@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String  @id @default(uuid())
+  username       String  @unique
+  hashedPassword Bytes
+  salt           Bytes
+  email          String  @unique
+  role           String
+  profilePicture String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  updatedById    String?  // Foreign key reference to another User
+  updatedBy      User?    @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedUsers   User[]   @relation("UserUpdatedBy") // Inverse relation: Tracks users this user has updated
+  orders         Order[]  @relation("UserOrders") // Unique relation name for the relation with orders
+  
+  @@index([email]) // Index on email for faster queries
+}
+
+model Size {
+  id        String  @id @default(uuid())
+  name      String  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products  Product[] @relation("ProductSizeRelation") // Inverse relation: Tracks products that belong to this size
+  
+  @@index([name])  // Index on size name for better query performance
+}
+
+model Category {
+  id            String     @id @default(uuid())
+  name          String     @unique
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  parentCategoryId String? 
+  parentCategory   Category?   @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
+  subcategories    Category[]  @relation("CategoryHierarchy")
+  
+  products        Product[]    @relation("ProductCategoryRelation") // Inverse relation: Tracks products that belong to this category
+  
+  @@index([name]) // Index on category name for better query performance
+}
+
+model Product {
+  id              String     @id @default(uuid())
+  title           String
+  code            String     @unique
+  images          String[]   // Assuming images are stored as URLs
+  itemLocation    String     // Location of the item in the warehouse or store
+  sizeId          String
+  size            Size       @relation(fields: [sizeId], references: [id], name: "ProductSizeRelation") // Unique relation name
+  categoryId      String
+  category        Category   @relation(fields: [categoryId], references: [id], name: "ProductCategoryRelation") // Unique relation name
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  orderDetails    OrderDetail[]  @relation("ProductOrderDetails") // Unique relation name for the relation with OrderDetail
+  
+  @@index([code])   // Index on product code for fast lookup
+  @@index([categoryId])  // Index on categoryId for fast filtering by category
+}
+
+model Order {
+  id            String        @id @default(uuid())
+  userId        String
+  user          User          @relation("UserOrders", fields: [userId], references: [id]) // Unique relation name for User
+  status        String        // Pending, Completed, Cancelled, etc.
+  totalAmount   Float         // Total amount for the order
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  transactionId String?
+  transaction   Transaction?  @relation("OrderTransaction") // Unique relation name for Transaction
+  orderDetails  OrderDetail[] @relation("OrderOrderDetails") // Unique relation name for OrderDetails
+
+  @@index([userId])       // Index on userId for faster filtering by user
+  @@index([status])       // Index on status for faster filtering by order status
+  @@index([createdAt])    // Index on createdAt for faster date-based queries
+  @@index([transactionId]) // Index on transactionId for faster lookup
+}
+
+model OrderDetail {
+  id              String   @id @default(uuid())
+  orderId         String
+  order           Order    @relation("OrderOrderDetails", fields: [orderId], references: [id]) // Unique relation name for Order
+  productId       String
+  product         Product  @relation("ProductOrderDetails", fields: [productId], references: [id]) // Unique relation name for Product
+  quantity        Int
+  price           Float    // Price of the product per unit
+  total           Float    // Total price for the quantity
+  productName     String   // Denormalized product name (for avoiding join with Product table)
+  categoryName    String   // Denormalized category name (for avoiding join with Category table)
+  sizeName        String   // Denormalized size name (for avoiding join with Size table)
+  createdAt       DateTime @default(now())
+
+  @@index([productId]) // Index on productId for fast lookup
+  @@index([orderId])   // Index on orderId for better performance
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  orderId   String   @unique
+  amount    Float    // Amount for the transaction
+  status    String   // Transaction status: Pending, Successful, Failed
+  createdAt DateTime @default(now())
+  order     Order    @relation("OrderTransaction", fields: [orderId], references: [id]) // Unique relation name for Order
+  
+  @@index([orderId])  // Index on orderId for faster lookup
+  @@index([status])   // Index on status for faster filtering by transaction status
+}
