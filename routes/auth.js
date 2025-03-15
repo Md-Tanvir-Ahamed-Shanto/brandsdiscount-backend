@@ -197,7 +197,7 @@ router.post(
     res.json({
       success: true,
       access_token: token,
-      refresh_token: refreshtoken,
+      refresh_token: refreshToken,
       user: { id: req.user.id, role: req.user.role },
     });
   }
