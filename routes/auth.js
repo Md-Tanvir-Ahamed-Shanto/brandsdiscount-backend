@@ -194,6 +194,7 @@ router.post(
       JSON.stringify({ token, refreshToken }),
       COOKIE_OPTIONS
     );
+
     res.json({
       success: true,
       access_token: token,

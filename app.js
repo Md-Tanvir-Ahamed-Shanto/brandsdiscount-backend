@@ -46,11 +46,7 @@ const corsOptions = {
   //     callback(new Error("Not allowed by CORS"));
   //   }
   // },
-  origin: [
-    "http://localhost:3000",
-    /\.orendt\.com$/,
-    /\.intelligentgraphics\.biz$/,
-  ],
+  origin: ["http://localhost:3000"],
   credentials: true,
 };
 

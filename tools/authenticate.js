@@ -6,10 +6,9 @@ exports.COOKIE_OPTIONS = {
   httpOnly: true,
   // Since localhost is not having https protocol,
   // secure cookies do not work correctly (in postman)
-  secure: true,
+  secure: false,
   sameSite: "none",
-  signed: true,
-  maxAge: eval(process.env.REFRESH_TOKEN_EXPIRY) * 1000,
+  maxAge: Number(process.env.REFRESH_TOKEN_EXPIRY) * 1000,
 };
 
 exports.getToken = (user) => {
@@ -29,13 +28,16 @@ exports.verifyUser = function authenticateJwt(req, res, next) {
   passport.authenticate("jwt", { session: false }, function (err, user, info) {
     if (err) {
       // console.log(err)
-      return res.status(500).send("An error occured while user authentication.");
+      return res
+        .status(500)
+        .send("An error occured while user authentication.");
     }
-      if (!user) {
-        // console.log("Token Expired!")
-        return res.status(401)
+    if (!user) {
+      // console.log("Token Expired!")
+      return res
+        .status(401)
         .json({ message: "Invalid or expired access token" });
-      }
+    }
     req.user = user;
     next();
   })(req, res, next);
