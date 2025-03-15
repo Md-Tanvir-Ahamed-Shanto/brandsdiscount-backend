@@ -113,6 +113,13 @@ router.post("/signup", async (req, res, next) => {
         });
 
         const token = getToken({ id: newUser.id });
+        const refreshToken = getRefreshToken({ id: newUser.id });
+
+        res.cookie(
+          "token",
+          JSON.stringify({ token, refreshToken }),
+          COOKIE_OPTIONS
+        );
         res.json({
           success: true,
           access_token: token,
@@ -160,6 +167,12 @@ router.get("/refreshtoken", async (req, res) => {
       const token = getToken({ id: user.id });
       const refreshToken = getRefreshToken({ id: user.id });
 
+      res.cookie(
+        "token",
+        JSON.stringify({ token, refreshToken }),
+        COOKIE_OPTIONS
+      );
+
       return res.json({
         success: true,
         access_token: token,
@@ -174,7 +187,13 @@ router.post(
   passport.authenticate("local", { session: false }),
   (req, res) => {
     const token = getToken({ id: req.user.id });
-    const refreshtoken = getRefreshToken({ id: req.user.id });
+    const refreshToken = getRefreshToken({ id: req.user.id });
+
+    res.cookie(
+      "token",
+      JSON.stringify({ token, refreshToken }),
+      COOKIE_OPTIONS
+    );
     res.json({
       success: true,
       access_token: token,
