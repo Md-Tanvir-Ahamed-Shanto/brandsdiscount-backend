@@ -146,15 +146,19 @@ router.get("/refreshtoken", async (req, res) => {
           .status(401)
           .json({ message: "Invalid or expired refresh token" });
       }
+      console.log("decoded");
+      console.log(decoded);
 
       // Find the user associated with the refresh token
       const user = await prisma.user.findUnique({
         where: { id: decoded.id },
       });
 
+      console.log(user);
+
       // Generate a new access token
-      const token = getToken({ _id: user._id });
-      const refreshToken = getRefreshToken({ _id: user._id });
+      const token = getToken({ id: user.id });
+      const refreshToken = getRefreshToken({ id: user.id });
 
       return res.json({
         success: true,
