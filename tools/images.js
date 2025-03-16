@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 // Middleware to get bucket file
 let { bucket } = require("../tools/cloudStorage.js");
 
@@ -11,7 +9,7 @@ const sendUploadToGCS = (req, res, next) => {
 
 const Multer = require("multer"),
   multer = Multer({
-    storage: Multer.MemoryStorage,
+    storage: Multer.memoryStorage,
     limits: {
       fileSize: 5 * 1024 * 1024,
     },

@@ -19,6 +19,26 @@ router.get(
   }
 );
 
+// API route to get a single size by ID
+router.get("/size/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const size = await prisma.size.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!size) {
+      return res.status(404).json({ error: "Size not found" });
+    }
+
+    res.status(200).json(size);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching product" });
+  }
+});
+
 router.post("/new", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
     const size = await prisma.size.create({ data: { name: req.body.name } });

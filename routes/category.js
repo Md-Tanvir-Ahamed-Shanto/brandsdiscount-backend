@@ -15,6 +15,26 @@ router.get("/categories", verifyUser, ensureRoleAdmin, async (req, res) => {
   res.send({ categories });
 });
 
+// API route to get a single category by ID
+router.get("/category/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const cat = await prisma.category.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (!cat) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    res.status(200).json(cat);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching product" });
+  }
+});
+
 router.post("/new", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
     const category = await prisma.category.create({

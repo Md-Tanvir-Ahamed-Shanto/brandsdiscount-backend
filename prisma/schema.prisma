@@ -55,19 +55,32 @@ model Category {
 model Product {
   id              String     @id @default(uuid())
   title           String
-  code            String     @unique
+  brandName       String?
+  color           String?
+  sku             String     @unique
   images          String[]   // Assuming images are stored as URLs
-  itemLocation    String     // Location of the item in the warehouse or store
-  sizeId          String
-  size            Size       @relation(fields: [sizeId], references: [id], name: "ProductSizeRelation") // Unique relation name
-  categoryId      String
-  category        Category   @relation(fields: [categoryId], references: [id], name: "ProductCategoryRelation") // Unique relation name
+  itemLocation    String?     // Location of the item in the warehouse or store
+  sizeId          String?
+  sizeType        String?
+  size            Size?      @relation(fields: [sizeId], references: [id], name: "ProductSizeRelation") // Unique relation name
+  categoryId      String?
+  category        Category?   @relation(fields: [categoryId], references: [id], name: "ProductCategoryRelation") // Unique relation name
+  regularPrice    Float?
+  salePrice       Float?
+  discountPercent Float?
+  stockQuantity   Int?
+  condition       String?     // New, Used, Refurbished, etc.
+  description     String?
+  status          String?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+  updatedById    String?  // Foreign key reference to another User
 
   orderDetails    OrderDetail[]  @relation("ProductOrderDetails") // Unique relation name for the relation with OrderDetail
   
-  @@index([code])   // Index on product code for fast lookup
+  @@index([sku])   // Index on product code for fast lookup
+  @@index([brandName])  // Index on product code for fast lookup
+  @@index([title])   // Index on product code for fast lookup
   @@index([categoryId])  // Index on categoryId for fast filtering by category
 }
 

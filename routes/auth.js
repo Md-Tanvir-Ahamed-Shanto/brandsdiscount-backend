@@ -115,14 +115,15 @@ router.post("/signup", async (req, res, next) => {
         const token = getToken({ id: newUser.id });
         const refreshToken = getRefreshToken({ id: newUser.id });
 
-        res.cookie(
-          "token",
-          JSON.stringify({ token, refreshToken }),
-          COOKIE_OPTIONS
-        );
+        // res.cookie(
+        //   "token",
+        //   JSON.stringify({ token, refreshToken }),
+        //   COOKIE_OPTIONS
+        // );
         res.json({
           success: true,
           access_token: token,
+          refresh_token: refreshToken,
           user: { id: newUser.id, role: newUser.role },
         });
       }
@@ -167,11 +168,11 @@ router.get("/refreshtoken", async (req, res) => {
       const token = getToken({ id: user.id });
       const refreshToken = getRefreshToken({ id: user.id });
 
-      res.cookie(
-        "token",
-        JSON.stringify({ token, refreshToken }),
-        COOKIE_OPTIONS
-      );
+      // res.cookie(
+      //   "token",
+      //   JSON.stringify({ token, refreshToken }),
+      //   COOKIE_OPTIONS
+      // );
 
       return res.json({
         success: true,
@@ -189,11 +190,11 @@ router.post(
     const token = getToken({ id: req.user.id });
     const refreshToken = getRefreshToken({ id: req.user.id });
 
-    res.cookie(
-      "token",
-      JSON.stringify({ token, refreshToken }),
-      COOKIE_OPTIONS
-    );
+    // res.cookie(
+    //   "token",
+    //   JSON.stringify({ token, refreshToken }),
+    //   COOKIE_OPTIONS
+    // );
 
     res.json({
       success: true,

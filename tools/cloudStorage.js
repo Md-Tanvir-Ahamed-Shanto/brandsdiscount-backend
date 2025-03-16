@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 /* Get file from bucket */
 let bucket = "cloudflare";
 
