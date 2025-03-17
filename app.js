@@ -18,6 +18,7 @@ let authRouter = require("./routes/auth");
 let productRouter = require("./routes/product");
 let sizeRouter = require("./routes/size");
 let categoryRouter = require("./routes/category");
+let ebayRouter = require("./routes/ebay");
 
 const nodemailer = require("nodemailer");
 let cron = require("node-cron");
@@ -46,7 +47,7 @@ const corsOptions = {
   //     callback(new Error("Not allowed by CORS"));
   //   }
   // },
-  origin: ["http://localhost:3000"],
+  origin: "*",
   credentials: true,
 };
 
@@ -57,6 +58,7 @@ app.use("/authroute", authRouter);
 app.use("/productroute", productRouter);
 app.use("/sizeroute", sizeRouter);
 app.use("/categoryroute", categoryRouter);
+app.use("/ebay", ebayRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

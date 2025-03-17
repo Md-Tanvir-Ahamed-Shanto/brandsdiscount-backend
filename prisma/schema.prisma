@@ -131,3 +131,21 @@ model Transaction {
   @@index([orderId])  // Index on orderId for faster lookup
   @@index([status])   // Index on status for faster filtering by transaction status
 }
+
+model ApiToken {
+  id            String   @id @default(uuid()) // Unique Token ID
+  platform      Platform @unique // Enum (eBay, Walmart, Shein)
+
+  accessToken   String   // Short-lived access token
+  refreshToken  String   // Long-lived refresh token
+  expiresAt     DateTime // Access token expiry
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Platform {
+  EBAY
+  WALMART
+  SHEIN
+}
