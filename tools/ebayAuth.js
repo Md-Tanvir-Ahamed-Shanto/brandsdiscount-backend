@@ -65,14 +65,23 @@ async function getAccessToken(authCode) {
 
     const expiresAt = new Date(Date.now() + response.data.expires_in * 1000); // Convert to Date object
 
-    const ebayApiData = await prisma.apiToken.create({
-      data: {
+    const ebayApiData = await prisma.apiToken.upsert({
+      where: { platform: "EBAY" }, // Check if an entry for "EBAY" exists
+      update: {
+        accessToken: response.data.access_token,
+        refreshToken: response.data.refresh_token,
+        expiresAt: expiresAt,
+      }, // Update if found
+      create: {
         platform: "EBAY",
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
         expiresAt: expiresAt,
-      },
+      }, // Create if not found
     });
+
+    console.log(ebayApiData);
+
     console.log(ebayApiData);
 
     return response.data;

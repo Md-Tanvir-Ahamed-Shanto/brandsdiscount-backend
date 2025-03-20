@@ -10,6 +10,7 @@ let path = require("path");
 let cookieParser = require("cookie-parser");
 let logger = require("morgan");
 let session = require("express-session");
+const bodyParser = require("body-parser");
 
 const { Client } = require("basic-ftp");
 
@@ -19,6 +20,7 @@ let productRouter = require("./routes/product");
 let sizeRouter = require("./routes/size");
 let categoryRouter = require("./routes/category");
 let ebayRouter = require("./routes/ebay");
+let webhookRouter = require("./webhook/ebayWebhook");
 
 const nodemailer = require("nodemailer");
 let cron = require("node-cron");
@@ -31,6 +33,9 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+// Use body-parser to handle raw XML payloads
+app.use(bodyParser.text({ type: "text/xml" }));
+app.use(bodyParser.text({ type: "application/xml" }));
 
 // const whitelist = process.env.WHITELISTED_DOMAINS
 //   ? process.env.WHITELISTED_DOMAINS.split(",")
@@ -59,6 +64,7 @@ app.use("/productroute", productRouter);
 app.use("/sizeroute", sizeRouter);
 app.use("/categoryroute", categoryRouter);
 app.use("/ebay", ebayRouter);
+app.use("/webhook", webhookRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
