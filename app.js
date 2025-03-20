@@ -66,11 +66,29 @@ app.use("/categoryroute", categoryRouter);
 app.use("/ebay", ebayRouter);
 app.use("/webhook", webhookRouter);
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404));
+// Serve the Checkout Page
+app.get("/ebayPurchase", (req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.sendFile(path.join(__dirname, "public", "ebayPurchase.html"));
 });
 
+// catch 404 and forward to error handler
+// app.use(function (req, res, next) {
+//   next(createError(404));
+// });
+
+// app.use(function (err, req, res, next) {
+//   console.error(err.stack); // Logs full error stack
+//   res.status(err.status || 500).json({
+//     error: err.message || "Internal Server Error",
+//   });
+// });
+
+app.use(function (req, res, next) {
+  const err = createError(404, `Not Found: ${req.originalUrl}`);
+  console.error(err.message); // Log the error in console
+  res.status(404).json({ error: err.message }); // Send a JSON response
+});
 /* Recommendation email */
 
 // Initialize a lock flag

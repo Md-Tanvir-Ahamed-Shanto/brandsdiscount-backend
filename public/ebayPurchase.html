@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout with eBay</title>
+    <script>
+      const ebayToken =
+        "v^1.1#i^1#r^1#f^0#I^3#p^1#t^Ul41XzM6RkI4Nzg4NzVDMkNGRUQ3NkRGMUY5NDRGNDIwQzFERjZfMV8xI0VeMTI4NA=="; // Replace with actual token
+      const sessionId = "500010504"; // Replace with actual session ID
+
+      function loadCheckoutButton() {
+        console.log("enter ebay payment");
+        // Encode the token
+        const encodedToken = encodeURIComponent(ebayToken);
+
+        // Load the eBay Checkout SDK dynamically
+        const script = document.createElement("script");
+        script.src = `https://checkout.ebay.com/sdk/js?locale=en-US&token=${encodedToken}&sessionid=${sessionId}`;
+        document.body.appendChild(script);
+        console.log("payment script added");
+        console.log(encodedToken);
+        console.log(sessionId);
+
+        script.onload = () => {
+          console.log("script on loaddddddddd");
+          // Render the checkout button
+          new window.ebaypay.Button({
+            token: encodedToken,
+            sessionId: sessionId,
+            paymentActions: {
+              onSuccess: (orderData) => {
+                console.log("Payment Success:", orderData);
+                alert(
+                  "Payment Successful! Order ID: " + orderData.purchaseOrderId
+                );
+              },
+              onError: (error) => {
+                console.error("Payment Error:", error);
+                alert("Payment Error: " + error.message);
+              },
+              onCancel: (cancelData) => {
+                console.log("Payment Canceled:", cancelData);
+                alert("Payment Canceled!");
+              },
+            },
+          }).render("#checkout-with-ebay-container");
+        };
+      }
+    </script>
+  </head>
+  <body onload="loadCheckoutButton()">
+    <h1>Checkout with eBay</h1>
+    <div id="checkout-with-ebay-container"></div>
+  </body>
+</html>
