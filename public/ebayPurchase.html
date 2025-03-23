@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Checkout with eBay</title>
-    <script src="https://checkout.ebay.com/sdk/js?locale=en-US&token=v%5E1.1%23i%5E1%23r%5E1%23f%5E0%23I%5E3%23p%5E1%23t%5EUl41Xzc6RkZCMjUxRDg2RkYyNTkzRDdCOUFERDM3RDc0MkIyOEZfMF8xI0VeMTI4NA%3D%3D&sessionid=500014620"></script>
+    <script src="https://checkout.ebay.com/sdk/js?locale=en-US&token=v%5E1.1%23i%5E1%23r%5E1%23f%5E0%23I%5E3%23p%5E1%23t%5EUl41Xzc6M0Y5Qzg4NzdGRkFCRjIyNTVDQkE0MjU5RTRERTVBMjFfMV8xI0VeMTI4NA%3D%3D
+    &sessionid=500014620"></script>
   </head>
   <body>
     <h1>Checkout with eBay</h1>
@@ -17,8 +18,8 @@
         if (window.ebaypay) {
           new window.ebaypay.Button({
             token:
-              "v%5E1.1%23i%5E1%23r%5E1%23f%5E0%23I%5E3%23p%5E1%23t%5EUl41Xzc6RkZCMjUxRDg2RkYyNTkzRDdCOUFERDM3RDc0MkIyOEZfMF8xI0VeMTI4NA%3D%3D",
-            sessionId: "500014620",
+              "v%5E1.1%23i%5E1%23r%5E1%23f%5E0%23I%5E3%23p%5E1%23t%5EUl41Xzc6M0Y5Qzg4NzdGRkFCRjIyNTVDQkE0MjU5RTRERTVBMjFfMV8xI0VeMTI4NA%3D%3D",
+            sessionId: "500010514",
             paymentActions: {
               onSuccess: (data) => {
                 console.log("Payment Success:", data);

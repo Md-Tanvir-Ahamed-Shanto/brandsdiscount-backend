@@ -13,6 +13,14 @@ const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
 const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
 const EBAY_REDIRECT_URI = process.env.EBAY_REDIRECT_URI;
 
+//PRODUCTION_KEYS!!!
+// const EBAY_AUTH_URL = "https://auth.ebay.com/oauth2/authorize";
+// const EBAY_TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token";
+
+// const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID_PRODUCTION;
+// const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET_PRODUCTION;
+// const EBAY_REDIRECT_URI = process.env.EBAY_REDIRECT_URI_PRODUCTION;
+
 // const eBay = new eBayApi({
 //   appId: EBAY_CLIENT_ID,
 //   certId: EBAY_CLIENT_SECRET,

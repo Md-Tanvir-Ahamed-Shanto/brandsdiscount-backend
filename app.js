@@ -24,6 +24,10 @@ let webhookRouter = require("./webhook/ebayWebhook");
 
 const nodemailer = require("nodemailer");
 let cron = require("node-cron");
+const {
+  getValidAccessToken,
+  walmartOrderSync,
+} = require("./tools/wallmartAuth");
 
 let app = express();
 
@@ -66,6 +70,18 @@ app.use("/categoryroute", categoryRouter);
 app.use("/ebay", ebayRouter);
 app.use("/webhook", webhookRouter);
 
+// Serve the Checkout Page
+app.get("/wallmart/token", async (req, res) => {
+  const token = await getValidAccessToken();
+  res.json(token);
+});
+// Serve the Checkout Page
+// Serve the Checkout Page
+app.get("/wallmart/order", async (req, res) => {
+  const token = await getValidAccessToken();
+  const data = await walmartOrderSync();
+  res.json(data);
+});
 // Serve the Checkout Page
 app.get("/ebayPurchase", (req, res) => {
   res.set("Cache-Control", "no-store");

@@ -5,6 +5,7 @@ const { verifyUser } = require("../tools/authenticate");
 const { ensureRoleAdmin } = require("../tools/tools.js");
 
 const axios = require("axios");
+const { v4: uuidv4 } = require("uuid");
 
 const ebayAuth = require("../tools/ebayAuth.js");
 
@@ -256,7 +257,105 @@ router.post("/create-product", async (req, res) => {
       "Error creating eBay product:",
       JSON.stringify(error.response?.data?.parameters) || error.message
     );
+    console.log(JSON.stringify(error));
     res.status(500).json({ error: "Failed to create product on eBay" });
+  }
+});
+
+// Route to initiate guest checkout
+router.post("/initiate-guest-checkout", async (req, res) => {
+  try {
+    const accessToken = await ebayAuth.getValidAccessToken();
+    if (!accessToken) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: Missing access token" });
+    }
+
+    const deviceId = uuidv4(); // Generate a unique device ID
+    console.log(deviceId);
+
+    const headers = {
+      Authorization:
+        "Bearer v^1.1#i^1#r^0#f^0#I^3#p^1#t^H4sIAAAAAAAA/+VYe2wURRjv3bXFBotYFAhRc1kkYOvu7bN3t3In1wdQW9rSO45eCda53bl26T6OfdAeBtM2AiaYQFRQIxBMTUANqSISUIMtEkDjIxKMkWgwGJSYaEUTwUYSZ6+lXCvh1Uts4v6zmZlvvvn9fvN9M98u2ZlfULxh8YaLhY5Jzl2dZKfT4aAmkwX5eSVTXM5ZeTlkhoFjV+eDnbndrvPzDaDISb4BGklNNaC7Q5FVg093BjBLV3kNGJLBq0CBBm8KfDi0pIanCZJP6pqpCZqMuasqAhiAVJymoMB4E8ArJCjUq17xGdECWCnt53w+SALg8wterx+NG4YFq1TDBKoZwGiS5nCSwWkqQlE8SfMMS1AM1YS5o1A3JE1FJgSJBdNw+fRcPQPr9aECw4C6iZxgwarQwnBdqKqisjYy35PhKzisQ9gEpmWMbpVrInRHgWzB6y9jpK35sCUI0DAwT3BohdFO+dAVMLcBPy11HIreOOXjWLGUBcALsiLlQk1XgHl9HHaPJOKJtCkPVVMyUzdSFKkRXwUFc7hVi1xUVbjt11ILyFJCgnoAqywLxUL19ViwuhVIuiWX4TWaAORWzcDDZY046xM4SAOOw70i6WUZlhteaMjbsMxjVirXVFGyRTPctZpZBhFqOFobkucytEFGdWqdHkqYNqJMO+aKhjTbZG/q0C5aZqtq7ytUkBDudPPGOzAy2zR1KW6ZcMTD2IG0RCitkklJxMYOpmNxOHw6jADWappJ3uNpb28n2hlC01s8NElSnsYlNWGhFSooQjoUO9eH7KUbT8ClNBUBopmGxJupJMLSgWIVAVBbsCDLUpSfHdZ9NKzg2N5/dWRw9ozOiGxliJeOMz6a4VhKTDClgpCNDAkOB6nHxgHjIIUrQG+DZlIGAsQFFGeWAnVJ5BkuQTO+BMTFUn8CZ/2JBB7nxFKcSkBIQhiPC37f/ylRbjbUw1DQoZmVWM9anDdWL1WWtdU2KctrYiUNXDTSGGH0SoGETeLyRRW0h2RojqQafBZYGrjZbLgm+XJZQspE0PrZEMDO9eyJsFgzTCiOi15Y0JKwXpMlITWxNpjRxXqgm6kyK4XaYSjL6DUuqqFksio7J3bWSN7iYXF7vLN3U/1Ht9Q1WRl24E4sVvZ8AzkASYlA95Cd6ylC0BSPBlARYnc3p1F74laKaLGgYaJFRKiPSwcJ1bMTSgVE2GafIiRxqBAl0vQJY41A6NDQLB3V4ESdXZdFtDaoolvO1DVZhnqUGnd+K4plgrgMJ1qiZyHgJTDBrmDKy9Icx/q58fES0hds80Q7om7taM5dmdVi2zP60z+Yk36obscnZLfjmNPhICtInCohH8p3Lct13YkZkgkJA6hiXOsgJJAgDKlFRV+2OiTaYCqJmDin5Zz6eUs49mX1wW2H167uIh49llOQ8Qdi10py5sg/iAIXNTnjhwR539WRPOquGYWotGJoiqJImmGbyNlXR3Op6bn3bPXXfndo59M9939bTs5gXoS/Wbu3kIUjRg5HXk5utyMnOTDoevzS5g8vr4jN6TnM99MPxP6c/unxosq5b65Ren6cMvDV8Qb4cvnZA4O/ziad35x8d0+R79JgLBJ+vnD2hdow07/tzP6XjvYu2RxLVfUWf1BW1HwgBlzr8KJJbZMfy3+mdsvW3Drn6387D93d1/zxaaLryPpovP30ic6NO++aFd2pqOb+P/rWL9w7tXj77wv6/9Lu3XQq0fj2C+fJRy4XBzc+pZwJ914IvvrexUV39Jzfd3lKc/G0rU+qO/YumPNZfv+Jnn27B1ed3fP5ufcXzF27/blnTx4caHpn3k/R1V+v+KjkeN+6eV1np3b9sj3y2vc7Hv4hUNn3xrlX3vpCmTnQyz8RrU65jlYeITYN7ek/dSWPLhsSAAA=",
+      "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+      "X-EBAY-C-ENDUSERCTX": `deviceId=${deviceId}`,
+      "Content-Type": "application/json",
+    };
+
+    const payload = {
+      contactEmail: "kb@gmail.com",
+      shippingAddress: {
+        recipient: {
+          firstName: "testr",
+          lastName: "testw",
+        },
+        phoneNumber: "9173310324",
+        addressLine1: "8 The Green",
+        city: "Dover",
+        stateOrProvince: "DE",
+        postalCode: "19901",
+        country: "US",
+      },
+      lineItemInputs: [
+        {
+          quantity: "1",
+          itemId: "v1|110578486495|0",
+        },
+      ],
+    };
+
+    const response = await axios.post(
+      "https://apix.sandbox.ebay.com/buy/order/v2/guest_checkout_session/initiate",
+      payload,
+      { headers }
+    );
+    console.log(response);
+
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error(
+      "Error initiating guest checkout:",
+      error.response?.data || error.message
+    );
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data || "Internal Server Error",
+    });
+  }
+});
+
+// GET route to fetch guest checkout session details
+router.get("/guest-checkout/:checkoutSessionId", async (req, res) => {
+  try {
+    const { checkoutSessionId } = req.params;
+    const accessToken = await ebayAuth.getValidAccessToken();
+    if (!accessToken) {
+      return res
+        .status(401)
+        .json({ error: "Unauthorized: Missing access token" });
+    }
+
+    const headers = {
+      Authorization:
+        "Bearer v^1.1#i^1#r^0#f^0#I^3#p^1#t^H4sIAAAAAAAA/+VYe2wURRjv3bXFBotYFAhRc1kkYOvu7bN3t3In1wdQW9rSO45eCda53bl26T6OfdAeBtM2AiaYQFRQIxBMTUANqSISUIMtEkDjIxKMkWgwGJSYaEUTwUYSZ6+lXCvh1Uts4v6zmZlvvvn9fvN9M98u2ZlfULxh8YaLhY5Jzl2dZKfT4aAmkwX5eSVTXM5ZeTlkhoFjV+eDnbndrvPzDaDISb4BGklNNaC7Q5FVg093BjBLV3kNGJLBq0CBBm8KfDi0pIanCZJP6pqpCZqMuasqAhiAVJymoMB4E8ArJCjUq17xGdECWCnt53w+SALg8wterx+NG4YFq1TDBKoZwGiS5nCSwWkqQlE8SfMMS1AM1YS5o1A3JE1FJgSJBdNw+fRcPQPr9aECw4C6iZxgwarQwnBdqKqisjYy35PhKzisQ9gEpmWMbpVrInRHgWzB6y9jpK35sCUI0DAwT3BohdFO+dAVMLcBPy11HIreOOXjWLGUBcALsiLlQk1XgHl9HHaPJOKJtCkPVVMyUzdSFKkRXwUFc7hVi1xUVbjt11ILyFJCgnoAqywLxUL19ViwuhVIuiWX4TWaAORWzcDDZY046xM4SAOOw70i6WUZlhteaMjbsMxjVirXVFGyRTPctZpZBhFqOFobkucytEFGdWqdHkqYNqJMO+aKhjTbZG/q0C5aZqtq7ytUkBDudPPGOzAy2zR1KW6ZcMTD2IG0RCitkklJxMYOpmNxOHw6jADWappJ3uNpb28n2hlC01s8NElSnsYlNWGhFSooQjoUO9eH7KUbT8ClNBUBopmGxJupJMLSgWIVAVBbsCDLUpSfHdZ9NKzg2N5/dWRw9ozOiGxliJeOMz6a4VhKTDClgpCNDAkOB6nHxgHjIIUrQG+DZlIGAsQFFGeWAnVJ5BkuQTO+BMTFUn8CZ/2JBB7nxFKcSkBIQhiPC37f/ylRbjbUw1DQoZmVWM9anDdWL1WWtdU2KctrYiUNXDTSGGH0SoGETeLyRRW0h2RojqQafBZYGrjZbLgm+XJZQspE0PrZEMDO9eyJsFgzTCiOi15Y0JKwXpMlITWxNpjRxXqgm6kyK4XaYSjL6DUuqqFksio7J3bWSN7iYXF7vLN3U/1Ht9Q1WRl24E4sVvZ8AzkASYlA95Cd6ylC0BSPBlARYnc3p1F74laKaLGgYaJFRKiPSwcJ1bMTSgVE2GafIiRxqBAl0vQJY41A6NDQLB3V4ESdXZdFtDaoolvO1DVZhnqUGnd+K4plgrgMJ1qiZyHgJTDBrmDKy9Icx/q58fES0hds80Q7om7taM5dmdVi2zP60z+Yk36obscnZLfjmNPhICtInCohH8p3Lct13YkZkgkJA6hiXOsgJJAgDKlFRV+2OiTaYCqJmDin5Zz6eUs49mX1wW2H167uIh49llOQ8Qdi10py5sg/iAIXNTnjhwR539WRPOquGYWotGJoiqJImmGbyNlXR3Op6bn3bPXXfndo59M9939bTs5gXoS/Wbu3kIUjRg5HXk5utyMnOTDoevzS5g8vr4jN6TnM99MPxP6c/unxosq5b65Ren6cMvDV8Qb4cvnZA4O/ziad35x8d0+R79JgLBJ+vnD2hdow07/tzP6XjvYu2RxLVfUWf1BW1HwgBlzr8KJJbZMfy3+mdsvW3Drn6387D93d1/zxaaLryPpovP30ic6NO++aFd2pqOb+P/rWL9w7tXj77wv6/9Lu3XQq0fj2C+fJRy4XBzc+pZwJ914IvvrexUV39Jzfd3lKc/G0rU+qO/YumPNZfv+Jnn27B1ed3fP5ufcXzF27/blnTx4caHpn3k/R1V+v+KjkeN+6eV1np3b9sj3y2vc7Hv4hUNn3xrlX3vpCmTnQyz8RrU65jlYeITYN7ek/dSWPLhsSAAA=",
+      "X-EBAY-C-MARKETPLACE-ID": "EBAY_US",
+      "X-EBAY-C-ENDUSERCTX": "deviceId=d295bd4e-156b-448d-8764-c87ebdfe7ba2",
+      "Content-Type": "application/json",
+    };
+
+    const response = await axios.get(
+      `https://apix.sandbox.ebay.com/buy/order/v2/guest_checkout_session/${checkoutSessionId}`,
+      { headers }
+    );
+    res.status(200).json(response.data);
+  } catch (error) {
+    console.error(
+      "Error fetching guest checkout session:",
+      error.response?.data || error.message
+    );
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data || "Internal Server Error",
+    });
   }
 });
 
