@@ -184,9 +184,133 @@ async function getValidAccessToken() {
   return await refreshAccessToken();
 }
 
+async function ebayUpdateInventory(sku, quantity) {
+  const token = await ebayAuth.getValidAccessToken();
+
+  try {
+    const offerId = await axios.put(
+      `https://api.ebay.com/sell/inventory/v1/offer?sku=${sku}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const reqBody = {
+      requests: [
+        {
+          offers: [
+            {
+              availableQuantity: quantity,
+              offerId: offerId,
+            },
+          ],
+          shipToLocationAvailability: {
+            availabilityDistributions: [
+              {
+                fulfillmentTime: {
+                  unit: "DAY",
+                  value: 3,
+                },
+                merchantLocationKey: "mk1",
+                quantity: quantity,
+              },
+            ],
+            quantity: quantity,
+          },
+          sku: sku,
+        },
+      ],
+    };
+
+    const newInventory = await axios.put(
+      "https://api.ebay.com/sell/inventory/v1/bulk_update_price_quantity",
+      reqBody,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+  } catch (error) {
+    console.log("ebay item update error", error);
+  }
+}
+
+async function ebayOrderSync() {
+  const token = await getValidAccessToken();
+
+  try {
+    const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
+
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B${now}..%5D&limit=180`;
+    // const url = `https://marketplace.walmartapis.com/v3/orders?status=Created&productInfo=false&shipNodeType=SellerFulfilled&replacementInfo=false&createdStartDate=${encodeURIComponent(
+    //   now
+    // )}`;
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
+    const response = await axios.get(url, { headers });
+    const data = response.data;
+    const existingOrders = await prisma.ebayOrder.findMany();
+    console.log("exisitng orders", existingOrders);
+    const newOrders = data.orders.filter(
+      (order) =>
+        !existingOrders.find((existing) => existing.orderId === order.orderId)
+    );
+
+    console.log(`new ordersssss`, newOrders);
+
+    const clearDB = await prisma.ebayOrder.deleteMany({});
+    const createOrders = await prisma.ebayOrder.createMany({
+      data: newOrders.map((order) => ({
+        orderId: order.orderId,
+        orderCreationDate: new Date(order.creationDate),
+      })),
+    });
+    console.log(`new ordersssss222222`, newOrders);
+
+    newOrders.forEach(async (order) => {
+      order.lineItems.forEach(async (item) => {
+        console.log("syncing order:", order);
+        const productData = await prisma.product.findUnique({
+          where: {
+            sku: item.sku,
+          },
+        });
+        if (productData) {
+          const updateProduct = await prisma.product.update({
+            where: {
+              sku: item.sku,
+            },
+            data: {
+              stockQuantity: productData.stockQuantity - item.quantity,
+            },
+          });
+        }
+      });
+    });
+    return newOrders;
+  } catch (error) {
+    console.error(
+      "Error fetching Walmart orders:",
+      error.response?.data || error.message
+    );
+    console.log(error);
+  }
+}
+
 module.exports = {
   getEbayAuthUrl,
   getAccessToken,
   refreshAccessToken,
   getValidAccessToken,
+  ebayUpdateInventory,
 };

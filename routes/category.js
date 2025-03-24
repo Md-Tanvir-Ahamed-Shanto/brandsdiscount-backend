@@ -8,7 +8,7 @@ const { paginateOverview } = require("../tools/pagination.js");
 const prisma = new PrismaClient();
 
 // Category Routes
-router.get("/categories", verifyUser, ensureRoleAdmin, async (req, res) => {
+router.get("/categories", verifyUser, paginateOverview, async (req, res) => {
   const categories = await prisma.category.findMany({
     include: { subcategories: true },
   });
@@ -41,6 +41,7 @@ router.post("/new", verifyUser, ensureRoleAdmin, async (req, res) => {
       data: {
         name: req.body.name,
         parentCategoryId: req.body.parentCategoryId || null,
+        subCategoryId: req.body.subCategoryId || null,
       },
     });
     res.send({ success: true, category });
@@ -56,6 +57,7 @@ router.put("/update/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
       data: {
         name: req.body.name,
         parentCategoryId: req.body.parentCategoryId || null,
+        subCategoryId: req.body.subCategoryId || null,
       },
     });
     res.send({ success: true, category });

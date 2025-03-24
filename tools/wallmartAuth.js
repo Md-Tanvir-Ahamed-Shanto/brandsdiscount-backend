@@ -87,6 +87,7 @@ async function getValidAccessToken() {
  * 3️⃣ List a Product on Walmart
  */
 async function listWalmartProduct(productData) {
+  //productData is a json file attached
   try {
     const access_token = await getValidAccessToken();
     if (!access_token) throw new Error("Failed to obtain access token");
@@ -107,6 +108,33 @@ async function listWalmartProduct(productData) {
       error.response?.data || error.message
     );
     return null;
+  }
+}
+
+async function walmartItemUpdate(sku, quantity) {
+  const updateData = {
+    quantity: {
+      unit: "EACH",
+      amount: quantity,
+    },
+  };
+  const token = await getValidAccessToken();
+  try {
+    const url = `https://marketplace.walmartapis.com/v3/inventory?sku=${sku}`;
+    const headers = {
+      "WM_QOS.CORRELATION_ID": "790554c7-caaa-4f2d-ada6-572b3b7fca88",
+      "WM_SEC.ACCESS_TOKEN": token, // Replace with actual token
+      "WM_SVC.NAME": "Walmart Marketplace",
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+
+    const response = await axios.put(url, updateData, { headers });
+  } catch (error) {
+    console.error(
+      "Walmart Inventory Update Error:",
+      error.response?.data || error.message
+    );
   }
 }
 
@@ -189,4 +217,5 @@ module.exports = {
   getNewAccessToken,
   getValidAccessToken,
   walmartOrderSync,
+  walmartItemUpdate,
 };
