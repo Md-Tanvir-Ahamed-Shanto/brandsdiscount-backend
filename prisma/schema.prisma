@@ -155,6 +155,7 @@ model SheinOrder {
 
 model OrderDetail {
   id              String   @id @default(uuid())
+  sku             String
   orderId         String
   order           Order    @relation("OrderOrderDetails", fields: [orderId], references: [id]) // Unique relation name for Order
   productId       String
@@ -173,7 +174,7 @@ model OrderDetail {
 
 model Transaction {
   id        String   @id @default(uuid())
-  TransactionId   String
+  transactionId   String
   orderId   String   @unique
   amount    Float    // Amount for the transaction
   status    String   // Transaction status: Pending, Successful, Failed

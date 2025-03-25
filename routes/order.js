@@ -1,5 +1,7 @@
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
+const { verifyUser } = require("../tools/authenticate");
+const { paginateOverview } = require("../tools/pagination");
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -9,7 +11,7 @@ const router = express.Router();
  * @desc    Get all orders with optional filtering
  * @access  Public
  */
-router.get("/", async (req, res) => {
+router.get("/", verifyUser, paginateOverview("order"), async (req, res) => {
   try {
     const { userId, status } = req.query;
 
@@ -66,44 +68,43 @@ router.get("/:id", async (req, res) => {
  * @desc    Create a new order
  * @access  Public
  */
-router.post("/", async (req, res) => {
+router.post("/", verifyUser, async (req, res) => {
+  console.log("order");
+  console.log("user", req.user);
+  const userId = req.user.id;
+
   try {
     const {
-      userId,
       orderDetails,
+      sku,
       totalAmount,
       status,
       transactionId,
       claimLoyaltyOffer,
       redeemPoint,
     } = req.body;
-
+    console.log(orderDetails);
     // Validate request
-    if (
-      !userId ||
-      !orderDetails ||
-      orderDetails.length === 0 ||
-      !transactionId
-    ) {
+    if (!orderDetails || orderDetails.length === 0 || !transactionId) {
       return res.status(400).json({ message: "Invalid order data" });
     }
 
     if (claimLoyaltyOffer) {
       console.log("loyalty offer claimed!");
-      const userID = req.user?.id;
+      console.log("user", req.user);
+      const userId = req.user.id;
       const updateUser = await prisma.user.update({
-        where: { id: userID },
+        where: { id: userId },
         data: { loyaltyStatus: "Loyal" },
       });
       //TODO Email
     } else {
-      const userID = req.user?.id;
       const userData = await prisma.user.findUnique({
-        where: { id: userID },
+        where: { id: userId },
       });
       if (userData.loyaltyStatus == "Not_Eligible" && totalAmount >= 60) {
         const updateUser = await prisma.user.update({
-          where: { id: userID },
+          where: { id: userId },
           data: { loyaltyStatus: "Eligible" },
         });
 
@@ -118,9 +119,11 @@ router.post("/", async (req, res) => {
         userId,
         status: status || "Pending",
         totalAmount,
+        transactionId: transactionId,
         orderDetails: {
           create: orderDetails.map((item) => ({
             productId: item.productId,
+            sku: sku,
             quantity: item.quantity,
             price: item.price,
             total: item.quantity * item.price,
@@ -140,10 +143,10 @@ router.post("/", async (req, res) => {
       include: { orderDetails: true, transaction: true },
     });
 
-    orderDetails.foreach(async (product) => {
+    orderDetails.map(async (product) => {
       const updateProduct = await prisma.product.update({
         where: { id: product.productId },
-        data: { quantity: { decrement: product.quantity } },
+        data: { stockQuantity: { decrement: product.quantity } },
       });
     });
     // orderPoint
@@ -170,7 +173,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, orderDetails } = req.body;
+    const { status } = req.body;
 
     const existingOrder = await prisma.order.findUnique({ where: { id } });
     if (!existingOrder)
@@ -181,22 +184,7 @@ router.put("/:id", async (req, res) => {
       where: { id },
       data: {
         status: status || existingOrder.status,
-        orderDetails: orderDetails
-          ? {
-              deleteMany: {}, // Clear previous order details
-              create: orderDetails.map((item) => ({
-                productId: item.productId,
-                quantity: item.quantity,
-                price: item.price,
-                total: item.quantity * item.price,
-                productName: item.productName,
-                categoryName: item.categoryName,
-                sizeName: item.sizeName,
-              })),
-            }
-          : undefined,
       },
-      include: { orderDetails: true },
     });
 
     res.json(updatedOrder);

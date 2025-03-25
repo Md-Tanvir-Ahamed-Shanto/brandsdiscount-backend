@@ -20,6 +20,7 @@ let productRouter = require("./routes/product");
 let sizeRouter = require("./routes/size");
 let categoryRouter = require("./routes/category");
 let ebayRouter = require("./routes/ebay");
+let orderRouter = require("./routes/order");
 let webhookRouter = require("./webhook/ebayWebhook");
 
 const nodemailer = require("nodemailer");
@@ -68,6 +69,7 @@ app.use("/productroute", productRouter);
 app.use("/sizeroute", sizeRouter);
 app.use("/categoryroute", categoryRouter);
 app.use("/ebay", ebayRouter);
+app.use("/order", orderRouter);
 app.use("/webhook", webhookRouter);
 
 // Serve the Checkout Page
@@ -78,7 +80,6 @@ app.get("/wallmart/token", async (req, res) => {
 // Serve the Checkout Page
 // Serve the Checkout Page
 app.get("/wallmart/order", async (req, res) => {
-  const token = await getValidAccessToken();
   const data = await walmartOrderSync();
   res.json(data);
 });

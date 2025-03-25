@@ -14,9 +14,14 @@ const paginateOverview = (model) => {
       // Filtering logic
       let where = {};
       if (filtering) {
+        console.log("enter filtering");
+
         filtering.split(",").forEach((filter) => {
+          console.log("filtering");
           const [key, value] = filter.split("_");
           if (key && value !== undefined) {
+            console.log("filtering key value");
+
             where[key] = isNaN(value) ? value : parseFloat(value);
           }
         });
