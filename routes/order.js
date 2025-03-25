@@ -2,6 +2,7 @@ const express = require("express");
 const { PrismaClient } = require("@prisma/client");
 const { verifyUser } = require("../tools/authenticate");
 const { paginateOverview } = require("../tools/pagination");
+const { sendLoyaltyEmail, sendAbandonedOfferEmail } = require("../tools/email");
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -89,7 +90,11 @@ router.post("/", verifyUser, async (req, res) => {
       return res.status(400).json({ message: "Invalid order data" });
     }
 
-    if (claimLoyaltyOffer) {
+    if (
+      claimLoyaltyOffer &&
+      req.user.loyaltyStatus != "Loyal" &&
+      totalAmount >= 60
+    ) {
       console.log("loyalty offer claimed!");
       console.log("user", req.user);
       const userId = req.user.id;
@@ -98,17 +103,26 @@ router.post("/", verifyUser, async (req, res) => {
         data: { loyaltyStatus: "Loyal" },
       });
       //TODO Email
+      console.log("sending email");
+
+      await sendLoyaltyEmail(req.user.email, req.user.username);
     } else {
       const userData = await prisma.user.findUnique({
         where: { id: userId },
       });
-      if (userData.loyaltyStatus == "Not_Eligible" && totalAmount >= 60) {
+      if (
+        (userData.loyaltyStatus == "Not_Eligible" ||
+          userData.loyaltyStatus == "Eligible") &&
+        totalAmount >= 60
+      ) {
         const updateUser = await prisma.user.update({
           where: { id: userId },
           data: { loyaltyStatus: "Eligible" },
         });
+        console.log("sending email");
 
         //TODO Email
+        await sendAbandonedOfferEmail(req.user.email, req.user.username);
       }
     }
 

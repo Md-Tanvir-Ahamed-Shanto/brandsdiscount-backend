@@ -23,12 +23,16 @@ let ebayRouter = require("./routes/ebay");
 let orderRouter = require("./routes/order");
 let webhookRouter = require("./webhook/ebayWebhook");
 
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
+
 const nodemailer = require("nodemailer");
 let cron = require("node-cron");
 const {
   getValidAccessToken,
   walmartOrderSync,
 } = require("./tools/wallmartAuth");
+const { sendAbandonedOfferEmail } = require("./tools/email");
 
 let app = express();
 
@@ -123,6 +127,12 @@ cron.schedule("*/5 * * * * *", async () => {
     // console.log("Job started...");
 
     // Simulated job logic
+    const userList = await prisma.user.findMany({
+      where: { loyaltyStatus: "Eligible" },
+    });
+    // userList.map(async (user) => {
+    //   await sendAbandonedOfferEmail(user.email, user.username);
+    // });
   } catch (error) {
     console.error("Error occurred during job execution:", error);
   } finally {
