@@ -22,9 +22,7 @@ const prisma = new PrismaClient();
 /* Get Products */
 router.get(
   "/products",
-  verifyUser,
-  ensureRoleAdmin,
-  paginateOverview(prisma.product),
+  paginateOverview("product"),
   async function (req, res, next) {
     res.send("product route");
   }
@@ -203,7 +201,7 @@ router.patch(
 );
 
 // API route to delete a product by ID
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 

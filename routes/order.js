@@ -3,6 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const { verifyUser } = require("../tools/authenticate");
 const { paginateOverview } = require("../tools/pagination");
 const { sendLoyaltyEmail, sendAbandonedOfferEmail } = require("../tools/email");
+const { ensureRoleAdmin } = require("../tools/tools");
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -43,7 +44,7 @@ router.get("/", verifyUser, paginateOverview("order"), async (req, res) => {
  * @desc    Get a single order by ID
  * @access  Public
  */
-router.get("/:id", async (req, res) => {
+router.get("/:id", verifyUser, async (req, res) => {
   try {
     const { id } = req.params;
     const order = await prisma.order.findUnique({
@@ -184,7 +185,7 @@ router.post("/", verifyUser, async (req, res) => {
  * @desc    Update an order status or details
  * @access  Public
  */
-router.put("/:id", async (req, res) => {
+router.patch("/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -213,7 +214,7 @@ router.put("/:id", async (req, res) => {
  * @desc    Delete an order
  * @access  Public
  */
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 

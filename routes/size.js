@@ -8,19 +8,13 @@ const { paginateOverview } = require("../tools/pagination.js");
 const prisma = new PrismaClient();
 
 // Size Routes
-router.get(
-  "/sizes",
-  verifyUser,
-  ensureRoleAdmin,
-  paginateOverview(prisma.size),
-  async (req, res) => {
-    const sizes = await prisma.size.findMany();
-    res.send({ sizes });
-  }
-);
+router.get("/sizes", paginateOverview("size"), async (req, res) => {
+  const sizes = await prisma.size.findMany();
+  res.send({ sizes });
+});
 
 // API route to get a single size by ID
-router.get("/size/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
+router.get("/size/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const size = await prisma.size.findUnique({

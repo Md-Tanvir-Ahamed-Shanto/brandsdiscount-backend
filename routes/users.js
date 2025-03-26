@@ -17,7 +17,8 @@ const prisma = new PrismaClient();
 router.get(
   "/users",
   verifyUser,
-  paginateOverview(prisma.user),
+  ensureRoleAdmin,
+  paginateOverview("user"),
   async (req, res) => {
     const users = await prisma.user.findMany();
     res.send({ users });
@@ -25,7 +26,7 @@ router.get(
 );
 
 // API route to get a single user by ID
-router.get("/user/:id", async (req, res) => {
+router.get("/user/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const user = await prisma.user.findUnique({
@@ -44,7 +45,7 @@ router.get("/user/:id", async (req, res) => {
   }
 });
 
-router.post("/new", verifyUser, async (req, res, next) => {
+router.post("/new", verifyUser, ensureRoleAdmin, async (req, res, next) => {
   try {
     const salt = crypto.randomBytes(16);
     crypto.pbkdf2(
