@@ -8,12 +8,17 @@ const { paginateOverview } = require("../tools/pagination.js");
 const prisma = new PrismaClient();
 
 // Category Routes
-router.get("/categories", verifyUser, paginateOverview, async (req, res) => {
-  const categories = await prisma.category.findMany({
-    include: { subcategories: true },
-  });
-  res.send({ categories });
-});
+router.get(
+  "/categories",
+  verifyUser,
+  paginateOverview("category"),
+  async (req, res) => {
+    // const categories = await prisma.category.findMany({
+    //   include: { subcategories: true },
+    // });
+    // res.send({ categories });
+  }
+);
 
 // API route to get a single category by ID
 router.get("/category/:id", verifyUser, ensureRoleAdmin, async (req, res) => {

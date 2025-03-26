@@ -14,29 +14,27 @@ const router = express.Router();
  * @access  Public
  */
 router.get("/", verifyUser, paginateOverview("order"), async (req, res) => {
-  try {
-    const { userId, status } = req.query;
-
-    const orders = await prisma.order.findMany({
-      where: {
-        userId: userId || undefined,
-        status: status || undefined,
-      },
-      include: {
-        orderDetails: {
-          include: { product: true },
-        },
-        transaction: true,
-        user: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    res.json(orders);
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-    res.status(500).json({ message: "Server error" });
-  }
+  //   try {
+  //     const { userId, status } = req.query;
+  //     const orders = await prisma.order.findMany({
+  //       where: {
+  //         userId: userId || undefined,
+  //         status: status || undefined,
+  //       },
+  //       include: {
+  //         orderDetails: {
+  //           include: { product: true },
+  //         },
+  //         transaction: true,
+  //         user: true,
+  //       },
+  //       orderBy: { createdAt: "desc" },
+  //     });
+  //     res.json(orders);
+  //   } catch (error) {
+  //     console.error("Error fetching orders:", error);
+  //     res.status(500).json({ message: "Server error" });
+  //   }
 });
 
 /**

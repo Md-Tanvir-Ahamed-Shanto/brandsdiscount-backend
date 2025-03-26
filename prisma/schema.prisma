@@ -13,7 +13,7 @@ model User {
   hashedPassword Bytes
   salt           Bytes
   email          String  @unique
-  role           String
+  role           UserRole
   profilePicture String?
   loyaltyStatus  Loyalty? @default(Not_Eligible)
   orderPoint     Float?   @default(0.00)
@@ -207,4 +207,11 @@ enum Loyalty {
   Not_Eligible
   Eligible
   Loyal
+}
+
+enum UserRole {
+  Admin
+  OfficeEmpolyee
+  WareHouse
+  PlatformUser
 }

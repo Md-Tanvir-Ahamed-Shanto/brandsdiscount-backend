@@ -22,10 +22,10 @@ const prisma = new PrismaClient();
 /* Get Products */
 router.get(
   "/products",
-  paginateOverview("product"),
-  async function (req, res, next) {
-    res.send("product route");
-  }
+  paginateOverview("product")
+  // async function (req, res, next) {
+  //   res.send("product route");
+  // }
 );
 
 // API route to get a single product by ID
