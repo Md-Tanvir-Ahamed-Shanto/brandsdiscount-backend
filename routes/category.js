@@ -46,7 +46,6 @@ router.post("/new", verifyUser, ensureRoleAdmin, async (req, res) => {
       data: {
         name: req.body.name,
         parentCategoryId: req.body.parentCategoryId || null,
-        subCategoryId: req.body.subCategoryId || null,
       },
     });
     res.send({ success: true, category });
