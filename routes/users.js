@@ -132,7 +132,7 @@ router.patch(
       }
 
       // If the user provides a profile picture, include it in the update
-      if (req.file) {
+      if (req.images.length !== 0) {
         updateData.profilePicture = req.images[0];
       }
 

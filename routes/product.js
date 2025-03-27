@@ -17,7 +17,8 @@ let { bucket } = require("../tools/cloudStorage.js");
 const images = require("../tools/images");
 
 const { PrismaClient } = require("@prisma/client");
-const { uploadImages, deleteCloudflareImage } = require("../tools/images");
+const { uploadImages, deleteCloudflareImage } = require("../tools/images.js");
+// const { uploadImages, deleteCloudflareImage } = require("../tools/images");
 const prisma = new PrismaClient();
 
 /* Get Products */
@@ -175,8 +176,8 @@ router.patch(
         updateData.status = req.body.status;
       }
 
-      // If the user provides a profile picture, include it in the update
-      if (req.file) {
+      // If the req provides picture, include it in the update
+      if (req.images.length !== 0) {
         updateData.images = req.images; // Assuming `sendUploadToGCS` will upload the image and set this field
       }
 
