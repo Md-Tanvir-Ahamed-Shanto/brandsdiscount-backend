@@ -10,6 +10,7 @@ const crypto = require("crypto");
 
 // Promisify pbkdf2 so it returns a promise
 const util = require("util");
+const { uploadImages, deleteCloudflareImage } = require("../tools/images");
 const pbkdf2Async = util.promisify(crypto.pbkdf2);
 
 const prisma = new PrismaClient();
@@ -45,43 +46,53 @@ router.get("/user/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   }
 });
 
-router.post("/new", verifyUser, ensureRoleAdmin, async (req, res, next) => {
-  try {
-    const salt = crypto.randomBytes(16);
-    crypto.pbkdf2(
-      req.body.password,
-      salt,
-      310000,
-      32,
-      "sha256",
-      async (err, hashedPassword) => {
-        if (err) return next(err);
+router.post(
+  "/new",
+  verifyUser,
+  ensureRoleAdmin,
+  uploadImages,
+  async (req, res, next) => {
+    try {
+      const salt = crypto.randomBytes(16);
+      crypto.pbkdf2(
+        req.body.password,
+        salt,
+        310000,
+        32,
+        "sha256",
+        async (err, hashedPassword) => {
+          if (err) return next(err);
 
-        const newUser = await prisma.user.create({
-          data: {
-            username: req.body.username,
-            hashedPassword,
-            salt,
-            email: req.body.email,
-            role: req.body.role,
-            profilePicture: req.body.profilePicture || null,
-          },
-        });
+          const newUser = await prisma.user.create({
+            data: {
+              username: req.body.username,
+              hashedPassword,
+              salt,
+              email: req.body.email,
+              role: req.body.role,
+              profilePicture: req.images[0] || {},
+            },
+          });
 
-        res.status(200).json({
-          success: true,
-          user: { id: newUser.id, role: newUser.role },
-        });
-      }
-    );
-  } catch (error) {
-    next(error);
+          res.status(200).json({
+            success: true,
+            user: { id: newUser.id, role: newUser.role },
+          });
+        }
+      );
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 router.delete("/delete/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
+    const user = await prisma.user.findUnique({ where: { id: req.params.id } });
     await prisma.user.delete({ where: { id: req.params.id } });
+    try {
+      deleteCloudflareImage(user.profilePicture.id);
+    } catch (error) {}
     res.send({ msg: `Deleted User ID ${req.params.id} successfully!` });
   } catch (error) {
     res.status(500).send(error);
@@ -92,8 +103,7 @@ router.patch(
   "/update/:id",
   verifyUser,
   ensureRoleAdmin,
-  images.multer.single("profilePicture"),
-  images.sendUploadToGCS,
+  uploadImages,
   async (req, res) => {
     try {
       // Get user details before updating
@@ -123,7 +133,7 @@ router.patch(
 
       // If the user provides a profile picture, include it in the update
       if (req.file) {
-        updateData.profilePicture = req.file.cloudStorageObject;
+        updateData.profilePicture = req.images[0];
       }
 
       // If the user provides a password, hash and include it in the update

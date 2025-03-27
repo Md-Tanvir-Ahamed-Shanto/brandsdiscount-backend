@@ -14,7 +14,7 @@ model User {
   salt           Bytes
   email          String  @unique
   role           UserRole
-  profilePicture String?
+  profilePicture Json?
   loyaltyStatus  Loyalty? @default(Not_Eligible)
   orderPoint     Float?   @default(0.00)
   createdAt      DateTime @default(now())
@@ -63,7 +63,7 @@ model Product {
   brandName       String?
   color           String?
   sku             String     @unique
-  images          String[]   // Assuming images are stored as URLs
+  images          Json[]   // Assuming images are stored as URLs
   itemLocation    String?    // Warehouse/store location
   sizeId          String?
   sizeType        String?

@@ -17,6 +17,7 @@ let { bucket } = require("../tools/cloudStorage.js");
 const images = require("../tools/images");
 
 const { PrismaClient } = require("@prisma/client");
+const { uploadImages, deleteCloudflareImage } = require("../tools/images");
 const prisma = new PrismaClient();
 
 /* Get Products */
@@ -53,8 +54,7 @@ router.post(
   "/new",
   verifyUser,
   ensureRoleAdmin,
-  images.multer.array("productImages"),
-  images.sendUploadToGCS,
+  uploadImages,
   async function (req, res, next) {
     try {
       const {
@@ -81,7 +81,7 @@ router.post(
           brandName: brandName || null, // Add if exists
           color: color || null, // Add if exists
           sku,
-          images: req.imgUrls || [], // If no images provided, use an empty array
+          images: req.images || [], // If no images provided, use an empty array
           itemLocation: itemLocation || null, // Add if exists
           sizeId: sizeId || null, // Add if exists
           sizeType: sizeType || null, // Add if exists
@@ -107,8 +107,7 @@ router.patch(
   "/update/:id",
   verifyUser,
   ensureRoleAdmin,
-  images.multer.array("productImages"), // Assuming "profilePicture" is the name of the file input
-  images.sendUploadToGCS, // Utility function for uploading to Google Cloud Storage
+  uploadImages, // Utility function for uploading to Google Cloud Storage
   async (req, res) => {
     try {
       // Get the product details before updating
@@ -178,7 +177,7 @@ router.patch(
 
       // If the user provides a profile picture, include it in the update
       if (req.file) {
-        updateData.images = [req.file.cloudStorageObject]; // Assuming `sendUploadToGCS` will upload the image and set this field
+        updateData.images = req.images; // Assuming `sendUploadToGCS` will upload the image and set this field
       }
 
       // Set `updatedById` if the user is authenticated
