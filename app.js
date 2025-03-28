@@ -22,6 +22,7 @@ let categoryRouter = require("./routes/category");
 let ebayRouter = require("./routes/ebay");
 let orderRouter = require("./routes/order");
 let webhookRouter = require("./webhook/ebayWebhook");
+let sheinRouter = require("./routes/shein");
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -73,6 +74,7 @@ app.use("/productroute", productRouter);
 app.use("/sizeroute", sizeRouter);
 app.use("/categoryroute", categoryRouter);
 app.use("/ebay", ebayRouter);
+app.use("/shein", sheinRouter);
 app.use("/order", orderRouter);
 app.use("/webhook", webhookRouter);
 

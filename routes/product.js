@@ -87,10 +87,10 @@ router.post(
           sizeId: sizeId || null, // Add if exists
           sizeType: sizeType || null, // Add if exists
           categoryId: categoryId || null, // Add if exists
-          regularPrice: regularPrice || null, // Add if exists
-          salePrice: salePrice || null, // Add if exists
-          discountPercent: discountPercent || null, // Add if exists
-          stockQuantity: stockQuantity || null, // Add if exists
+          regularPrice: parseFloat(regularPrice) || null, // Add if exists
+          salePrice: parseFloat(salePrice) || null, // Add if exists
+          discountPercent: parseFloat(discountPercent) || null, // Add if exists
+          stockQuantity: parseInt(stockQuantity) || null, // Add if exists
           condition: condition || null, // Add if exists
           description: description || null, // Add if exists
           status: status || null, // Add if exists
