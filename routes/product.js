@@ -177,8 +177,13 @@ router.patch(
       }
 
       // If the req provides picture, include it in the update
-      if (req.images.length !== 0) {
-        updateData.images = req.images; // Assuming `sendUploadToGCS` will upload the image and set this field
+
+      if (req.body.images?.length > 0) {
+        updateData.images = [...req.images, ...JSON.parse(req.body.images)];
+      } else {
+        if (req.images.length !== 0) {
+          updateData.images = req.images; // Assuming `sendUploadToGCS` will upload the image and set this field
+        }
       }
 
       // Set `updatedById` if the user is authenticated
