@@ -99,7 +99,7 @@ router.delete("/delete/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   }
 });
 
-router.patch(
+router.put(
   "/update/:id",
   verifyUser,
   ensureRoleAdmin,
@@ -159,12 +159,16 @@ router.patch(
       }
 
       // Perform the update only with the fields provided in the request
-      const updatedUser = await prisma.user.update({
-        where: { id: req.params.id },
-        data: updateData,
-      });
-
-      res.send({ success: true, user: updatedUser });
+      try {
+        const updatedUser = await prisma.user.update({
+          where: { id: req.params.id },
+          data: updateData,
+        });
+        res.status(200).send({ success: true, user: updatedUser });
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ error: "Internal server error" });
+      }
     } catch (error) {
       console.error(error); // Log the error for debugging
       res.status(500).send({ error: "Internal server error" });
