@@ -99,81 +99,85 @@ router.delete("/delete/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   }
 });
 
-router.put(
-  "/update/:id",
-  verifyUser,
-  ensureRoleAdmin,
-  uploadImages,
-  async (req, res) => {
+router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
+  try {
+    // Get user details before updating
+    const userDetails = await prisma.user.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (req.user.role !== "Admin" && req.user.id !== userDetails.id) {
+      return res
+        .status(403)
+        .send({ error: "You are not authorized to update this user" });
+    }
+
+    if (!userDetails) {
+      return res.status(404).send({ error: "User not found" });
+    }
+
+    // Initialize the update data object
+    let updateData = {};
+
+    // Conditionally add fields to the update data object only if provided
+    if (req.body.username) {
+      updateData.username = req.body.username;
+    }
+
+    if (req.body.email) {
+      updateData.email = req.body.email;
+    }
+
+    if (req.body.role) {
+      updateData.role = req.body.role;
+    }
+
+    if (req.body.userDetails) {
+      updateData.userDetails = JSON.parse(req.body.userDetails);
+    }
+
+    // If the user provides a profile picture, include it in the update
+    if (req.images.length !== 0) {
+      updateData.profilePicture = req.images[0];
+    }
+
+    // If the user provides a password, hash and include it in the update
+    if (req.body.password) {
+      const salt = crypto.randomBytes(16); // Generate salt
+
+      // Hash the new password with the provided salt
+      const hashedPassword = await pbkdf2Async(
+        req.body.password,
+        salt,
+        310000,
+        32,
+        "sha256"
+      );
+
+      updateData.salt = salt; // Save the salt
+      updateData.hashedPassword = hashedPassword.toString("hex"); // Save the hashed password
+    }
+
+    // Set `updatedById` if the user is authenticated
+    if (req.user?.id) {
+      updateData.updatedById = req.user.id;
+    }
+
+    // Perform the update only with the fields provided in the request
     try {
-      // Get user details before updating
-      const userDetails = await prisma.user.findUnique({
+      const updatedUser = await prisma.user.update({
         where: { id: req.params.id },
+        data: updateData,
       });
-
-      if (!userDetails) {
-        return res.status(404).send({ error: "User not found" });
-      }
-
-      // Initialize the update data object
-      let updateData = {};
-
-      // Conditionally add fields to the update data object only if provided
-      if (req.body.username) {
-        updateData.username = req.body.username;
-      }
-
-      if (req.body.email) {
-        updateData.email = req.body.email;
-      }
-
-      if (req.body.role) {
-        updateData.role = req.body.role;
-      }
-
-      // If the user provides a profile picture, include it in the update
-      if (req.images.length !== 0) {
-        updateData.profilePicture = req.images[0];
-      }
-
-      // If the user provides a password, hash and include it in the update
-      if (req.body.password) {
-        const salt = crypto.randomBytes(16); // Generate salt
-
-        // Hash the new password with the provided salt
-        const hashedPassword = await pbkdf2Async(
-          req.body.password,
-          salt,
-          310000,
-          32,
-          "sha256"
-        );
-
-        updateData.salt = salt; // Save the salt
-        updateData.hashedPassword = hashedPassword.toString("hex"); // Save the hashed password
-      }
-
-      // Set `updatedById` if the user is authenticated
-      if (req.user?.id) {
-        updateData.updatedById = req.user.id;
-      }
-
-      // Perform the update only with the fields provided in the request
-      try {
-        const updatedUser = await prisma.user.update({
-          where: { id: req.params.id },
-          data: updateData,
-        });
-        res.status(200).send({ success: true, user: updatedUser });
-      } catch (error) {
-        console.log(error);
-        res.status(500).send({ error: "Internal server error" });
-      }
+      res.status(200).send({ success: true, user: updatedUser });
     } catch (error) {
-      console.error(error); // Log the error for debugging
+      console.log(error);
       res.status(500).send({ error: "Internal server error" });
     }
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    res.status(500).send({ error: "Internal server error" });
   }
-);
+});
 
 module.exports = router;

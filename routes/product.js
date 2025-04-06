@@ -50,6 +50,31 @@ router.get("/product/:id", async (req, res) => {
   }
 });
 
+// Get Product by Title
+router.get("/product/title/:title", async (req, res) => {
+  try {
+    const { title } = req.params;
+
+    const product = await prisma.product.findFirst({
+      where: {
+        title: {
+          equals: title,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Error fetching product" });
+  }
+});
+
 /* Create product listing. */
 router.post(
   "/new",
