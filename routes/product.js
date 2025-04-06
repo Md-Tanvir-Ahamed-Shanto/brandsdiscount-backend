@@ -38,6 +38,12 @@ router.get("/product/:id", async (req, res) => {
       where: {
         id: id,
       },
+      include: {
+        size: true,
+        category: true,
+        subCategory: true,
+        parentCategory: true,
+      },
     });
 
     if (!product) {

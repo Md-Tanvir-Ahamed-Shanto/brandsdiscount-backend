@@ -1,6 +1,22 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
+// Define includes for each model
+const modelIncludes = {
+  order: {
+    user: true,
+    transaction: true,
+    orderDetails: { include: { product: true } },
+  },
+  product: {
+    size: true,
+    category: true,
+    subCategory: true,
+    parentCategory: true,
+  },
+  // Add more models as needed
+};
+
 const paginateOverview = (model) => {
   return async (req, res, next) => {
     try {
@@ -34,12 +50,16 @@ const paginateOverview = (model) => {
         orderBy = { [field]: direction === "desc" ? "desc" : "asc" };
       }
 
+      // Get include config based on model
+      const includeObj = modelIncludes[model] || undefined;
+
       // Fetch data from Prisma model
       const data = await prisma[model].findMany({
         where,
         orderBy,
         skip,
         take: limitNum,
+        include: includeObj,
       });
 
       // Get total count for pagination metadata
