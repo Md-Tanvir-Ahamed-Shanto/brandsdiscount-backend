@@ -64,6 +64,33 @@ router.get("/:id", verifyUser, async (req, res) => {
 });
 
 /**
+ * @route   GET /api/orders/userOrders
+ * @desc    Get all order
+ * @access  Public
+ */
+router.get("/user/allOrders", verifyUser, async (req, res) => {
+  try {
+    const id = req.user.id;
+    console.log("id", id);
+    const order = await prisma.order.findMany({
+      // where: { userId: id },
+      // include: {
+      //   orderDetails: { include: { product: true } },
+      //   transaction: true,
+      // },
+    });
+    console.log("order", order);
+
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    res.json(order);
+  } catch (error) {
+    console.error("Error fetching order:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/**
  * @route   POST /api/orders
  * @desc    Create a new order
  * @access  Public
