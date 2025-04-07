@@ -105,7 +105,7 @@ model Product {
 model Order {
   id            String        @id @default(uuid())
   userId        String
-  user          User          @relation("UserOrders", fields: [userId], references: [id]) // Unique relation name for User
+  user          User         @relation("UserOrders", fields: [userId], references: [id]) // Unique relation name for User
   status        String        // Pending, Completed, Cancelled, etc.
   totalAmount   Float         // Total amount for the order
   createdAt     DateTime      @default(now())

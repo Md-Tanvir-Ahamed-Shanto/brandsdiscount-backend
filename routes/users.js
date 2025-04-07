@@ -27,7 +27,7 @@ router.get(
 );
 
 // API route to get a single user by ID
-router.get("/user/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
+router.get("/user/:id", verifyUser, async (req, res) => {
   try {
     const { id } = req.params;
     const user = await prisma.user.findUnique({
@@ -102,6 +102,8 @@ router.delete("/delete/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
 router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
   try {
     // Get user details before updating
+    console.log("user update");
+    console.log(req.body);
     const userDetails = await prisma.user.findUnique({
       where: { id: req.params.id },
     });
@@ -155,7 +157,7 @@ router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
       );
 
       updateData.salt = salt; // Save the salt
-      updateData.hashedPassword = hashedPassword.toString("hex"); // Save the hashed password
+      updateData.hashedPassword = hashedPassword; // Save the hashed password
     }
 
     // Set `updatedById` if the user is authenticated
