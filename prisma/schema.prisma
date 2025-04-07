@@ -200,6 +200,7 @@ model ApiToken {
 
 enum Platform {
   EBAY
+  EBAY2
   WALMART
   SHEIN
 }

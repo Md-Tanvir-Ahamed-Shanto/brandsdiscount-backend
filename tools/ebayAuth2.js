@@ -74,14 +74,14 @@ async function getAccessToken(authCode) {
     const expiresAt = new Date(Date.now() + response.data.expires_in * 1000); // Convert to Date object
 
     const ebayApiData = await prisma.apiToken.upsert({
-      where: { platform: "EBAY" }, // Check if an entry for "EBAY" exists
+      where: { platform: "EBAY2" }, // Check if an entry for "EBAY" exists
       update: {
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
         expiresAt: expiresAt,
       }, // Update if found
       create: {
-        platform: "EBAY",
+        platform: "EBAY2",
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
         expiresAt: expiresAt,
@@ -125,7 +125,7 @@ async function getAccessToken(authCode) {
 async function refreshAccessToken() {
   const refreshToken = await prisma.apiToken.findUnique({
     where: {
-      platform: "EBAY",
+      platform: "EBAY2",
     },
   });
 
@@ -156,9 +156,9 @@ async function refreshAccessToken() {
   const expiresAt = new Date(Date.now() + response.data.expires_in * 1000);
   try {
     const tokenUpdate = await prisma.apiToken.update({
-      where: { platform: "EBAY" },
+      where: { platform: "EBAY2" },
       data: {
-        platform: "EBAY",
+        platform: "EBAY2",
         accessToken: response.data.access_token,
         refreshToken: refreshToken.refreshToken,
         expiresAt: expiresAt,
@@ -175,7 +175,7 @@ async function refreshAccessToken() {
 async function getValidAccessToken() {
   const token = await prisma.apiToken.findUnique({
     where: {
-      platform: "EBAY",
+      platform: "EBAY2",
     },
   });
   if (token.accessToken && Date.now() < token.expiresAt) {

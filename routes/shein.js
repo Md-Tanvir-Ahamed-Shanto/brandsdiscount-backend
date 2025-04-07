@@ -6,9 +6,10 @@ const { decryptSheinSecretKey, decrypt } = require("../tools/sheinAuth");
 
 const router = express.Router();
 
-const SHEIN_API_BASE = "https://openapi-test01.sheincorp.cn";
-const APP_ID = "10ADAAA5CE0008CF3585A106B6AFF"; // Replace with your Shein APP ID
-const APP_SECRET = "D70A14A37467468AA4F5B96CE42A61F2"; // Replace with your Shein APP Secret
+// const SHEIN_API_BASE = "https://openapi-test01.sheincorp.cn";
+const SHEIN_API_BASE = "https://openapi.sheincorp.com";
+const APP_ID = "13297410B5803ABC87CC8C3BECAD1"; // Replace with your Shein APP ID
+const APP_SECRET = "E1653908B3DD454C80596029EDC627D6"; // Replace with your Shein APP Secret
 const OPENKEYID = "848CA220E27941BB96DC84CE89CDD80D";
 const SECRETKEY =
   "xKvqU+9zNB4HzEOguXP7InW5S70r6IxoyACe7rlGyQIG/cATT2VTyUFybl7dKCpw";
