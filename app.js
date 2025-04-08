@@ -67,7 +67,11 @@ const corsOptions = {
   credentials: true,
 };
 
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: "https://main.d1qut4bee6t6a3.amplifyapp.com", // Frontend URL
+  })
+);
 
 app.use("/userroute", usersRouter);
 app.use("/authroute", authRouter);
