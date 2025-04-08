@@ -119,32 +119,32 @@ app.use(function (req, res, next) {
 // Initialize a lock flag
 let isRunning = false;
 
-cron.schedule("*/5 * * * * *", async () => {
-  if (isRunning) {
-    // console.log("Job is already running, skipping this execution...");
-    return; // Prevent the job from running again if it is already running
-  }
+// cron.schedule("*/5 * * * * *", async () => {
+//   if (isRunning) {
+//     // console.log("Job is already running, skipping this execution...");
+//     return; // Prevent the job from running again if it is already running
+//   }
 
-  try {
-    // Set the lock flag to true
-    isRunning = true;
-    // console.log("Job started...");
+//   try {
+//     // Set the lock flag to true
+//     isRunning = true;
+//     // console.log("Job started...");
 
-    // Simulated job logic
-    const userList = await prisma.user.findMany({
-      where: { loyaltyStatus: "Eligible" },
-    });
-    // userList.map(async (user) => {
-    //   await sendAbandonedOfferEmail(user.email, user.username);
-    // });
-  } catch (error) {
-    console.error("Error occurred during job execution:", error);
-  } finally {
-    // Release the lock flag
-    isRunning = false;
-    // console.log("Job finished.");
-  }
-});
+//     // Simulated job logic
+//     const userList = await prisma.user.findMany({
+//       where: { loyaltyStatus: "Eligible" },
+//     });
+//     // userList.map(async (user) => {
+//     //   await sendAbandonedOfferEmail(user.email, user.username);
+//     // });
+//   } catch (error) {
+//     console.error("Error occurred during job execution:", error);
+//   } finally {
+//     // Release the lock flag
+//     isRunning = false;
+//     // console.log("Job finished.");
+//   }
+// });
 
 // error handler
 app.use(function (err, req, res, next) {

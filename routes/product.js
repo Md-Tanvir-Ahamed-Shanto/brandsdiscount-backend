@@ -251,4 +251,28 @@ router.delete("/delete/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   }
 });
 
+/*Search Product */
+router.get("/search", async (req, res) => {
+  const { q } = req.query;
+
+  if (!q || q.length < 2) {
+    return res.status(400).json({ error: "Search query too short" });
+  }
+
+  try {
+    const results = await prisma.$queryRaw`
+      SELECT "id", "title", "sku", "brandName", "images", "salePrice", "stockQuantity", "updatedAt"
+      FROM "Product"
+      WHERE "search_vector" @@ plainto_tsquery('simple', ${q})
+      ORDER BY "updatedAt" DESC
+      LIMIT 50;
+    `;
+
+    return res.json(results);
+  } catch (err) {
+    console.error("🔍 Search error:", err);
+    return res.status(500).json({ error: "Search failed" });
+  }
+});
+
 module.exports = router;
