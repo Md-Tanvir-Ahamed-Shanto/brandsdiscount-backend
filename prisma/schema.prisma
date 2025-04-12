@@ -216,4 +216,5 @@ enum UserRole {
   OfficeEmpolyee
   WareHouse
   PlatformUser
+  Cashier
 }

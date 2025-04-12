@@ -168,6 +168,180 @@ async function main() {
   console.log("Decrypted Secret Key:", secretKey);
 }
 
+async function publishOrEditProductToShein(
+  OPENKEYID,
+  SECRETKEY,
+  APP_SECRET,
+  SHEIN_API_BASE
+) {
+  const payload = {
+    brand_code: "",
+    category_id: 13132,
+    product_type_id: 9867,
+    multi_language_desc_list: [
+      {
+        language: "en",
+        name: "&lt;p&gt;cd test description \n sc_eu20241127001&lt;/p&gt;",
+      },
+    ],
+    multi_language_name_list: [
+      {
+        language: "en",
+        name: "test name sc_eu20241127001",
+      },
+    ],
+    part_info_list: null,
+    product_attribute_list: [
+      {
+        attribute_id: 1001236,
+        attribute_type: 4,
+        attribute_value_id: 546,
+      },
+      {
+        attribute_id: 160,
+        attribute_type: 4,
+        attribute_value_id: 62,
+      },
+      {
+        attribute_id: 1000627,
+        attribute_type: 4,
+        attribute_value_id: 70,
+      },
+      {
+        attribute_id: 1000411,
+        attribute_type: 4,
+        attribute_value_id: 1002333,
+        attribute_extra_value: "100",
+      },
+      {
+        attribute_id: 1000407,
+        attribute_type: 4,
+        attribute_value_id: 1005244,
+      },
+      {
+        attribute_id: 1000462,
+        attribute_type: 4,
+        attribute_value_id: 1004808,
+      },
+      {
+        attribute_extra_value: "",
+        attribute_id: 152,
+        attribute_type: 3,
+        attribute_value_id: 1110,
+      },
+      {
+        attribute_id: 1001518,
+        attribute_type: 4,
+        attribute_value_id: 12808900,
+      },
+    ],
+    skc_list: [
+      {
+        image_info: {
+          image_info_list: [
+            {
+              image_sort: 1,
+              image_type: 1,
+              image_url:
+                "https://imgdeal-test01.shein.com/images3_pi/2024/12/10/27/17338148602250996226.jpeg",
+            },
+            {
+              image_sort: 2,
+              image_type: 2,
+              image_url:
+                "https://imgdeal-test01.shein.com/images3_pi/2024/12/10/27/17338148602250996226.jpeg",
+            },
+            {
+              image_sort: 3,
+              image_type: 5,
+              image_url:
+                "https://imgdeal-test01.shein.com/images3_pi/2024/12/10/59/17338148663526671606.jpeg",
+            },
+          ],
+        },
+        sale_attribute: {
+          attribute_id: 27,
+          attribute_value_id: 81,
+        },
+        skc_title: null,
+        sku_list: [
+          {
+            height: "5.00",
+            length: "10.00",
+            width: "10.00",
+            weight: "10",
+            mall_state: 1,
+            sale_attribute_list: [],
+            sku_code: "",
+            price_info_list: [
+              {
+                base_price: 10.0,
+                currency: "EUR",
+                sub_site: "shein-fr",
+              },
+            ],
+            stock_info_list: [
+              {
+                inventory_num: 10,
+              },
+            ],
+            stop_purchase: 1,
+            supplier_sku: "sc_eu20241127001ss241113986146541TEST2",
+            competing_product_link: "",
+            image_info: null,
+          },
+        ],
+        supplier_code: "",
+        shelf_require: "0",
+        shelf_way: "1",
+        hope_on_sale_date: null,
+      },
+    ],
+    sale_attribute_sort_list: [],
+    source_system: "openapi",
+    spu_code: null,
+    spu_name: "",
+    suit_flag: 0,
+    supplier_code: "sc20241119002s2412100969",
+    image_info: null,
+    is_spu_pic: false,
+    sample_info: null,
+  };
+
+  try {
+    const secretKey = decrypt(SECRETKEY, APP_SECRET);
+    const randomKey = "test1";
+    const timestamp = Date.now();
+
+    const signature = generateSignature(
+      OPENKEYID,
+      secretKey,
+      "/open-api/goods/product/publishOrEdit",
+      timestamp,
+      randomKey
+    );
+
+    const response = await axios.post(
+      `${SHEIN_API_BASE}/open-api/goods/product/publishOrEdit`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-lt-openKeyId": OPENKEYID,
+          "x-lt-signature": signature,
+          "x-lt-timestamp": timestamp,
+          language: "en",
+        },
+      }
+    );
+
+    return { success: true, data: response.data };
+  } catch (error) {
+    console.error("SHEIN API Error:", error.response?.data || error.message);
+    return { success: false, error: error.response?.data || error.message };
+  }
+}
+
 // Uncomment to run
 // main();
 module.exports = {
@@ -175,4 +349,5 @@ module.exports = {
   exchangeTempTokenForKeys,
   decryptSheinSecretKey,
   decrypt,
+  publishOrEditProductToShein,
 };

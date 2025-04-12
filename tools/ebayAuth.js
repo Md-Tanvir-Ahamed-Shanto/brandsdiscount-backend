@@ -307,10 +307,151 @@ async function ebayOrderSync() {
   }
 }
 
+async function createEbayProduct({ title, price, sku, quantity, ebayAuth }) {
+  const EBAY_SANDBOX_URL = "https://api.sandbox.ebay.com";
+  // const EBAY_SANDBOX_URL = "https://api.ebay.com";
+  try {
+    const token = await getValidAccessToken();
+    if (!token) throw new Error("Failed to get eBay token");
+
+    // Step 1: Create Inventory Item
+    await axios.put(
+      `${EBAY_SANDBOX_URL}/sell/inventory/v1/inventory_item/${sku}`,
+      {
+        product: {
+          title,
+          description: "Test product for eBay API",
+          brand: "Generic",
+          aspects: { Brand: ["Generic"] },
+          imageUrls: ["https://via.placeholder.com/300"],
+          ean: [],
+          mpn: "ss453",
+          upc: [],
+        },
+        availability: {
+          shipToLocationAvailability: {
+            availabilityDistributions: [
+              {
+                availabilityType: "IN_STOCK",
+                fulfillmentTime: {
+                  unit: "BUSINESS_DAY",
+                  value: 2,
+                },
+                merchantLocationKey: "mk1",
+                quantity,
+              },
+            ],
+            quantity,
+          },
+          pickupAtLocationAvailability: [
+            {
+              availabilityType: "IN_STOCK",
+              fulfillmentTime: {
+                unit: "DAY",
+                value: 1,
+              },
+              merchantLocationKey: "mk1",
+              quantity,
+            },
+          ],
+        },
+        condition: "NEW",
+        conditionDescription: "Brand new item in excellent condition",
+        conditionDescriptors: [
+          {
+            name: "Package Condition",
+            additionalInfo: "Item is in original packaging.",
+            values: ["Brand New"],
+          },
+        ],
+        packageWeightAndSize: {
+          weight: {
+            unit: "KILOGRAM",
+            value: 88,
+          },
+          shippingIrregular: false,
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Content-Language": "en-US",
+        },
+      }
+    );
+
+    // Step 2: Create Offer
+    const offerResponse = await axios.post(
+      `${EBAY_SANDBOX_URL}/sell/inventory/v1/offer`,
+      {
+        sku,
+        marketplaceId: "EBAY_US",
+        categoryId: "162925",
+        format: "FIXED_PRICE",
+        merchantLocationKey: "mk1",
+        listingDuration: "GTC",
+        listingDescription:
+          "<ul><li><p>Test listing - do not bid or buy&nbsp;</p></li><li><p>Built-in GPS.&nbsp;</p></li><li><p>Water resistance to 50 meters.</p></li><li><p>Dual-core processor.&nbsp;</p></li><li><p>Bright display.&nbsp;</p></li><li><p>Apple Watch Series 2 designed for all movements</p></li></ul>",
+        availableQuantity: quantity,
+        quantityLimitPerBuyer: 10,
+        listingPolicies: {
+          paymentPolicyId: "6208689000",
+          returnPolicyId: "6208690000",
+          fulfillmentPolicyId: "6208688000",
+        },
+        pricingSummary: {
+          price: {
+            currency: "USD",
+            value: price,
+          },
+        },
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Content-Language": "en-US",
+        },
+      }
+    );
+
+    const offerId = offerResponse.data.offerId;
+
+    // Step 3: Publish the Listing
+    const publishing = await axios.post(
+      `${EBAY_SANDBOX_URL}/sell/inventory/v1/offer/${offerId}/publish`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Content-Language": "en-US",
+        },
+      }
+    );
+
+    return {
+      success: true,
+      message: "Product created and published successfully",
+      offerId,
+      publishResponse: publishing.data,
+    };
+  } catch (error) {
+    const errorDetails = error.response?.data || error.message;
+    console.error("eBay API Error:", errorDetails);
+    throw new Error(
+      `Failed to create product on eBay: ${JSON.stringify(errorDetails)}`
+    );
+  }
+}
+
 module.exports = {
   getEbayAuthUrl,
   getAccessToken,
   refreshAccessToken,
   getValidAccessToken,
   ebayUpdateInventory,
+  createEbayProduct,
+  ebayOrderSync,
 };
