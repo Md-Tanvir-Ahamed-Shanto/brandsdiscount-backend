@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const jwt = require("jsonwebtoken");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -95,4 +96,27 @@ const sendAbandonedOfferEmail = async (toEmail, customerName) => {
   }
 };
 
-module.exports = { sendAbandonedOfferEmail, sendLoyaltyEmail };
+const sendForgotPasswordEmail = async (email) => {
+  console.log("sending verification email");
+  const token = jwt.sign({ email }, process.env.JWT_SECRET);
+  const url = `${process.env.CLIENT_URL}/authroute/verify-email?token=${token}`;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Reset your password",
+    html: `<p>Please update your password by clicking <a href="${url}">here</a>.</p>`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+module.exports = {
+  sendAbandonedOfferEmail,
+  sendLoyaltyEmail,
+  sendForgotPasswordEmail,
+};

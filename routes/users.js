@@ -11,6 +11,7 @@ const crypto = require("crypto");
 // Promisify pbkdf2 so it returns a promise
 const util = require("util");
 const { uploadImages, deleteCloudflareImage } = require("../tools/images");
+const { sendForgotPasswordEmail } = require("../tools/email.js");
 const pbkdf2Async = util.promisify(crypto.pbkdf2);
 
 const prisma = new PrismaClient();
@@ -180,6 +181,17 @@ router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
     console.error(error); // Log the error for debugging
     res.status(500).send({ error: "Internal server error" });
   }
+});
+
+router.post("/forgotPassword", async (req, res) => {
+  const email = req.body.email;
+  console.log(email);
+  const users = await prisma.user.findUnique({ where: { email: email } });
+  if (!users) {
+    return res.status(404).json({ message: "User not found" });
+  }
+  sendForgotPasswordEmail(email);
+  res.status(200).json({ message: "Email sent" });
 });
 
 module.exports = router;
