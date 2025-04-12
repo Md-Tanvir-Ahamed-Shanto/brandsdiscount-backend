@@ -91,6 +91,8 @@ model Product {
   updatedAt       DateTime   @updatedAt
   updatedById     String?    // Foreign key reference to another User
 
+  search_vector  Unsupported("tsvector")?
+
   orderDetails    OrderDetail[]  @relation("ProductOrderDetails")
 
   @@index([sku])  
