@@ -35,6 +35,10 @@ const {
   walmartOrderSync,
 } = require("./tools/wallmartAuth");
 const { sendAbandonedOfferEmail } = require("./tools/email");
+const {
+  getRecentOrders,
+  getFirstFiftyProducts,
+} = require("./tools/wooCommerce");
 
 let app = express();
 
@@ -86,9 +90,18 @@ app.get("/wallmart/token", async (req, res) => {
   res.json(token);
 });
 // Serve the Checkout Page
-// Serve the Checkout Page
 app.get("/wallmart/order", async (req, res) => {
   const data = await walmartOrderSync();
+  res.json(data);
+});
+
+app.get("/woocommerce/order", async (req, res) => {
+  const data = await getRecentOrders();
+  res.json(data);
+});
+
+app.get("/woocommerce/products", async (req, res) => {
+  const data = await getFirstFiftyProducts();
   res.json(data);
 });
 // Serve the Checkout Page

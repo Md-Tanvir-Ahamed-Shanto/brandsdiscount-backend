@@ -70,6 +70,8 @@ model Product {
   sizeType        String?
   size            Size?      @relation(fields: [sizeId], references: [id], name: "ProductSizeRelation")
 
+  postName        String?
+
   categoryId      String?    // Child category ID
   category        Category?  @relation(fields: [categoryId], references: [id], name: "ProductCategoryRelation")
   
@@ -78,6 +80,11 @@ model Product {
 
   parentCategoryId String?   // Parent category ID
   parentCategory   Category? @relation(fields: [parentCategoryId], references: [id], name: "ProductParentCategoryRelation")
+
+  ebayId String?
+  wallmartId String?
+  sheinId String?
+  woocommerceId String?
 
   regularPrice    Float?
   salePrice       Float?

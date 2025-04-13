@@ -1,0 +1,129 @@
+// lib/woocommerce.js
+const axios = require("axios");
+
+const consumerKey = process.env.WC_CONSUMER_KEY;
+const consumerSecret = process.env.WC_CONSUMER_SECRET;
+const storeUrl = process.env.WC_STORE_URL;
+
+const wooAPI = axios.create({
+  baseURL: `${storeUrl}/wp-json/wc/v3`,
+  auth: {
+    username: consumerKey,
+    password: consumerSecret,
+  },
+});
+
+async function createProduct(productData) {
+  const response = await wooAPI.post("/products", {
+    name: productData.title,
+    sku: productData.sku,
+    regular_price: productData.regular_price,
+    description: productData.description || "",
+    images: productData.images || [],
+    date_created_gmt: new Date().toISOString(),
+    categories: productData.categories || [],
+    stock_quantity: productData.stock_quantity,
+  });
+
+  return response.data;
+}
+
+async function updateProduct(productId, updateData) {
+  const response = await wooAPI.put(`/products/${productId}`, updateData);
+  return response.data;
+}
+
+async function getRecentOrders() {
+  const response = await wooAPI.get("/orders", {
+    params: {
+      page: 1,
+      per_page: 10,
+      orderby: "date",
+      order: "desc",
+    },
+  });
+
+  return response.data;
+}
+
+async function woocommerceOrderSync() {
+  try {
+    const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
+
+    const response = await wooAPI.get("/orders", {
+      params: {
+        after: now,
+        per_page: 100,
+        orderby: "date",
+        order: "desc",
+      },
+    });
+
+    const data = response.data;
+    const existingOrders = await prisma.woocommmerceOrder.findMany();
+    console.log("exisitng orders", existingOrders);
+    const newOrders = data.orders.filter(
+      (order) =>
+        !existingOrders.find((existing) => existing.orderId === order.id)
+    );
+
+    console.log(`new ordersssss`, newOrders);
+
+    const clearDB = await prisma.woocommmerceOrder.deleteMany({});
+    const createOrders = await prisma.woocommmerceOrder.createMany({
+      data: newOrders.map((order) => ({
+        orderId: order.id,
+        orderCreationDate: new Date(order.date_created_gmt),
+      })),
+    });
+    console.log(`new ordersssss222222`, newOrders);
+
+    newOrders.forEach(async (order) => {
+      order.line_items.forEach(async (item) => {
+        console.log("syncing order:", order);
+        const productData = await prisma.product.findUnique({
+          where: {
+            sku: item.sku,
+          },
+        });
+        if (productData) {
+          const updateProduct = await prisma.product.update({
+            where: {
+              sku: item.sku,
+            },
+            data: {
+              stockQuantity: productData.stockQuantity - item.quantity,
+            },
+          });
+        }
+      });
+    });
+    return newOrders;
+  } catch (error) {
+    console.error(
+      "Error fetching Walmart orders:",
+      error.response?.data || error.message
+    );
+    console.log(error);
+  }
+}
+
+async function getFirstFiftyProducts() {
+  const response = await wooAPI.get("/products", {
+    params: {
+      per_page: 50,
+      page: 1,
+    },
+  });
+
+  return response.data;
+}
+
+module.exports = {
+  wooAPI,
+  getRecentOrders,
+  createProduct,
+  updateProduct,
+  woocommerceOrderSync,
+  getFirstFiftyProducts,
+};
