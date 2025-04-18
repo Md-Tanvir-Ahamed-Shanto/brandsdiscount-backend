@@ -101,16 +101,12 @@ router.post("/signup", async (req, res, next) => {
       async (err, hashedPassword) => {
         if (err) return next(err);
 
-        const newUser = await prisma.user.create({
-          data: {
-            username: req.body.username,
-            hashedPassword,
-            salt,
-            email: req.body.email,
-            role: req.body.role,
-            profilePicture: req.body.profilePicture || null,
-          },
-        });
+        try {
+        } catch (error) {
+          return res.status(500).json({
+            message: "Error creating user",
+          });
+        }
 
         const token = getToken({ id: newUser.id });
         const refreshToken = getRefreshToken({ id: newUser.id });

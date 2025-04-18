@@ -56,6 +56,32 @@ router.get("/product/:id", async (req, res) => {
   }
 });
 
+// API route to get a single product by SKU
+router.get("/product/sku/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await prisma.product.findUnique({
+      where: {
+        sku: id,
+      },
+      include: {
+        size: true,
+        category: true,
+        subCategory: true,
+        parentCategory: true,
+      },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching product" });
+  }
+});
+
 // Get Product by Title
 router.get("/product/title/:title", async (req, res) => {
   try {
@@ -229,6 +255,54 @@ router.patch(
       });
 
       res.status(201).json(updatedProduct);
+    } catch (error) {
+      console.error(error); // Log the error for debugging
+      res.status(500).send({ error: "Internal server error" });
+    }
+  }
+);
+
+// API route to bulk update product quantity by sku
+router.patch(
+  "/bulkupdate/sku",
+  verifyUser,
+  // ensureRoleAdmin,
+  async (req, res) => {
+    try {
+      // Initialize the update data object
+      let updateData = {};
+
+      const data = req.body.data;
+      data.forEach(async (item) => {
+        const productDetails = await prisma.product.findUnique({
+          where: { sku: item.sku },
+        });
+
+        if (!productDetails) {
+          return res.status(404).send({ error: "Product not found" });
+        }
+
+        if (item.sku) {
+          updateData.sku = item.sku;
+        }
+
+        if (item.quantity) {
+          updateData.stockQuantity =
+            productDetails.stockQuantity - parseInt(item.quantity);
+        }
+
+        try {
+          const updatedProduct = await prisma.product.update({
+            where: { sku: item.sku },
+            data: updateData,
+          });
+        } catch (error) {
+          console.error(error); // Log the error for debugging
+          res.status(500).send({ error: "Internal server error" });
+        }
+      });
+
+      res.status(201).json({ message: "Product updated successfully" });
     } catch (error) {
       console.error(error); // Log the error for debugging
       res.status(500).send({ error: "Internal server error" });

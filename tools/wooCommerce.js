@@ -46,6 +46,7 @@ async function getRecentOrders() {
   return response.data;
 }
 
+// Check inventory instead of orders
 async function woocommerceOrderSync() {
   try {
     const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
