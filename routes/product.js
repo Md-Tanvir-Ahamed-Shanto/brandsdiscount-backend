@@ -272,52 +272,100 @@ router.patch(
       // Initialize the update data object
       // let updateData = {};
 
+      // const data = req.body.data;
+
+      // const updateProducts = () => {
+      //   return new Promise((resolve, reject) => {
+      //     data.forEach(async (item, index) => {
+      //       let updateData = {};
+      //       const productDetails = await prisma.product.findUnique({
+      //         where: { sku: item.sku },
+      //       });
+
+      //       if (!productDetails) {
+      //         return res.status(404).send({ error: "Product not found" });
+      //       }
+
+      //       if (item.sku) {
+      //         updateData.sku = item.sku;
+      //       }
+
+      //       if (item.quantity) {
+      //         updateData.stockQuantity =
+      //           productDetails.stockQuantity - parseInt(item.quantity);
+      //       }
+
+      //       console.log(updateData);
+
+      //       try {
+      //         const updatedProduct = await prisma.product.update({
+      //           where: { sku: item.sku },
+      //           data: updateData,
+      //         });
+
+      //         if (data.length === index + 1) {
+      //           resolve(true);
+      //         }
+      //       } catch (error) {
+      //         console.error(error); // Log the error for debugging
+      //         reject(error);
+      //         return res.status(500).send({ error: "Internal server error" });
+      //       }
+      //     });
+      //   });
+      // };
+
+      // await updateProducts();
+
       const data = req.body.data;
 
-      const updateProducts = () => {
-        return new Promise((resolve, reject) => {
-          data.forEach(async (item, index) => {
-            let updateData = {};
-            const productDetails = await prisma.product.findUnique({
-              where: { sku: item.sku },
-            });
+      const updateProducts = async () => {
+        await data.reduce(async (prevPromise, item) => {
+          // Wait for previous promise to finish
+          await prevPromise;
 
-            if (!productDetails) {
-              return res.status(404).send({ error: "Product not found" });
-            }
-
-            if (item.sku) {
-              updateData.sku = item.sku;
-            }
-
-            if (item.quantity) {
-              updateData.stockQuantity =
-                productDetails.stockQuantity - parseInt(item.quantity);
-            }
-
-            console.log(updateData);
-
-            try {
-              const updatedProduct = await prisma.product.update({
-                where: { sku: item.sku },
-                data: updateData,
-              });
-
-              if (data.length === index + 1) {
-                resolve(true);
-              }
-            } catch (error) {
-              console.error(error); // Log the error for debugging
-              reject(error);
-              return res.status(500).send({ error: "Internal server error" });
-            }
+          // Fetch product details
+          const productDetails = await prisma.product.findUnique({
+            where: { sku: item.sku },
           });
-        });
+
+          if (!productDetails) {
+            throw new Error(`Product with SKU ${item.sku} not found`);
+          }
+
+          let updateData = {};
+
+          if (item.sku) {
+            updateData.sku = item.sku;
+          }
+
+          if (item.quantity) {
+            updateData.stockQuantity =
+              productDetails.stockQuantity - parseInt(item.quantity);
+          }
+
+          console.log(updateData);
+
+          // Update product
+          await prisma.product.update({
+            where: { sku: item.sku },
+            data: updateData,
+          });
+        }, Promise.resolve());
       };
 
-      await updateProducts();
+      // Call and handle errors
+      try {
+        await updateProducts();
+        res.status(200).send({ success: true });
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .send({ error: error.message || "Internal server error" });
+      }
 
-      res.status(201).json({ message: "Product updated successfully" });
+      // res.status(201).json({ message: "Product updated successfully" });
     } catch (error) {
       console.error(error); // Log the error for debugging
       res.status(500).send({ error: "Internal server error" });
