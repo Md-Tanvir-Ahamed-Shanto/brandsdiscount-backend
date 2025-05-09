@@ -24,6 +24,7 @@ let ebayRouter2 = require("./routes/ebay2");
 let orderRouter = require("./routes/order");
 let webhookRouter = require("./webhook/ebayWebhook");
 let sheinRouter = require("./routes/shein");
+let wallmartRouter = require("./routes/wallmart");
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -33,12 +34,14 @@ let cron = require("node-cron");
 const {
   getValidAccessToken,
   walmartOrderSync,
+  getNewAccessToken,
 } = require("./tools/wallmartAuth");
 const { sendAbandonedOfferEmail } = require("./tools/email");
 const {
   getRecentOrders,
   getFirstFiftyProducts,
 } = require("./tools/wooCommerce");
+const { ebayOrderSync } = require("./tools/ebayAuth");
 
 let app = express();
 
@@ -83,12 +86,18 @@ app.use("/ebay2", ebayRouter2);
 app.use("/shein", sheinRouter);
 app.use("/order", orderRouter);
 app.use("/webhook", webhookRouter);
+app.use("/api", require("./routes/import"));
 
 // Serve the Checkout Page
 app.get("/wallmart/token", async (req, res) => {
   const token = await getValidAccessToken();
   res.json(token);
 });
+app.post("/wallmart/auth/callback", async (req, res) => {
+  const token = await getNewAccessToken();
+  res.json(token);
+});
+app.use("/wallmart", wallmartRouter);
 // Serve the Checkout Page
 app.get("/wallmart/order", async (req, res) => {
   const data = await walmartOrderSync();
@@ -132,7 +141,7 @@ app.use(function (req, res, next) {
 // Initialize a lock flag
 let isRunning = false;
 
-// cron.schedule("*/5 * * * * *", async () => {
+// cron.schedule("*/4 * * * * ", async () => {
 //   if (isRunning) {
 //     // console.log("Job is already running, skipping this execution...");
 //     return; // Prevent the job from running again if it is already running
@@ -144,6 +153,8 @@ let isRunning = false;
 //     // console.log("Job started...");
 
 //     // Simulated job logic
+//     const ebayOrder = await ebayOrderSync();
+//     const wallmartOrder = await walmartOrderSync();
 //     const userList = await prisma.user.findMany({
 //       where: { loyaltyStatus: "Eligible" },
 //     });

@@ -3,23 +3,24 @@ const querystring = require("querystring");
 require("dotenv").config();
 const eBayApi = require("ebay-api");
 const { PrismaClient } = require("@prisma/client");
+const e = require("express");
 
 const prisma = new PrismaClient();
 
-const EBAY_AUTH_URL = "https://auth.sandbox.ebay.com/oauth2/authorize";
-const EBAY_TOKEN_URL = "https://api.sandbox.ebay.com/identity/v1/oauth2/token";
+// const EBAY_AUTH_URL = "https://auth.sandbox.ebay.com/oauth2/authorize";
+// const EBAY_TOKEN_URL = "https://api.sandbox.ebay.com/identity/v1/oauth2/token";
 
-const EBAY_CLIENT_ID = process.env.EBAY2_CLIENT_ID;
-const EBAY_CLIENT_SECRET = process.env.EBAY2_CLIENT_SECRET;
-const EBAY_REDIRECT_URI = process.env.EBAY2_REDIRECT_URI;
+// const EBAY_CLIENT_ID = process.env.EBAY2_CLIENT_ID;
+// const EBAY_CLIENT_SECRET = process.env.EBAY2_CLIENT_SECRET;
+// const EBAY_REDIRECT_URI = process.env.EBAY2_REDIRECT_URI;
 
 //PRODUCTION_KEYS!!!
-// const EBAY_AUTH_URL = "https://auth.ebay.com/oauth2/authorize";
-// const EBAY_TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token";
+const EBAY_AUTH_URL = "https://auth.ebay.com/oauth2/authorize";
+const EBAY_TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token";
 
-// const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID_PRODUCTION;
-// const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET_PRODUCTION;
-// const EBAY_REDIRECT_URI = process.env.EBAY_REDIRECT_URI_PRODUCTION;
+const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
+const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
+const EBAY_REDIRECT_URI = process.env.EBAY_REDIRECT_URI;
 
 // const eBay = new eBayApi({
 //   appId: EBAY_CLIENT_ID,
@@ -137,24 +138,41 @@ async function refreshAccessToken() {
     `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
   ).toString("base64")}`;
 
-  const response = await axios.post(
-    EBAY_TOKEN_URL,
-    querystring.stringify({
-      grant_type: "refresh_token",
-      refresh_token: refreshToken.refreshToken,
-      scope:
-        "https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/buy.order.readonly https://api.ebay.com/oauth/api_scope/buy.guest.order https://api.ebay.com/oauth/api_scope/sell.marketing.readonly https://api.ebay.com/oauth/api_scope/sell.marketing https://api.ebay.com/oauth/api_scope/sell.inventory.readonly https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account.readonly https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly https://api.ebay.com/oauth/api_scope/sell.fulfillment https://api.ebay.com/oauth/api_scope/sell.analytics.readonly https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly https://api.ebay.com/oauth/api_scope/commerce.catalog.readonly https://api.ebay.com/oauth/api_scope/buy.shopping.cart https://api.ebay.com/oauth/api_scope/buy.offer.auction https://api.ebay.com/oauth/api_scope/commerce.identity.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.email.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.phone.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.address.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.name.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.status.readonly https://api.ebay.com/oauth/api_scope/sell.finances https://api.ebay.com/oauth/api_scope/sell.payment.dispute https://api.ebay.com/oauth/api_scope/sell.item.draft https://api.ebay.com/oauth/api_scope/sell.item https://api.ebay.com/oauth/api_scope/sell.reputation https://api.ebay.com/oauth/api_scope/sell.reputation.readonly https://api.ebay.com/oauth/api_scope/commerce.notification.subscription https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly https://api.ebay.com/oauth/api_scope/sell.stores https://api.ebay.com/oauth/api_scope/sell.stores.readonly",
-    }),
-    {
-      headers: {
-        Authorization: authHeader,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    }
-  );
+  // const response = await axios.post(
+  //   EBAY_TOKEN_URL,
+  //   querystring.stringify({
+  //     grant_type: "refresh_token",
+  //     refresh_token: refreshToken.refreshToken,
+  //     scope:
+  //       "https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/buy.order.readonly https://api.ebay.com/oauth/api_scope/buy.guest.order https://api.ebay.com/oauth/api_scope/sell.marketing.readonly https://api.ebay.com/oauth/api_scope/sell.marketing https://api.ebay.com/oauth/api_scope/sell.inventory.readonly https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account.readonly https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly https://api.ebay.com/oauth/api_scope/sell.fulfillment https://api.ebay.com/oauth/api_scope/sell.analytics.readonly https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly https://api.ebay.com/oauth/api_scope/commerce.catalog.readonly https://api.ebay.com/oauth/api_scope/buy.shopping.cart https://api.ebay.com/oauth/api_scope/buy.offer.auction https://api.ebay.com/oauth/api_scope/commerce.identity.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.email.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.phone.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.address.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.name.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.status.readonly https://api.ebay.com/oauth/api_scope/sell.finances https://api.ebay.com/oauth/api_scope/sell.payment.dispute https://api.ebay.com/oauth/api_scope/sell.item.draft https://api.ebay.com/oauth/api_scope/sell.item https://api.ebay.com/oauth/api_scope/sell.reputation https://api.ebay.com/oauth/api_scope/sell.reputation.readonly https://api.ebay.com/oauth/api_scope/commerce.notification.subscription https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly https://api.ebay.com/oauth/api_scope/sell.stores https://api.ebay.com/oauth/api_scope/sell.stores.readonly",
+  //   }),
+  //   {
+  //     headers: {
+  //       Authorization: authHeader,
+  //       "Content-Type": "application/x-www-form-urlencoded",
+  //     },
+  //   }
+  // );
 
-  const expiresAt = new Date(Date.now() + response.data.expires_in * 1000);
+  // const expiresAt = new Date(Date.now() + response.data.expires_in * 1000);
   try {
+    const response = await axios.post(
+      EBAY_TOKEN_URL,
+      querystring.stringify({
+        grant_type: "refresh_token",
+        refresh_token: refreshToken.refreshToken,
+        // scope:
+        //   "https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/buy.order.readonly https://api.ebay.com/oauth/api_scope/buy.guest.order https://api.ebay.com/oauth/api_scope/sell.marketing.readonly https://api.ebay.com/oauth/api_scope/sell.marketing https://api.ebay.com/oauth/api_scope/sell.inventory.readonly https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account.readonly https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly https://api.ebay.com/oauth/api_scope/sell.fulfillment https://api.ebay.com/oauth/api_scope/sell.analytics.readonly https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly https://api.ebay.com/oauth/api_scope/commerce.catalog.readonly https://api.ebay.com/oauth/api_scope/buy.shopping.cart https://api.ebay.com/oauth/api_scope/buy.offer.auction https://api.ebay.com/oauth/api_scope/commerce.identity.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.email.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.phone.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.address.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.name.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.status.readonly https://api.ebay.com/oauth/api_scope/sell.finances https://api.ebay.com/oauth/api_scope/sell.payment.dispute https://api.ebay.com/oauth/api_scope/sell.item.draft https://api.ebay.com/oauth/api_scope/sell.item https://api.ebay.com/oauth/api_scope/sell.reputation https://api.ebay.com/oauth/api_scope/sell.reputation.readonly https://api.ebay.com/oauth/api_scope/commerce.notification.subscription https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly https://api.ebay.com/oauth/api_scope/sell.stores https://api.ebay.com/oauth/api_scope/sell.stores.readonly",
+      }),
+      {
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const expiresAt = new Date(Date.now() + response.data.expires_in * 1000);
     const tokenUpdate = await prisma.apiToken.update({
       where: { platform: "EBAY" },
       data: {
@@ -164,11 +182,10 @@ async function refreshAccessToken() {
         expiresAt: expiresAt,
       },
     });
+    return response.data.access_token;
   } catch (error) {
-    res.status(500).send(error);
+    console.log("error", error);
   }
-
-  return response.data.access_token;
 }
 
 // Get a Valid Access Token (Refresh if Needed)
@@ -273,6 +290,7 @@ async function ebayOrderSync() {
       data: newOrders.map((order) => ({
         orderId: order.orderId,
         orderCreationDate: new Date(order.creationDate),
+        status: order.orderFulfillmentStatus,
       })),
     });
     console.log(`new ordersssss222222`, newOrders);

@@ -36,7 +36,7 @@ router.get("/auth/callback", async (req, res) => {
 });
 
 router.post("/create-product", async (req, res) => {
-  const { title, price, sku, quantity } = req.body;
+  const { title, price, sku, quantity, categoryId } = req.body;
   console.log(req.body);
 
   console.log("quantity");
@@ -116,18 +116,45 @@ router.post("/create-product", async (req, res) => {
   // };
 
   try {
+    //get ebay category from json file
+    const ebayCat = categoryId || "155201";
+
+    const aspectsData = await axios.get(
+      `${process.env.EBAY_PRODUCTION_URL}/commerce/taxonomy/v1/category_tree/0/get_item_aspects_for_category?category_id=${ebayCat}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Content-Language": "en-US",
+        },
+      }
+    );
+    console.log(aspects);
+
+    const exclude = ["size", "brand", "color", "style"];
+    const aspects = aspectsData.aspects.reduce((acc, value) => {
+      const name = value.localizedAspectName?.toLowerCase();
+      if (!name || exclude.includes(name)) return acc;
+      return { ...acc, [value.localizedAspectName]: ["ㅤ"] };
+    }, {});
+
     // Step 2.1: Create Inventory Item
     const newInventory = await axios.put(
-      `${EBAY_SANDBOX_URL}/sell/inventory/v1/inventory_item/${sku}`,
+      `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/inventory_item/${sku}`,
       {
         product: {
           title: title,
+          outerShellMaterial: "100% Acrylic",
+          style: "anorak",
+          color: "Black",
+          size: "XS",
+          type: "Blazer",
           description: "Test product for eBay API", // Add dynamic description if needed
           brand: "Generic", // Add dynamic brand if needed
-          aspects: {
-            Brand: ["Generic"],
-          },
-          imageUrls: ["https://via.placeholder.com/300"], // Replace with actual image URL if available
+          aspects: aspects,
+          imageUrls: [
+            "https://res.cloudinary.com/dpl2zeblj/image/upload/v1745867141/Gemini_Generated_Image_vice8xvice8xvice_fneegp.jpg",
+          ], // Replace with actual image URL if available
           ean: [], // Replace with product's EAN if available
           mpn: "ss453", // Replace with product's MPN if available
           upc: [], // Replace with product's UPC if available
@@ -194,23 +221,23 @@ router.post("/create-product", async (req, res) => {
 
     // Step 2.2: Create Offer for Listing
     const offerResponse = await axios.post(
-      `${EBAY_SANDBOX_URL}/sell/inventory/v1/offer`,
+      `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/offer`,
       {
         sku: sku,
         marketplaceId: "EBAY_US",
-        categoryId: "162925",
+        categoryId: "155201",
         format: "FIXED_PRICE",
-        merchantLocationKey: "mk1",
+        merchantLocationKey: "US-SAMPLEDEALS-WH1",
         listingDuration: "GTC",
         listingDescription:
           '<ul><li><font face="Arial"><span style="font-size: 18.6667px;"><p class="p1">Test listing - do not bid or buy&nbsp;</p></span></font></li><li><p class="p1">Built-in GPS.&nbsp;</p></li><li><p class="p1">Water resistance to 50 meters.</p></li><li><p class="p1">&nbsp;A new lightning-fast dual-core processor.&nbsp;</p></li><li><p class="p1">And a display that\u2019s two times brighter than before.&nbsp;</p></li><li><p class="p1">Full of features that help you stay active, motivated, and connected, Apple Watch Series 2 is designed for all the ways you move</p></li></ul>',
 
         availableQuantity: quantity,
-        quantityLimitPerBuyer: 10,
+        quantityLimitPerBuyer: 2,
         listingPolicies: {
-          paymentPolicyId: "6208689000",
-          returnPolicyId: "6208690000",
-          fulfillmentPolicyId: "6208688000",
+          paymentPolicyId: "243417962010",
+          returnPolicyId: "243417673010",
+          fulfillmentPolicyId: "243417625010",
         },
         pricingSummary: {
           price: {
@@ -238,7 +265,7 @@ router.post("/create-product", async (req, res) => {
 
     // Step 2.3: Publish the Listing
     const publishing = await axios.post(
-      `${EBAY_SANDBOX_URL}/sell/inventory/v1/offer/${offerId}/publish`,
+      `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/offer/${offerId}/publish`,
       {},
       {
         headers: {
@@ -359,4 +386,13 @@ router.get("/guest-checkout/:checkoutSessionId", async (req, res) => {
   }
 });
 
+router.get("/getToken", async (req, res) => {
+  const token = await ebayAuth.getValidAccessToken();
+  res.json({ token });
+});
+
+router.get("/getRefreshToken", async (req, res) => {
+  const token = await ebayAuth.refreshAccessToken();
+  res.json({ token });
+});
 module.exports = router;

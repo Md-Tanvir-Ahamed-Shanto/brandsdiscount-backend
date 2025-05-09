@@ -115,17 +115,26 @@ function encrypt(
 }
 
 // AES Decryption function
-function decrypt(content, key, ivSeed = "space-station-default-iv") {
-  if (!content || !key) {
-    throw new Error("Ciphertext and key cannot be empty");
-  }
+function decrypt(
+  content,
+  key = "space-station-default-key",
+  ivSeed = "space-station-default-iv"
+) {
+  // if (!content || !key) {
+  //   throw new Error("Ciphertext and key cannot be empty");
+  // }
 
   try {
+    console.log(content);
     const keyBytes = getKeyBytes(key);
     const ivBytes = getIVBytes(ivSeed);
+    console.log("IV length:", ivBytes.length);
+    console.log("IV length:", keyBytes.length);
 
     const decipher = crypto.createDecipheriv("aes-128-cbc", keyBytes, ivBytes);
+    console.log("Decipher:", decipher);
     let decrypted = decipher.update(content, "base64", "utf8");
+    console.log("Decrypted:", decrypted);
     decrypted += decipher.final("utf8");
 
     return decrypted;
@@ -137,7 +146,7 @@ function decrypt(content, key, ivSeed = "space-station-default-iv") {
 
 // Helper function to generate key byte array (Ensuring correct size)
 function getKeyBytes(key) {
-  const keyBytes = Buffer.from(key, "utf8");
+  const keyBytes = Buffer.from(key, "utf8"); // use hex
   return keyBytes.subarray(0, 16); // Use subarray instead of slice
 }
 
@@ -349,5 +358,6 @@ module.exports = {
   exchangeTempTokenForKeys,
   decryptSheinSecretKey,
   decrypt,
+  encrypt,
   publishOrEditProductToShein,
 };

@@ -4,11 +4,15 @@ const { getAccessToken } = require("./ebayAuth");
 
 const { PrismaClient } = require("@prisma/client");
 
+const fs = require("fs");
+const path = require("path");
+const FormData = require("form-data");
+
 const prisma = new PrismaClient();
 
 const WALMART_AUTH_URL = "https://marketplace.walmartapis.com/v3/token";
 const WALMART_ITEMS_URL =
-  "https://sandbox.walmartapis.com/v3/feeds?feedType=ITEM";
+  "https://marketplace.walmartapis.com/v3/feeds?feedType=ITEM";
 const CLIENT_ID = process.env.WALMART_CLIENT_ID;
 const CLIENT_SECRET = process.env.WALMART_CLIENT_SECRET;
 
@@ -86,25 +90,38 @@ async function getValidAccessToken() {
 /**
  * 3️⃣ List a Product on Walmart
  */
-async function listWalmartProduct(productData) {
-  //productData is a json file attached
+async function listWalmartProduct() {
   try {
-    const access_token = await getValidAccessToken();
-    if (!access_token) throw new Error("Failed to obtain access token");
+    const access_token = await getValidAccessToken(); // Your token fetch logic
 
-    const response = await axios.post(WALMART_ITEMS_URL, productData, {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-        "Content-Type": "application/xml",
-        Accept: "application/json",
-      },
+    const filePath = path.join(__dirname, "../wallmart.json");
+    const fileStream = fs.createReadStream(filePath);
+
+    const form = new FormData();
+    form.append("file", fileStream, {
+      filename: "wallmart.json",
+      contentType: "application/json",
     });
 
-    console.log("✅ Product Listing Submitted:", response.data);
+    const response = await axios.post(
+      "https://marketplace.walmartapis.com/v3/feeds?feedType=item",
+      form,
+      {
+        headers: {
+          ...form.getHeaders(),
+          Accept: "application/json",
+          "WM_SVC.NAME": "Walmart Marketplace",
+          "WM_QOS.CORRELATION_ID": "290554c7-caaa-4f2d-ada6-572b3b7fca88",
+          "WM_SEC.ACCESS_TOKEN": access_token,
+        },
+      }
+    );
+    console.log(response.status);
+    console.log("✅ Walmart Feed Upload Response:", response.data);
     return response.data;
   } catch (error) {
     console.error(
-      "❌ Error listing product:",
+      "❌ Error uploading feed:",
       error.response?.data || error.message
     );
     return null;

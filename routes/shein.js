@@ -2,17 +2,21 @@ const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
 const CryptoJS = require("crypto-js");
-const { decryptSheinSecretKey, decrypt } = require("../tools/sheinAuth");
+const {
+  decryptSheinSecretKey,
+  decrypt,
+  encrypt,
+} = require("../tools/sheinAuth");
 
 const router = express.Router();
 
 // const SHEIN_API_BASE = "https://openapi-test01.sheincorp.cn";
 const SHEIN_API_BASE = "https://openapi.sheincorp.com";
-const APP_ID = "13297410B5803ABC87CC8C3BECAD1"; // Replace with your Shein APP ID
-const APP_SECRET = "E1653908B3DD454C80596029EDC627D6"; // Replace with your Shein APP Secret
-const OPENKEYID = "848CA220E27941BB96DC84CE89CDD80D";
+const APP_ID = "13382755AD8018DE44B63CE4D9456"; // Replace with your Shein APP ID
+const APP_SECRET = "A64ECD3760D24AE8BCE8BB09F2833EC5"; // Replace with your Shein APP Secret
+const OPENKEYID = "1D3CC80CAE02411CA6D656AB0A66B637";
 const SECRETKEY =
-  "xKvqU+9zNB4HzEOguXP7InW5S70r6IxoyACe7rlGyQIG/cATT2VTyUFybl7dKCpw";
+  "bZNkVWPgU4uQo+eQeAn5FwjiVFvjNfpdd1CK63xJR2dmCtTjqppjW2A6vHpo9af+";
 const REDIRECT_URI =
   "https://e2f0-103-148-179-215.ngrok-free.app/shein/auth/callback"; // This must match the one in Shein's developer console
 
@@ -89,8 +93,8 @@ router.get("/auth/callback", async (req, res) => {
     //   console.log(response.data);
     //   throw new Error(`Shein API Error: ${response.data.message}`);
     // }
-
-    const { openKeyId, secretKey: encryptedSecretKey } = response.data.data;
+    console.log("Shein API Response:", response.data);
+    const { openKeyId, secretKey: encryptedSecretKey } = response.data.info;
 
     console.log("Open Key ID:", openKeyId);
     console.log("Encrypted Secret Key:", encryptedSecretKey);
@@ -276,6 +280,15 @@ router.post("/createProduct", async (req, res) => {
   } catch (error) {
     console.log(error);
   }
+});
+
+router.get("/getSecret", async (req, res) => {
+  const secretKey = decrypt(req.body.secretKey, req.body.app);
+  // const secretKey = encrypt(req.body.secretKey);
+  res.json({
+    message: "Decryption successful",
+    secretKey,
+  });
 });
 
 module.exports = router;

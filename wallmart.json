@@ -7,30 +7,60 @@
     "MPItem": [
       {
         "Orderable": {
-          "sku": "TEST-SKU-001",
+          "sku": "TEST-SKU-003",
           "productId": "123456789012",
-          "productIdType": "99937657182664",
-          "price": 19.99,
+          "productIdType": "GTIN",
+          "sellingPrice": 1,
+          "shippingWeight": 1,
+          "shippingWeightUnit": "LB",
+          "siteDescription": "This is a sample product description for a Walmart listing.",
+          "keyFeatures": ["Feature 1", "Feature 2", "Feature 3"],
           "currency": "USD",
           "isPreOrder": "NO",
           "releaseDate": "2025-02-04T00:00:00.000Z",
           "quantity": 100,
-          "fulfillmentCenterID": "10002733672",
+          "fulfillmentCenterID": "10002797062",
           "inventoryAvailabilityDate": "2025-02-04T00:00:00.000Z"
         },
         "Visible": {
           "productName": "Sample Product Name",
           "longDescription": "This is a sample product description for a Walmart listing.",
           "shortDescription": "Sample product short description.",
-          "brand": "BrandName",
-          "mainImageURL": "https://example.com/image1.jpg",
+          "countPerPack": 1,
+          "totalCount": 1,
+          "multiPackQuantity": 1,
+          "isProp65WarningRequired": "NO",
+          "ageGroup": "Adult",
+          "clothingNeckStyle": "V-Neck",
+          "clothingSize": "M",
+          "clothingSizeGroup": "Adult",
+          "clothingTopStyle": "Pullover",
+          "color": "Red",
+          "colorCategory": "Red",
+          "fabricCareInstructions": "Machine Wash",
+          "fabricMaterialPercentage": "100",
+          "fabricMaterialName": "Cotton",
+          "Gender": "Unisex",
+          "hasWrittenWarranty": "NO",
+          "measure": {
+            "length": 10,
+            "width": 5,
+            "height": 2,
+            "unitOfMeasure": "IN"
+          },
+          "unit": "Unit",
+          "sleeveLengthStyle": "Long Sleeve",
+          "sleeveLength": "Long Sleeve",
+          "smallPartsWarningCode": "NO",
+          "zippered": "NO",
+          "academicInstitution": "University Name",
+          "brandName": "BrandName",
+          "mainImageURL": "https://imagedelivery.net/uaALX6FE2lVFAKXACq-6eQ/43ba346b-93b4-4b80-9476-e1bef103ab00/walmart",
           "productSecondaryImageURL": [
-            "https://example.com/image2.jpg",
-            "https://example.com/image3.jpg",
-            "https://example.com/image4.jpg",
-            "https://example.com/image5.jpg"
+            "https://imagedelivery.net/uaALX6FE2lVFAKXACq-6eQ/43ba346b-93b4-4b80-9476-e1bef103ab00/walmart",
+            "https://imagedelivery.net/uaALX6FE2lVFAKXACq-6eQ/43ba346b-93b4-4b80-9476-e1bef103ab00/walmart"
           ],
-          "productType": "Animal Feed",
+          "productType": "Dresses",
           "condition": "New"
         }
       }
