@@ -33,15 +33,16 @@ const nodemailer = require("nodemailer");
 let cron = require("node-cron");
 const {
   getValidAccessToken,
-  walmartOrderSync,
   getNewAccessToken,
+  walmartOrderSync,
 } = require("./tools/wallmartAuth");
 const { sendAbandonedOfferEmail } = require("./tools/email");
 const {
   getRecentOrders,
   getFirstFiftyProducts,
 } = require("./tools/wooCommerce");
-const { ebayOrderSync } = require("./tools/ebayAuth");
+const { ebayOrderSync2 } = require("./tools/ebayOrderSync2");
+const { ebayOrderSync } = require("./tools/ebayOrderSync");
 
 let app = express();
 
@@ -154,8 +155,9 @@ cron.schedule("*/4 * * * * ", async () => {
 
     // Simulated job logic
     try {
-      const ebayOrder = await ebayOrderSync();
-      const wallmartOrder = await walmartOrderSync();
+      const ebayOrder = ebayOrderSync();
+      const ebayOrder2 = ebayOrderSync2();
+      const walmartOrder = walmartOrderSync();
     } catch (error) {
       console.error("Error occurred during order sync:", error);
     }
