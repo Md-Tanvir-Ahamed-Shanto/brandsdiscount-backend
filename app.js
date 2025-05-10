@@ -162,9 +162,9 @@ cron.schedule("*/4 * * * * ", async () => {
     // Simulated job logic
     try {
       const ebayOrder = ebayOrderSync();
-      const ebayOrder2 = ebayOrderSync2();
+      // const ebayOrder2 = ebayOrderSync2();
       const walmartOrder = walmartOrderSync();
-      const wooOrder = woocommerceOrderSync();
+      // const wooOrder = woocommerceOrderSync();
     } catch (error) {
       console.error("Error occurred during order sync:", error);
     }
