@@ -40,6 +40,7 @@ const { sendAbandonedOfferEmail } = require("./tools/email");
 const {
   getRecentOrders,
   getFirstFiftyProducts,
+  woocommerceOrderSync,
 } = require("./tools/wooCommerce");
 const { ebayOrderSync2 } = require("./tools/ebayOrderSync2");
 const { ebayOrderSync } = require("./tools/ebayOrderSync");
@@ -158,6 +159,7 @@ cron.schedule("*/4 * * * * ", async () => {
       const ebayOrder = ebayOrderSync();
       const ebayOrder2 = ebayOrderSync2();
       const walmartOrder = walmartOrderSync();
+      const wooOrder = woocommerceOrderSync();
     } catch (error) {
       console.error("Error occurred during order sync:", error);
     }
