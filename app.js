@@ -44,6 +44,7 @@ const {
 } = require("./tools/wooCommerce");
 const { ebayOrderSync2 } = require("./tools/ebayOrderSync2");
 const { ebayOrderSync } = require("./tools/ebayOrderSync");
+const { woocommerceItemUpdate } = require("./tools/woocommerceInventory");
 
 let app = express();
 
@@ -111,8 +112,12 @@ app.get("/woocommerce/order", async (req, res) => {
   res.json(data);
 });
 
-app.get("/woocommerce/products", async (req, res) => {
-  const data = await getFirstFiftyProducts();
+app.get("/woocommerce/updateInventory", async (req, res) => {
+  const wooData = req.body;
+  const data = await woocommerceItemUpdate(wooData.sku, {
+    manage_stock: true,
+    stock_quantity: wooData.quantity,
+  });
   res.json(data);
 });
 // Serve the Checkout Page
