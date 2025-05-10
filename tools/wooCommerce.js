@@ -1,5 +1,8 @@
 // lib/woocommerce.js
 const axios = require("axios");
+const { ebayInventorySync } = require("./ebayAuth");
+const { ebayInventorySync2 } = require("./ebayAuth2");
+const { walmartItemUpdate } = require("./wallmartInventory");
 
 const consumerKey = process.env.WC_CONSUMER_KEY;
 const consumerSecret = process.env.WC_CONSUMER_SECRET;
@@ -28,10 +31,16 @@ async function createProduct(productData) {
   return response.data;
 }
 
-async function updateProduct(productId, updateData) {
-  const response = await wooAPI.put(`/products/${productId}`, updateData);
-  return response.data;
-}
+// async function woocommerceItemUpdate(sku, updateData) {
+//   const product = await wooAPI.get("/products", {
+//     params: { sku },
+//   });
+//   const response = await wooAPI.put(
+//     `/products/${product.data[0].id}`,
+//     updateData
+//   );
+//   return response.data;
+// }
 
 async function getRecentOrders() {
   const response = await wooAPI.get("/orders", {
@@ -88,6 +97,18 @@ async function woocommerceOrderSync() {
           },
         });
         if (productData) {
+          ebayInventorySync(
+            item.sku,
+            productData.stockQuantity - item.quantity
+          );
+          ebayInventorySync2(
+            item.sku,
+            productData.stockQuantity - item.quantity
+          );
+          walmartItemUpdate(
+            item.sku,
+            productData.stockQuantity - item.quantity
+          );
           const updateProduct = await prisma.product.update({
             where: {
               sku: item.sku,
@@ -124,7 +145,6 @@ module.exports = {
   wooAPI,
   getRecentOrders,
   createProduct,
-  updateProduct,
   woocommerceOrderSync,
   getFirstFiftyProducts,
 };

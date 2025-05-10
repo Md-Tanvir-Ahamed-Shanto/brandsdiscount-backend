@@ -1,12 +1,14 @@
 const axios = require("axios");
 const querystring = require("querystring");
-const { getAccessToken } = require("./ebayAuth");
 
 const { PrismaClient } = require("@prisma/client");
 
 const fs = require("fs");
 const path = require("path");
 const FormData = require("form-data");
+const { ebayUpdateInventory } = require("./ebayInventory");
+const { ebayUpdateInventory2 } = require("./ebayInventory2");
+const { woocommerceItemUpdate } = require("./woocommerceInventory");
 
 const prisma = new PrismaClient();
 
@@ -128,32 +130,32 @@ async function listWalmartProduct() {
   }
 }
 
-async function walmartItemUpdate(sku, quantity) {
-  const updateData = {
-    quantity: {
-      unit: "EACH",
-      amount: quantity,
-    },
-  };
-  const token = await getValidAccessToken();
-  try {
-    const url = `https://marketplace.walmartapis.com/v3/inventory?sku=${sku}`;
-    const headers = {
-      "WM_QOS.CORRELATION_ID": "790554c7-caaa-4f2d-ada6-572b3b7fca88",
-      "WM_SEC.ACCESS_TOKEN": token, // Replace with actual token
-      "WM_SVC.NAME": "Walmart Marketplace",
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    };
+// async function walmartItemUpdate(sku, quantity) {
+//   const updateData = {
+//     quantity: {
+//       unit: "EACH",
+//       amount: quantity,
+//     },
+//   };
+//   const token = await getValidAccessToken();
+//   try {
+//     const url = `https://marketplace.walmartapis.com/v3/inventory?sku=${sku}`;
+//     const headers = {
+//       "WM_QOS.CORRELATION_ID": "790554c7-caaa-4f2d-ada6-572b3b7fca88",
+//       "WM_SEC.ACCESS_TOKEN": token, // Replace with actual token
+//       "WM_SVC.NAME": "Walmart Marketplace",
+//       Accept: "application/json",
+//       "Content-Type": "application/json",
+//     };
 
-    const response = await axios.put(url, updateData, { headers });
-  } catch (error) {
-    console.error(
-      "Walmart Inventory Update Error:",
-      error.response?.data || error.message
-    );
-  }
-}
+//     const response = await axios.put(url, updateData, { headers });
+//   } catch (error) {
+//     console.error(
+//       "Walmart Inventory Update Error:",
+//       error.response?.data || error.message
+//     );
+//   }
+// }
 
 async function walmartOrderSync() {
   const token = await getValidAccessToken();
@@ -207,6 +209,18 @@ async function walmartOrderSync() {
           },
         });
         if (productData) {
+          ebayUpdateInventory(
+            item.item.sku,
+            productData.stockQuantity - item.orderLineQuantity.amount
+          );
+          ebayUpdateInventory2(
+            item.item.sku,
+            productData.stockQuantity - item.orderLineQuantity.amount
+          );
+          woocommerceItemUpdate(
+            item.item.sku,
+            productData.stockQuantity - item.orderLineQuantity.amount
+          );
           const updateProduct = await prisma.product.update({
             where: {
               sku: item.item.sku,
@@ -234,5 +248,4 @@ module.exports = {
   getNewAccessToken,
   getValidAccessToken,
   walmartOrderSync,
-  walmartItemUpdate,
 };

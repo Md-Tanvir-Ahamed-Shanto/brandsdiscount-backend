@@ -3,6 +3,9 @@ const querystring = require("querystring");
 require("dotenv").config();
 const eBayApi = require("ebay-api");
 const { PrismaClient } = require("@prisma/client");
+const { ebayUpdateInventory } = require("./ebayInventory");
+// const { ebayInventorySync } = require("./ebayAuth");
+// const { ebayUpdateInventory } = require("./ebayAuth");
 
 const prisma = new PrismaClient();
 
@@ -184,266 +187,366 @@ async function getValidAccessToken() {
   return await refreshAccessToken();
 }
 
-async function ebayUpdateInventory(sku, quantity) {
-  const token = await ebayAuth.getValidAccessToken();
+// async function ebayUpdateInventory2(sku, quantity) {
+//   const token = await getValidAccessToken();
+
+//   try {
+//     const offerId = await axios.get(
+//       `https://api.ebay.com/sell/inventory/v1/offer?sku=${sku}`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           Accept: "application/json",
+//         },
+//       }
+//     );
+
+//     const reqBody = {
+//       requests: [
+//         {
+//           offers: [
+//             {
+//               availableQuantity: quantity,
+//               offerId: offerId,
+//             },
+//           ],
+//           shipToLocationAvailability: {
+//             availabilityDistributions: [
+//               {
+//                 fulfillmentTime: {
+//                   unit: "DAY",
+//                   value: 3,
+//                 },
+//                 merchantLocationKey: "mk1",
+//                 quantity: quantity,
+//               },
+//             ],
+//             quantity: quantity,
+//           },
+//           sku: sku,
+//         },
+//       ],
+//     };
+
+//     const newInventory = await axios.put(
+//       "https://api.ebay.com/sell/inventory/v1/bulk_update_price_quantity",
+//       reqBody,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//           "Content-Type": "application/json",
+//           Accept: "application/json",
+//         },
+//       }
+//     );
+//   } catch (error) {
+//     console.log("ebay item update error", error);
+//   }
+// }
+
+// async function ebayInventorySync2(sku, quantity, getValidAccessToken) {
+//   await ebayUpdateInventory(sku, quantity, getValidAccessToken);
+// }
+
+// async function ebayOrderSync2() {
+//   const token = await getValidAccessToken();
+
+//   try {
+//     const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
+
+//     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B${now}..%5D&limit=180`;
+//     // const url = `https://marketplace.walmartapis.com/v3/orders?status=Created&productInfo=false&shipNodeType=SellerFulfilled&replacementInfo=false&createdStartDate=${encodeURIComponent(
+//     //   now
+//     // )}`;
+
+//     const headers = {
+//       Authorization: `Bearer ${token}`,
+//       "Content-Type": "application/json",
+//     };
+
+//     const response = await axios.get(url, { headers });
+//     const data = response.data;
+//     const existingOrders = await prisma.ebayOrder.findMany();
+//     console.log("exisitng orders", existingOrders);
+//     const newOrders = data.orders.filter(
+//       (order) =>
+//         !existingOrders.find((existing) => existing.orderId === order.orderId)
+//     );
+
+//     console.log(`new ordersssss`, newOrders);
+
+//     const clearDB = await prisma.ebayOrder.deleteMany({});
+//     const createOrders = await prisma.ebayOrder.createMany({
+//       data: newOrders.map((order) => ({
+//         orderId: order.orderId,
+//         orderCreationDate: new Date(order.creationDate),
+//         status: order.orderFulfillmentStatus,
+//       })),
+//     });
+//     console.log(`new ordersssss222222`, newOrders);
+
+//     newOrders.forEach(async (order) => {
+//       order.lineItems.forEach(async (item) => {
+//         console.log("syncing order:", order);
+//         const productData = await prisma.product.findUnique({
+//           where: {
+//             sku: item.sku,
+//           },
+//         });
+//         if (productData) {
+//           const updateProduct = await prisma.product.update({
+//             where: {
+//               sku: item.sku,
+//             },
+//             data: {
+//               stockQuantity: productData.stockQuantity - item.quantity,
+//             },
+//           });
+//           // ebayInventorySync(
+//           //   item.sku,
+//           //   productData.stockQuantity - item.quantity
+//           // );
+//         }
+//       });
+//     });
+//     return newOrders;
+//   } catch (error) {
+//     console.error(
+//       "Error fetching Walmart orders:",
+//       error.response?.data || error.message
+//     );
+//     console.log(error);
+//   }
+// }
+
+/**
+ * Creates a product on eBay through their Inventory API
+ */
+async function createEbayProduct2(productData) {
+  try {
+    // Get eBay API token
+    const token = await getValidAccessToken();
+    if (!token) {
+      res.status(500).json({ error: "Failed to get eBay token" });
+      return;
+    }
+
+    // Process the category ID
+    const ebayCategoryId = productData.categoryId || "155201"; // Default category if not provided
+
+    // 1. Fetch category aspects from eBay API
+    const aspects = await fetchCategoryAspects(token, ebayCategoryId);
+
+    // 2. Create inventory item
+    await createInventoryItem(token, productData, aspects);
+
+    // 3. Create offer for listing
+    const offerId = await createOffer(token, productData, ebayCategoryId);
+
+    // 4. Publish the listing
+    await publishListing(token, offerId);
+
+    res.json({
+      success: true,
+      message: "Product created successfully",
+      offerId,
+    });
+  } catch (error) {
+    console.error(
+      "Error creating eBay product:",
+      error.response?.data?.parameters
+        ? JSON.stringify(error.response.data.parameters)
+        : error.message
+    );
+    console.log(JSON.stringify(error));
+    res.status(500).json({ error: "Failed to create product on eBay" });
+  }
+}
+
+/**
+ * Fetches category aspects from eBay API
+ * @param {string} token - Valid eBay API token
+ * @param {string} categoryId - eBay category ID
+ * @returns {Object} Processed aspects object
+ */
+async function fetchCategoryAspects(token, categoryId) {
+  const excludedAspects = ["size", "brand", "color", "style"];
 
   try {
-    const offerId = await axios.put(
-      `https://api.ebay.com/sell/inventory/v1/offer?sku=${sku}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        },
-      }
-    );
-
-    const reqBody = {
-      requests: [
-        {
-          offers: [
-            {
-              availableQuantity: quantity,
-              offerId: offerId,
-            },
-          ],
-          shipToLocationAvailability: {
-            availabilityDistributions: [
-              {
-                fulfillmentTime: {
-                  unit: "DAY",
-                  value: 3,
-                },
-                merchantLocationKey: "mk1",
-                quantity: quantity,
-              },
-            ],
-            quantity: quantity,
-          },
-          sku: sku,
-        },
-      ],
-    };
-
-    const newInventory = await axios.put(
-      "https://api.ebay.com/sell/inventory/v1/bulk_update_price_quantity",
-      reqBody,
+    const response = await axios.get(
+      `${process.env.EBAY_PRODUCTION_URL}/commerce/taxonomy/v1/category_tree/0/get_item_aspects_for_category?category_id=${categoryId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          Accept: "application/json",
+          "Content-Language": "en-US",
         },
       }
     );
+
+    // Process and filter aspects
+    return response.data.aspects.reduce((acc, value) => {
+      const name = value.localizedAspectName?.toLowerCase();
+      if (!name || excludedAspects.includes(name)) return acc;
+      return { ...acc, [value.localizedAspectName]: ["ㅤ"] };
+    }, {});
   } catch (error) {
-    console.log("ebay item update error", error);
+    console.error("Error fetching category aspects:", error.message);
+    // Return empty aspects object if there's an error
+    return {};
   }
 }
 
-async function ebayOrderSync() {
-  const token = await getValidAccessToken();
+/**
+ * Creates an inventory item on eBay
+ * @param {string} token - Valid eBay API token
+ * @param {Object} productData - Product data from request
+ * @param {Object} aspects - Processed category aspects
+ * @returns {Promise} Result of the API call
+ */
+async function createInventoryItem(token, productData, aspects) {
+  const {
+    title,
+    sku,
+    quantity,
+    size,
+    type,
+    description,
+    brand,
+    imageUrls,
+    condition,
+    color,
+  } = productData;
 
-  try {
-    const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
-
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B${now}..%5D&limit=180`;
-    // const url = `https://marketplace.walmartapis.com/v3/orders?status=Created&productInfo=false&shipNodeType=SellerFulfilled&replacementInfo=false&createdStartDate=${encodeURIComponent(
-    //   now
-    // )}`;
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-
-    const response = await axios.get(url, { headers });
-    const data = response.data;
-    const existingOrders = await prisma.ebayOrder.findMany();
-    console.log("exisitng orders", existingOrders);
-    const newOrders = data.orders.filter(
-      (order) =>
-        !existingOrders.find((existing) => existing.orderId === order.orderId)
-    );
-
-    console.log(`new ordersssss`, newOrders);
-
-    const clearDB = await prisma.ebayOrder.deleteMany({});
-    const createOrders = await prisma.ebayOrder.createMany({
-      data: newOrders.map((order) => ({
-        orderId: order.orderId,
-        orderCreationDate: new Date(order.creationDate),
-      })),
-    });
-    console.log(`new ordersssss222222`, newOrders);
-
-    newOrders.forEach(async (order) => {
-      order.lineItems.forEach(async (item) => {
-        console.log("syncing order:", order);
-        const productData = await prisma.product.findUnique({
-          where: {
-            sku: item.sku,
-          },
-        });
-        if (productData) {
-          const updateProduct = await prisma.product.update({
-            where: {
-              sku: item.sku,
-            },
-            data: {
-              stockQuantity: productData.stockQuantity - item.quantity,
-            },
-          });
-        }
-      });
-    });
-    return newOrders;
-  } catch (error) {
-    console.error(
-      "Error fetching Walmart orders:",
-      error.response?.data || error.message
-    );
-    console.log(error);
-  }
-}
-
-async function createEbayProduct2({ title, price, sku, quantity, ebayAuth }) {
-  const EBAY_SANDBOX_URL = "https://api.sandbox.ebay.com";
-  // const EBAY_SANDBOX_URL = "https://api.ebay.com";
-  try {
-    const token = await getValidAccessToken();
-    if (!token) throw new Error("Failed to get eBay token");
-
-    // Step 1: Create Inventory Item
-    await axios.put(
-      `${EBAY_SANDBOX_URL}/sell/inventory/v1/inventory_item/${sku}`,
-      {
-        product: {
-          title,
-          description: "Test product for eBay API",
-          brand: "Generic",
-          aspects: { Brand: ["Generic"] },
-          imageUrls: ["https://via.placeholder.com/300"],
-          ean: [],
-          mpn: "ss453",
-          upc: [],
-        },
-        availability: {
-          shipToLocationAvailability: {
-            availabilityDistributions: [
-              {
-                availabilityType: "IN_STOCK",
-                fulfillmentTime: {
-                  unit: "BUSINESS_DAY",
-                  value: 2,
-                },
-                merchantLocationKey: "mk1",
-                quantity,
-              },
-            ],
-            quantity,
-          },
-          pickupAtLocationAvailability: [
+  return axios.put(
+    `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/inventory_item/${sku}`,
+    {
+      product: {
+        title,
+        style: "ㅤ",
+        color,
+        size,
+        type,
+        description,
+        brand,
+        aspects,
+        imageUrls,
+        ean: [],
+        mpn: "ss453", // Consider making this dynamic
+        upc: [],
+      },
+      availability: {
+        shipToLocationAvailability: {
+          availabilityDistributions: [
             {
               availabilityType: "IN_STOCK",
               fulfillmentTime: {
-                unit: "DAY",
-                value: 1,
+                unit: "BUSINESS_DAY",
+                value: 2,
               },
               merchantLocationKey: "mk1",
               quantity,
             },
           ],
+          quantity,
         },
-        condition: "NEW",
-        conditionDescription: "Brand new item in excellent condition",
-        conditionDescriptors: [
+        pickupAtLocationAvailability: [
           {
-            name: "Package Condition",
-            additionalInfo: "Item is in original packaging.",
-            values: ["Brand New"],
+            availabilityType: "IN_STOCK",
+            fulfillmentTime: {
+              unit: "DAY",
+              value: 1,
+            },
+            merchantLocationKey: "mk1",
+            quantity,
           },
         ],
-        packageWeightAndSize: {
-          weight: {
-            unit: "KILOGRAM",
-            value: 88,
-          },
-          shippingIrregular: false,
+      },
+      condition,
+      conditionDescription: "Brand new item in excellent condition",
+      conditionDescriptors: [
+        {
+          name: "Package Condition",
+          additionalInfo: "Item is in original packaging.",
+          values: "ㅤ",
+        },
+      ],
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Content-Language": "en-US",
+      },
+    }
+  );
+}
+
+/**
+ * Creates an offer for the inventory item
+ * @param {string} token - Valid eBay API token
+ * @param {Object} productData - Product data from request
+ * @param {string} categoryId - eBay category ID
+ * @returns {string} eBay offer ID
+ */
+async function createOffer(token, productData, categoryId) {
+  const { sku, quantity, price } = productData;
+
+  const response = await axios.post(
+    `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/offer`,
+    {
+      sku,
+      marketplaceId: "EBAY_US",
+      categoryId,
+      format: "FIXED_PRICE",
+      merchantLocationKey: "US-SAMPLEDEALS-WH1",
+      listingDuration: "GTC",
+      listingDescription:
+        '<ul><li><font face="Arial"><span style="font-size: 18.6667px;"><p class="p1">Test listing - do not bid or buy&nbsp;</p></span></font></li><li><p class="p1">Built-in GPS.&nbsp;</p></li><li><p class="p1">Water resistance to 50 meters.</p></li><li><p class="p1">&nbsp;A new lightning-fast dual-core processor.&nbsp;</p></li><li><p class="p1">And a display that\u2019s two times brighter than before.&nbsp;</p></li><li><p class="p1">Full of features that help you stay active, motivated, and connected, Apple Watch Series 2 is designed for all the ways you move</p></li></ul>',
+      availableQuantity: quantity,
+      quantityLimitPerBuyer: 2,
+      listingPolicies: {
+        paymentPolicyId: "243417962010",
+        returnPolicyId: "243417673010",
+        fulfillmentPolicyId: "243417625010",
+      },
+      pricingSummary: {
+        price: {
+          currency: "USD",
+          value: price,
         },
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "Content-Language": "en-US",
-        },
-      }
-    );
-
-    // Step 2: Create Offer
-    const offerResponse = await axios.post(
-      `${EBAY_SANDBOX_URL}/sell/inventory/v1/offer`,
-      {
-        sku,
-        marketplaceId: "EBAY_US",
-        categoryId: "162925",
-        format: "FIXED_PRICE",
-        merchantLocationKey: "mk1",
-        listingDuration: "GTC",
-        listingDescription:
-          "<ul><li><p>Test listing - do not bid or buy&nbsp;</p></li><li><p>Built-in GPS.&nbsp;</p></li><li><p>Water resistance to 50 meters.</p></li><li><p>Dual-core processor.&nbsp;</p></li><li><p>Bright display.&nbsp;</p></li><li><p>Apple Watch Series 2 designed for all movements</p></li></ul>",
-        availableQuantity: quantity,
-        quantityLimitPerBuyer: 10,
-        listingPolicies: {
-          paymentPolicyId: "6208689000",
-          returnPolicyId: "6208690000",
-          fulfillmentPolicyId: "6208688000",
-        },
-        pricingSummary: {
-          price: {
-            currency: "USD",
-            value: price,
-          },
-        },
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Content-Language": "en-US",
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "Content-Language": "en-US",
-        },
-      }
-    );
+    }
+  );
 
-    const offerId = offerResponse.data.offerId;
+  return response.data.offerId;
+}
 
-    // Step 3: Publish the Listing
-    const publishing = await axios.post(
-      `${EBAY_SANDBOX_URL}/sell/inventory/v1/offer/${offerId}/publish`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "Content-Language": "en-US",
-        },
-      }
-    );
-
-    return {
-      success: true,
-      message: "Product created and published successfully",
-      offerId,
-      publishResponse: publishing.data,
-    };
-  } catch (error) {
-    const errorDetails = error.response?.data || error.message;
-    console.error("eBay API Error:", errorDetails);
-    throw new Error(
-      `Failed to create product on eBay: ${JSON.stringify(errorDetails)}`
-    );
-  }
+/**
+ * Publishes the offer (listing) on eBay
+ * @param {string} token - Valid eBay API token
+ * @param {string} offerId - eBay offer ID to publish
+ * @returns {Promise} Result of the API call
+ */
+async function publishListing(token, offerId) {
+  return axios.post(
+    `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/offer/${offerId}/publish`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "Content-Language": "en-US",
+      },
+    }
+  );
 }
 
 module.exports = {
@@ -451,6 +554,5 @@ module.exports = {
   getAccessToken,
   refreshAccessToken,
   getValidAccessToken,
-  ebayUpdateInventory,
   createEbayProduct2,
 };

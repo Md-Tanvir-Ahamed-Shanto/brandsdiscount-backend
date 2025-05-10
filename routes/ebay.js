@@ -36,7 +36,20 @@ router.get("/auth/callback", async (req, res) => {
 });
 
 router.post("/create-product", async (req, res) => {
-  const { title, price, sku, quantity, categoryId } = req.body;
+  const {
+    title,
+    price,
+    sku,
+    quantity,
+    categoryId,
+    size,
+    type,
+    description,
+    brand,
+    imageUrls,
+    condition,
+    itemLocation,
+  } = req.body;
   console.log(req.body);
 
   console.log("quantity");
@@ -144,17 +157,14 @@ router.post("/create-product", async (req, res) => {
       {
         product: {
           title: title,
-          outerShellMaterial: "100% Acrylic",
-          style: "anorak",
-          color: "Black",
-          size: "XS",
-          type: "Blazer",
-          description: "Test product for eBay API", // Add dynamic description if needed
-          brand: "Generic", // Add dynamic brand if needed
+          style: "ㅤ",
+          color: color,
+          size: size,
+          type: type,
+          description: description, // Add dynamic description if needed
+          brand: brand, // Add dynamic brand if needed
           aspects: aspects,
-          imageUrls: [
-            "https://res.cloudinary.com/dpl2zeblj/image/upload/v1745867141/Gemini_Generated_Image_vice8xvice8xvice_fneegp.jpg",
-          ], // Replace with actual image URL if available
+          imageUrls: imageUrls, // Replace with actual image URL if available
           ean: [], // Replace with product's EAN if available
           mpn: "ss453", // Replace with product's MPN if available
           upc: [], // Replace with product's UPC if available
@@ -188,24 +198,24 @@ router.post("/create-product", async (req, res) => {
           ],
         },
         // Condition of the product
-        condition: "NEW", // Modify based on product condition
+        condition: condition, // Modify based on product condition
         conditionDescription: "Brand new item in excellent condition", // Modify if needed
         conditionDescriptors: [
           {
             name: "Package Condition",
             additionalInfo: "Item is in original packaging.",
-            values: ["Brand New"],
+            values: "ㅤ",
           },
         ],
         // Package weight and size details
-        packageWeightAndSize: {
-          weight: {
-            unit: "KILOGRAM", // Modify weight unit (POUND, GRAM, etc.)
-            value: 88, // Replace with actual weight
-          },
-          //   packageType: "MAILING_BOX", // Modify package type as needed
-          shippingIrregular: false, // Set to true if the package is irregularly shaped
-        },
+        // packageWeightAndSize: {
+        //   weight: {
+        //     unit: "KILOGRAM", // Modify weight unit (POUND, GRAM, etc.)
+        //     value: 88, // Replace with actual weight
+        //   },
+        //   //   packageType: "MAILING_BOX", // Modify package type as needed
+        //   shippingIrregular: false, // Set to true if the package is irregularly shaped
+        // },
       },
       {
         headers: {
@@ -225,7 +235,7 @@ router.post("/create-product", async (req, res) => {
       {
         sku: sku,
         marketplaceId: "EBAY_US",
-        categoryId: "155201",
+        categoryId: ebayCat,
         format: "FIXED_PRICE",
         merchantLocationKey: "US-SAMPLEDEALS-WH1",
         listingDuration: "GTC",

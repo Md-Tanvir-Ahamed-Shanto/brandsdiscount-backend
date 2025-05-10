@@ -4,6 +4,10 @@ const { verifyUser } = require("../tools/authenticate");
 const { paginateOverview } = require("../tools/pagination");
 const { sendLoyaltyEmail, sendAbandonedOfferEmail } = require("../tools/email");
 const { ensureRoleAdmin } = require("../tools/tools");
+const { ebayUpdateInventory } = require("../tools/ebayInventory");
+const { ebayUpdateInventory2 } = require("../tools/ebayInventory2");
+const { walmartItemUpdate } = require("../tools/wallmartInventory");
+const { woocommerceItemUpdate } = require("../tools/woocommerceInventory");
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -189,6 +193,10 @@ router.post("/", verifyUser, async (req, res) => {
         where: { id: product.productId },
         data: { stockQuantity: { decrement: product.quantity } },
       });
+      ebayUpdateInventory(product.sku, updateProduct.stockQuantity);
+      ebayUpdateInventory2(product.sku, updateProduct.stockQuantity);
+      walmartItemUpdate(product.sku, updateProduct.stockQuantity);
+      woocommerceItemUpdate(product.sku, updateProduct.stockQuantity);
     });
     // orderPoint
     const userData = await prisma.user.findUnique({
