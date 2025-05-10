@@ -18,6 +18,8 @@ const images = require("../tools/images");
 
 const { PrismaClient } = require("@prisma/client");
 const { uploadImages, deleteCloudflareImage } = require("../tools/images.js");
+const { createEbayProduct } = require("../tools/ebayAuth.js");
+const { createEbayProduct2 } = require("../tools/ebayAuth2.js");
 // const { uploadImages, deleteCloudflareImage } = require("../tools/images");
 const prisma = new PrismaClient();
 
@@ -153,8 +155,30 @@ router.post(
           status: status || null, // Add if exists
         },
       });
+      const imageUrls = req.images.map((image) => image.url);
+      const ebayProductData = {
+        title,
+        price: salePrice,
+        color,
+        sku,
+        quantity: stockQuantity,
+        categoryId,
+        size: sizeId,
+        description,
+        brand: brandName,
+        imageUrls,
+        condition,
+        itemLocation,
+      };
+      try {
+        createEbayProduct(ebayProductData);
+        createEbayProduct2(ebayProductData);
+      } catch (error) {
+        console.error("Error creating eBay product:", error);
+      }
       res.status(201).json(product);
     } catch (error) {
+      console.error("Error creating product:", error);
       res.status(500).json({ error: "Error creating product" });
     }
   }
