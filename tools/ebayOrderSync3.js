@@ -1,14 +1,14 @@
-const { getValidAccessToken } = require("./ebayAuth");
 const axios = require("axios");
 const { PrismaClient } = require("@prisma/client");
-const { ebayUpdateInventory2 } = require("./ebayInventory2");
+const { getValidAccessToken } = require("./ebayAuth3");
+const { ebayUpdateInventory } = require("./ebayInventory");
 const { walmartItemUpdate } = require("./wallmartInventory");
 const { woocommerceItemUpdate } = require("./woocommerceInventory");
-const { ebayUpdateInventory3 } = require("./ebayInventory3");
+const { ebayUpdateInventory2 } = require("./ebayInventory2");
 
 const prisma = new PrismaClient();
 
-async function ebayOrderSync() {
+async function ebayOrderSync3() {
   const token = await getValidAccessToken();
 
   try {
@@ -62,11 +62,11 @@ async function ebayOrderSync() {
               stockQuantity: productData.stockQuantity - item.quantity,
             },
           });
-          ebayUpdateInventory2(
+          ebayUpdateInventory(
             item.sku,
             productData.stockQuantity - item.quantity
           );
-          ebayUpdateInventory3(
+          ebayUpdateInventory2(
             item.sku,
             productData.stockQuantity - item.quantity
           );
@@ -92,5 +92,5 @@ async function ebayOrderSync() {
 }
 
 module.exports = {
-  ebayOrderSync,
+  ebayOrderSync3,
 };

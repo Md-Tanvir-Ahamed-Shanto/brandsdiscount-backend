@@ -12,9 +12,9 @@ const prisma = new PrismaClient();
 const EBAY_AUTH_URL = "https://auth.ebay.com/oauth2/authorize";
 const EBAY_TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token";
 
-const EBAY_CLIENT_ID = process.env.EBAY2_CLIENT_ID;
-const EBAY_CLIENT_SECRET = process.env.EBAY2_CLIENT_SECRET;
-const EBAY_REDIRECT_URI = process.env.EBAY2_REDIRECT_URI;
+const EBAY_CLIENT_ID = process.env.EBAY3_CLIENT_ID;
+const EBAY_CLIENT_SECRET = process.env.EBAY3_CLIENT_SECRET;
+const EBAY_REDIRECT_URI = process.env.EBAY3_REDIRECT_URI;
 
 //PRODUCTION_KEYS!!!
 // const EBAY_AUTH_URL = "https://auth.ebay.com/oauth2/authorize";
@@ -77,14 +77,14 @@ async function getAccessToken(authCode) {
     const expiresAt = new Date(Date.now() + response.data.expires_in * 1000); // Convert to Date object
 
     const ebayApiData = await prisma.apiToken.upsert({
-      where: { platform: "EBAY2" }, // Check if an entry for "EBAY" exists
+      where: { platform: "EBAY3" }, // Check if an entry for "EBAY" exists
       update: {
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
         expiresAt: expiresAt,
       }, // Update if found
       create: {
-        platform: "EBAY2",
+        platform: "EBAY3",
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
         expiresAt: expiresAt,
@@ -128,7 +128,7 @@ async function getAccessToken(authCode) {
 async function refreshAccessToken() {
   const refreshToken = await prisma.apiToken.findUnique({
     where: {
-      platform: "EBAY2",
+      platform: "EBAY3",
     },
   });
 
@@ -159,9 +159,9 @@ async function refreshAccessToken() {
   const expiresAt = new Date(Date.now() + response.data.expires_in * 1000);
   try {
     const tokenUpdate = await prisma.apiToken.update({
-      where: { platform: "EBAY2" },
+      where: { platform: "EBAY3" },
       data: {
-        platform: "EBAY2",
+        platform: "EBAY3",
         accessToken: response.data.access_token,
         refreshToken: refreshToken.refreshToken,
         expiresAt: expiresAt,
@@ -178,7 +178,7 @@ async function refreshAccessToken() {
 async function getValidAccessToken() {
   const token = await prisma.apiToken.findUnique({
     where: {
-      platform: "EBAY2",
+      platform: "EBAY3",
     },
   });
   if (token.accessToken && Date.now() < token.expiresAt) {

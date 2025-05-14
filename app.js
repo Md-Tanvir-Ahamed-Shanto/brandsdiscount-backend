@@ -21,6 +21,7 @@ let sizeRouter = require("./routes/size");
 let categoryRouter = require("./routes/category");
 let ebayRouter = require("./routes/ebay");
 let ebayRouter2 = require("./routes/ebay2");
+let ebayRouter3 = require("./routes/ebay3");
 let orderRouter = require("./routes/order");
 let webhookRouter = require("./webhook/ebayWebhook");
 let sheinRouter = require("./routes/shein");
@@ -45,6 +46,7 @@ const {
 const { ebayOrderSync2 } = require("./tools/ebayOrderSync2");
 const { ebayOrderSync } = require("./tools/ebayOrderSync");
 const { woocommerceItemUpdate } = require("./tools/woocommerceInventory");
+const { ebayOrderSync3 } = require("./tools/ebayOrderSync3");
 
 let app = express();
 
@@ -86,6 +88,7 @@ app.use("/sizeroute", sizeRouter);
 app.use("/categoryroute", categoryRouter);
 app.use("/ebay", ebayRouter);
 app.use("/ebay2", ebayRouter2);
+app.use("/ebay3", ebayRouter3);
 app.use("/shein", sheinRouter);
 app.use("/order", orderRouter);
 app.use("/webhook", webhookRouter);
@@ -163,6 +166,7 @@ cron.schedule("*/4 * * * * ", async () => {
     try {
       const ebayOrder = ebayOrderSync();
       // const ebayOrder2 = ebayOrderSync2();
+      // const ebayOrder3 = ebayOrderSync3();
       const walmartOrder = walmartOrderSync();
       // const wooOrder = woocommerceOrderSync();
     } catch (error) {

@@ -3,6 +3,7 @@ const axios = require("axios");
 const { ebayInventorySync } = require("./ebayAuth");
 const { ebayInventorySync2 } = require("./ebayAuth2");
 const { walmartItemUpdate } = require("./wallmartInventory");
+const { ebayUpdateInventory3 } = require("./ebayInventory3");
 
 const consumerKey = process.env.WC_CONSUMER_KEY;
 const consumerSecret = process.env.WC_CONSUMER_SECRET;
@@ -102,6 +103,10 @@ async function woocommerceOrderSync() {
             productData.stockQuantity - item.quantity
           );
           ebayInventorySync2(
+            item.sku,
+            productData.stockQuantity - item.quantity
+          );
+          ebayUpdateInventory3(
             item.sku,
             productData.stockQuantity - item.quantity
           );

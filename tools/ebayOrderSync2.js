@@ -4,6 +4,7 @@ const { getValidAccessToken } = require("./ebayAuth2");
 const { ebayUpdateInventory } = require("./ebayInventory");
 const { walmartItemUpdate } = require("./wallmartInventory");
 const { woocommerceItemUpdate } = require("./woocommerceInventory");
+const { ebayUpdateInventory3 } = require("./ebayInventory3");
 
 const prisma = new PrismaClient();
 
@@ -62,6 +63,10 @@ async function ebayOrderSync2() {
             },
           });
           ebayUpdateInventory(
+            item.sku,
+            productData.stockQuantity - item.quantity
+          );
+          ebayUpdateInventory3(
             item.sku,
             productData.stockQuantity - item.quantity
           );
