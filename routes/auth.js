@@ -102,26 +102,41 @@ router.post("/signup", async (req, res, next) => {
         if (err) return next(err);
 
         try {
+          const newUser = await prisma.user.create({
+            data: {
+              username: req.body.username,
+
+              hashedPassword,
+
+              salt,
+
+              email: req.body.email,
+
+              role: req.body.role,
+
+              profilePicture: req.body.profilePicture || null,
+            },
+          });
+
+          const token = getToken({ id: newUser.id });
+          const refreshToken = getRefreshToken({ id: newUser.id });
+
+          // res.cookie(
+          //   "token",
+          //   JSON.stringify({ token, refreshToken }),
+          //   COOKIE_OPTIONS
+          // );
+          res.json({
+            success: true,
+            access_token: token,
+            refresh_token: refreshToken,
+            user: { id: newUser.id, role: newUser.role },
+          });
         } catch (error) {
           return res.status(500).json({
             message: "Error creating user",
           });
         }
-
-        const token = getToken({ id: newUser.id });
-        const refreshToken = getRefreshToken({ id: newUser.id });
-
-        // res.cookie(
-        //   "token",
-        //   JSON.stringify({ token, refreshToken }),
-        //   COOKIE_OPTIONS
-        // );
-        res.json({
-          success: true,
-          access_token: token,
-          refresh_token: refreshToken,
-          user: { id: newUser.id, role: newUser.role },
-        });
       }
     );
   } catch (error) {

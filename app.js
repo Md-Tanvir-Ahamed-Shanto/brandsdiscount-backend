@@ -165,8 +165,8 @@ cron.schedule("*/4 * * * * ", async () => {
     // Simulated job logic
     try {
       const ebayOrder = ebayOrderSync();
-      // const ebayOrder2 = ebayOrderSync2();
-      // const ebayOrder3 = ebayOrderSync3();
+      const ebayOrder2 = ebayOrderSync2();
+      const ebayOrder3 = ebayOrderSync3();
       const walmartOrder = walmartOrderSync();
       // const wooOrder = woocommerceOrderSync();
     } catch (error) {

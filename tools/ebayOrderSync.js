@@ -10,6 +10,7 @@ const prisma = new PrismaClient();
 
 async function ebayOrderSync() {
   const token = await getValidAccessToken();
+  console.log("ebayOrderSync token", token);
 
   try {
     const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO

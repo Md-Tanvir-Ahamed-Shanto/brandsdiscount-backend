@@ -128,6 +128,7 @@ async function refreshAccessToken() {
       platform: "EBAY",
     },
   });
+  console.log(refreshToken);
 
   if (!refreshToken) {
     throw new Error("No refresh token found");

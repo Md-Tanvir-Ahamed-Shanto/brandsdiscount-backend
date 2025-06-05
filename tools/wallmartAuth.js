@@ -9,6 +9,7 @@ const FormData = require("form-data");
 const { ebayUpdateInventory } = require("./ebayInventory");
 const { ebayUpdateInventory2 } = require("./ebayInventory2");
 const { woocommerceItemUpdate } = require("./woocommerceInventory");
+const { ebayUpdateInventory3 } = require("./ebayInventory3");
 
 const prisma = new PrismaClient();
 
@@ -214,6 +215,10 @@ async function walmartOrderSync() {
             productData.stockQuantity - item.orderLineQuantity.amount
           );
           ebayUpdateInventory2(
+            item.item.sku,
+            productData.stockQuantity - item.orderLineQuantity.amount
+          );
+          ebayUpdateInventory3(
             item.item.sku,
             productData.stockQuantity - item.orderLineQuantity.amount
           );
