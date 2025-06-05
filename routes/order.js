@@ -8,6 +8,7 @@ const { ebayUpdateInventory } = require("../tools/ebayInventory");
 const { ebayUpdateInventory2 } = require("../tools/ebayInventory2");
 const { walmartItemUpdate } = require("../tools/wallmartInventory");
 const { woocommerceItemUpdate } = require("../tools/woocommerceInventory");
+const { ebayUpdateInventory3 } = require("../tools/ebayInventory3");
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -195,6 +196,7 @@ router.post("/", verifyUser, async (req, res) => {
       });
       ebayUpdateInventory(product.sku, updateProduct.stockQuantity);
       ebayUpdateInventory2(product.sku, updateProduct.stockQuantity);
+      ebayUpdateInventory3(product.sku, updateProduct.stockQuantity);
       walmartItemUpdate(product.sku, updateProduct.stockQuantity);
       woocommerceItemUpdate(product.sku, updateProduct.stockQuantity);
     });
