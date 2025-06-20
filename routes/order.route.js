@@ -7,6 +7,8 @@ const {
   deleteOrder,
   sendOrderEmail,
 } = require("../controllers/order.controller");
+const { verifyUser } = require("../tools/authenticate");
+const { ensureRoleAdmin } = require("../tools/tools");
 
 const orderRoutes = express.Router();
 
@@ -20,10 +22,10 @@ orderRoutes.get("/", getAllOrders);
 orderRoutes.get("/:id", getOrderById);
 
 // Update an order by ID
-orderRoutes.put("/:id", updateOrder);
+orderRoutes.put("/:id",verifyUser, ensureRoleAdmin, updateOrder);
 
 // Delete an order by ID
-orderRoutes.delete("/:id", deleteOrder);
-orderRoutes.post(":id/send-email", sendOrderEmail);
+orderRoutes.delete("/:id",verifyUser, ensureRoleAdmin, deleteOrder);
+orderRoutes.post(":id/send-email",verifyUser, ensureRoleAdmin, sendOrderEmail);
 
 module.exports = orderRoutes;
