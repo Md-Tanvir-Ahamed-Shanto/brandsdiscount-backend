@@ -46,7 +46,8 @@ const { ebayOrderSync2 } = require("./tools/ebayOrderSync2");
 const { ebayOrderSync } = require("./tools/ebayOrderSync");
 const { woocommerceItemUpdate } = require("./tools/woocommerceInventory");
 const { ebayOrderSync3 } = require("./tools/ebayOrderSync3");
-const { productRoute } = require("./routes/product.route");
+const { productRoutes } = require("./routes/product.route");
+const orderRoutes = require("./routes/order.route");
 
 let app = express();
 
@@ -81,7 +82,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-app.use('/api', productRoute);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+
 
 app.use("/userroute", usersRouter);
 app.use("/authroute", authRouter);
