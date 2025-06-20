@@ -1,21 +1,12 @@
 const express = require("express");
 const router = express.Router();
-
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-
 const passport = require("passport");
 const ExtractJwt = require("passport-jwt").ExtractJwt;
 const LocalStrategy = require("passport-local");
-
 const { PrismaClient } = require("@prisma/client");
-const {
-  getToken,
-  verifyUser,
-  COOKIE_OPTIONS,
-  getRefreshToken,
-} = require("../tools/authenticate");
-
+const { getToken, verifyUser, COOKIE_OPTIONS, getRefreshToken } = require("../tools/authenticate");
 const prisma = new PrismaClient();
 
 passport.use(
@@ -74,19 +65,18 @@ const opts = {
   secretOrKey: process.env.JWT_SECRET,
 };
 
-passport.use(
-  new (require("passport-jwt").Strategy)(opts, async (jwt_payload, done) => {
-    try {
-      console.log(jwt_payload.id);
-      const user = await prisma.user.findUnique({
-        where: { id: jwt_payload.id },
-      });
-      // console.log(user);
-      return done(null, user || false);
-    } catch (error) {
-      return done(error, false);
-    }
-  })
+passport.use(new (require("passport-jwt").Strategy)(opts, async (jwt_payload, done) => {
+  try {
+    console.log(jwt_payload.id);
+    const user = await prisma.user.findUnique({
+      where: { id: jwt_payload.id },
+    });
+    // console.log(user);
+    return done(null, user || false);
+  } catch (error) {
+    return done(error, false);
+  }
+})
 );
 
 router.post("/signup", async (req, res, next) => {
@@ -194,30 +184,27 @@ router.get("/refreshtoken", async (req, res) => {
   );
 });
 
-router.post(
-  "/login",
-  passport.authenticate("local", { session: false }),
-  (req, res) => {
-    const token = getToken({ id: req.user.id });
-    const refreshToken = getRefreshToken({ id: req.user.id });
+router.post("/login", passport.authenticate("local", { session: false }), (req, res) => {
+  const token = getToken({ id: req.user.id });
+  const refreshToken = getRefreshToken({ id: req.user.id });
 
-    // res.cookie(
-    //   "token",
-    //   JSON.stringify({ token, refreshToken }),
-    //   COOKIE_OPTIONS
-    // );
+  // res.cookie(
+  //   "token",
+  //   JSON.stringify({ token, refreshToken }),
+  //   COOKIE_OPTIONS
+  // );
 
-    res.json({
-      success: true,
-      access_token: token,
-      refresh_token: refreshToken,
-      user: {
-        id: req.user.id,
-        role: req.user.role,
-        userName: req.user.username,
-      },
-    });
-  }
+  res.json({
+    success: true,
+    access_token: token,
+    refresh_token: refreshToken,
+    user: {
+      id: req.user.id,
+      role: req.user.role,
+      userName: req.user.username,
+    },
+  });
+}
 );
 
 router.get("/logout", verifyUser, (req, res) => {

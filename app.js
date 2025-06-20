@@ -13,7 +13,6 @@ let session = require("express-session");
 const bodyParser = require("body-parser");
 
 const { Client } = require("basic-ftp");
-
 let usersRouter = require("./routes/users");
 let authRouter = require("./routes/auth");
 let productRouter = require("./routes/product");
@@ -47,6 +46,7 @@ const { ebayOrderSync2 } = require("./tools/ebayOrderSync2");
 const { ebayOrderSync } = require("./tools/ebayOrderSync");
 const { woocommerceItemUpdate } = require("./tools/woocommerceInventory");
 const { ebayOrderSync3 } = require("./tools/ebayOrderSync3");
+const { productRoute } = require("./routes/product.route");
 
 let app = express();
 
@@ -76,10 +76,12 @@ const corsOptions = {
   //   }
   // },
   origin: "*",
-  credentials: true,
+  // credentials: true,
 };
 
 app.use(cors(corsOptions));
+
+app.use('/api', productRoute);
 
 app.use("/userroute", usersRouter);
 app.use("/authroute", authRouter);

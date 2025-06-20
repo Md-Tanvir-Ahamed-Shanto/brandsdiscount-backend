@@ -89,6 +89,7 @@ model Product {
   regularPrice    Float?
   salePrice       Float?
   platFormPrice   Float?
+  toggleFirstDeal   Boolean? @default(true) // toggle 10% discount for first deal
   discountPercent Float?
   stockQuantity   Int?
   condition       String?    // New, Used, Refurbished, etc.
