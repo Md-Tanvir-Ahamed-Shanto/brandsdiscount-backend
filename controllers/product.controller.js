@@ -1,4 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
+const { deleteCloudflareImage } = require("../utils/imageUpload");
+
 const prisma = new PrismaClient();
 
 // Helper function to build category relations for Prisma includes
@@ -179,9 +181,7 @@ const createProduct = async (req, res) => {
       brandName,
       color,
       sku,
-      images,
       itemLocation,
-      size,
       sizeId,
       sizeType,
       postName,
@@ -195,7 +195,6 @@ const createProduct = async (req, res) => {
       regularPrice,
       salePrice,
       platFormPrice,
-      toggleFirstDeal,
       discountPercent,
       stockQuantity,
       condition,
@@ -203,6 +202,12 @@ const createProduct = async (req, res) => {
       status,
       updatedById,
     } = req.body;
+    if (!title || !sku) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and SKU are required fields.",
+      });
+    }
 
     const newProduct = await prisma.product.create({
       data: {
@@ -210,9 +215,8 @@ const createProduct = async (req, res) => {
         brandName: brandName || null,
         color: color || null,
         sku,
-        images: req.images || [],
+        images: req.uploadedImageUrls || [],
         itemLocation: itemLocation || null,
-        size: size || null,
         sizeId: sizeId || null,
         sizeType: sizeType || null,
         postName: postName || null,
@@ -223,96 +227,148 @@ const createProduct = async (req, res) => {
         wallmartId: wallmartId || null,
         sheinId: sheinId || null,
         woocommerceId: woocommerceId || null,
-        regularPrice: parseFloat(regularPrice) || null,
+        regularPrice: parseFloat(regularPrice) || 0,
         salePrice: parseFloat(salePrice) || null,
         platFormPrice: parseFloat(platFormPrice) || null,
-        toggleFirstDeal: toggleFirstDeal || true,
+        toggleFirstDeal:true,
         discountPercent: parseFloat(discountPercent) || null,
-        stockQuantity: parseInt(stockQuantity) || null,
+        stockQuantity: parseInt(stockQuantity) || 0,
         condition: condition || null,
         description: description || null,
-        status: status || null,
+        status: status || "Draft",
         updatedById: updatedById || null,
       },
     });
-    res.status(201).json(newProduct);
+    res.status(201).json({
+      success: true,
+      message: "Product created successfully",
+      product: newProduct,
+    });
   } catch (error) {
     console.error("Error creating product:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to create product", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to create product",
+      error: error.message,
+    });
   }
 };
 
 const updateProduct = async (req, res) => {
   try {
-    const { id } = req.params;
-    const {
+    const productId = req.params.id;
+    console.log(`Entering updateProduct controller for ID: ${productId}`);
+    console.log("Request Body:", req.body);
+    console.log("Newly Uploaded Cloudflare Image URLs:", req.uploadedImageUrls);
+
+    // Parse existingImages from req.body
+    let existingImages = [];
+    if (req.body.existingImages) {
+      try {
+        existingImages = JSON.parse(req.body.existingImages);
+      } catch (parseError) {
+        console.error(
+          "Error parsing existingImages from request body (update):",
+          parseError
+        );
+        return res.status(400).json({
+          success: false,
+          message: "Invalid format for existing images data.",
+        });
+      }
+    }
+
+    // Combine existing images (that frontend wanted to keep) with newly uploaded images
+    const allImagesForProduct = [
+      ...existingImages,
+      ...(req.uploadedImageUrls || []),
+    ];
+    console.log(
+      "Combined all images for product (update):",
+      allImagesForProduct
+    );
+
+
+    const currentProduct = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+    if (!currentProduct) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found." });
+    }
+
+    // Identify images to delete from Cloudflare (if they are no longer in allImagesForProduct)
+    const oldCloudflareImageIds = currentProduct.images
+      .filter((img) => img.id) // Filter to ensure it's a Cloudflare image object with an 'id'
+      .map((img) => img.id);
+
+    const newCloudflareImageIds = allImagesForProduct
+      .filter((img) => img.id)
+      .map((img) => img.id);
+
+    const imageIdsToDelete = oldCloudflareImageIds.filter(
+      (id) => !newCloudflareImageIds.includes(id)
+    );
+
+    // Execute deletions (consider doing this asynchronously or in a background job)
+    for (const imageId of imageIdsToDelete) {
+      console.log(`Deleting image from Cloudflare: ${imageId}`);
+      await deleteCloudflareImage(imageId).catch((deleteError) => {
+        console.error(
+          `Failed to delete Cloudflare image ${imageId}:`,
+          deleteError.message
+        );
+      });
+    }
+
+    // Prepare data for update, ensuring images array is correct
+    const dataToUpdate = {
       title,
-      brandName,
-      color,
+      brandName: brandName || null,
+      color: color || null,
       sku,
-      images,
-      itemLocation,
-      sizeId,
-      sizeType,
-      postName,
-      categoryId,
-      subCategoryId,
-      parentCategoryId,
-      ebayId,
-      wallmartId,
-      sheinId,
-      woocommerceId,
-      regularPrice,
-      salePrice,
-      platFormPrice,
-      toggleFirstDeal,
-      discountPercent,
-      stockQuantity,
-      condition,
-      description,
-      status,
-      updatedById,
-    } = req.body;
+      images: allImagesForProduct, // Update images with the combined array
+      itemLocation: itemLocation || null,
+      sizeId: sizeId || null,
+      sizeType: sizeType || null,
+      postName: postName || null,
+      categoryId: categoryId || null,
+      subCategoryId: subCategoryId || null,
+      parentCategoryId: parentCategoryId || null,
+      ebayId: ebayId || null,
+      wallmartId: wallmartId || null,
+      sheinId: sheinId || null,
+      woocommerceId: woocommerceId || null,
+      regularPrice: parseFloat(regularPrice) || 0,
+      salePrice: parseFloat(salePrice) || null,
+      platFormPrice: parseFloat(platFormPrice) || null,
+      toggleFirstDeal: toggleFirstDeal === "true" || toggleFirstDeal === true,
+      discountPercent: parseFloat(discountPercent) || null,
+      stockQuantity: parseInt(stockQuantity) || 0,
+      condition: condition || null,
+      description: description || null,
+      status: status || "Draft",
+      updatedById: updatedById || null,
+    };
 
     const updatedProduct = await prisma.product.update({
-      where: { id },
-      data: {
-        title,
-        brandName: brandName || null,
-        color: color || null,
-        sku,
-        images: req.images || [],
-        itemLocation: itemLocation || null,
-        sizeId: sizeId || null,
-        sizeType: sizeType || null,
-        postName: postName || null,
-        categoryId: categoryId || null,
-        subCategoryId: subCategoryId || null,
-        parentCategoryId: parentCategoryId || null,
-        ebayId: ebayId || null,
-        wallmartId: wallmartId || null,
-        sheinId: sheinId || null,
-        woocommerceId: woocommerceId || null,
-        regularPrice: parseFloat(regularPrice) || null,
-        salePrice: parseFloat(salePrice) || null,
-        platFormPrice: parseFloat(platFormPrice) || null,
-        toggleFirstDeal: toggleFirstDeal || true,
-        discountPercent: parseFloat(discountPercent) || null,
-        stockQuantity: parseInt(stockQuantity) || null,
-        condition: condition || null,
-        description: description || null,
-        status: status || null,
-        updatedById: updatedById || null,
-      },
+      where: { id: productId },
+      data: dataToUpdate,
     });
-    res.status(200).json(updatedProduct);
+
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully",
+      product: updatedProduct,
+    });
   } catch (error) {
     console.error("Error updating product:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to update product", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Failed to update product",
+      error: error.message,
+    });
   }
 };
 

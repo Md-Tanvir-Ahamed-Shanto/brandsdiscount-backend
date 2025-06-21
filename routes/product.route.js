@@ -3,17 +3,21 @@ const express = require("express");
 const {
   getProducts,
   getProductById,
-  createProduct,
+
   updateProduct,
   deleteProduct,
   updateProductStockQuantity,
   updateProductStatus,
   toggleProductOffer,
   bulkUpdateProducts,
+  createProduct,
 } = require("../controllers/product.controller");
 const { verifyUser } = require("../tools/authenticate");
 const { ensureRoleAdmin } = require("../tools/tools");
-const { uploadImages } = require("../tools/images");
+const {
+  multerUpload,
+  uploadImagesToCloudflare,
+} = require("../utils/imageUpload");
 
 const productRoutes = express.Router();
 
@@ -24,14 +28,35 @@ productRoutes.get("/", getProducts);
 productRoutes.get("/:id", getProductById);
 
 // POST a new product
-productRoutes.post("/",verifyUser,ensureRoleAdmin,uploadImages, createProduct);
+productRoutes.post(
+  "/",
+  verifyUser,
+  ensureRoleAdmin,
+  multerUpload.array("images", 10), // <--- ADD THIS: Multer middleware to process 'images' field
+  uploadImagesToCloudflare,
+  createProduct
+);
 
 // PUT/PATCH update an existing product by ID
-productRoutes.put("/:id",verifyUser,ensureRoleAdmin,uploadImages, updateProduct);
-productRoutes.patch("/:id",verifyUser,ensureRoleAdmin,uploadImages, updateProduct); // Often good to have both for flexibility
+productRoutes.put(
+  "/:id",
+  verifyUser,
+  ensureRoleAdmin,
+  multerUpload.array("images", 10), // <--- ADD THIS: Multer middleware to process 'images' field
+  uploadImagesToCloudflare,
+  updateProduct
+);
+productRoutes.patch(
+  "/:id",
+  verifyUser,
+  ensureRoleAdmin,
+  multerUpload.array("images", 10), // <--- ADD THIS: Multer middleware to process 'images' field
+  uploadImagesToCloudflare,
+  updateProduct
+); // Often good to have both for flexibility
 
 // DELETE a product by ID
-productRoutes.delete("/:id",verifyUser, ensureRoleAdmin, deleteProduct);
+productRoutes.delete("/:id", verifyUser, ensureRoleAdmin, deleteProduct);
 
 // PATCH update stock quantity for a single product
 productRoutes.patch("/:id/stock-quantity", updateProductStockQuantity);

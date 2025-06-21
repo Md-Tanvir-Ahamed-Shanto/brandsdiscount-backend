@@ -4,23 +4,29 @@ const FormData = require("form-data");
 const fs = require("fs");
 require("dotenv").config();
 
+
 // Configure Multer for temporary file storage
 const upload = multer({ dest: "uploads/" });
 
 // Middleware for handling image uploads and attaching URLs to req.images
 const uploadImages = (req, res, next) => {
+  console.log("Starting image upload process...");
+  // Check if files are provided
+  console.log(("Files in request:", req.files));
   upload.any()(req, res, async (err) => {
     if (err) return res.status(500).json({ error: "Upload failed" });
 
-    if (!req.files || req.files.length === 0) {
-      req.images = []; // No images uploaded
-      return next();
-    }
+   if (!req.files || req.files.length === 0) {
+    console.log("No files uploaded.");
+    req.images = []; // No images uploaded
+    return next();
+  }
 
     try {
       const uploadedImages = [];
 
       for (const file of req.files) {
+        
         const fileStream = fs.createReadStream(file.path);
         const form = new FormData();
         form.append("file", fileStream);
