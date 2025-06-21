@@ -48,6 +48,7 @@ const { woocommerceItemUpdate } = require("./tools/woocommerceInventory");
 const { ebayOrderSync3 } = require("./tools/ebayOrderSync3");
 const { productRoutes } = require("./routes/product.route");
 const orderRoutes = require("./routes/order.route");
+const categoryRoutes = require("./routes/category.route");
 
 let app = express();
 
@@ -84,6 +85,7 @@ app.use(cors(corsOptions));
 
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/categories', categoryRoutes);
 
 
 app.use("/userroute", usersRouter);
