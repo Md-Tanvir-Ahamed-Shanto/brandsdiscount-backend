@@ -13,6 +13,16 @@ router.get("/sizes", paginateOverview("size"), async (req, res) => {
   res.send({ sizes });
 });
 
+// get all sizes
+router.get("/all-sizes", async (req, res) => {
+  try {
+    const sizes = await prisma.size.findMany();
+    res.status(200).json(sizes);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching sizes" });
+  }
+});
+
 // API route to get a single size by ID
 router.get("/size/:id", async (req, res) => {
   try {
