@@ -230,7 +230,7 @@ const createProduct = async (req, res) => {
         regularPrice: parseFloat(regularPrice) || 0,
         salePrice: parseFloat(salePrice) || null,
         platFormPrice: parseFloat(platFormPrice) || null,
-        toggleFirstDeal:true,
+        toggleFirstDeal: true,
         discountPercent: parseFloat(discountPercent) || null,
         stockQuantity: parseInt(stockQuantity) || 0,
         condition: condition || null,
@@ -288,7 +288,6 @@ const updateProduct = async (req, res) => {
       allImagesForProduct
     );
 
-
     const currentProduct = await prisma.product.findUnique({
       where: { id: productId },
     });
@@ -322,13 +321,47 @@ const updateProduct = async (req, res) => {
       });
     }
 
+    const {
+      title,
+      brandName,
+      color,
+      sku,
+      itemLocation,
+      sizeId,
+      sizeType,
+      postName,
+      categoryId,
+      subCategoryId,
+      parentCategoryId,
+      ebayId,
+      wallmartId,
+      sheinId,
+      woocommerceId,
+      regularPrice,
+      salePrice,
+      platFormPrice,
+      discountPercent,
+      stockQuantity,
+      condition,
+      description,
+      status,
+      updatedById,
+    } = req.body;
+
+    if (!title || !sku) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and SKU are required fields.",
+      });
+    }
+
     // Prepare data for update, ensuring images array is correct
     const dataToUpdate = {
       title,
       brandName: brandName || null,
       color: color || null,
       sku,
-      images: allImagesForProduct, // Update images with the combined array
+      images: req.uploadedImageUrls || [],
       itemLocation: itemLocation || null,
       sizeId: sizeId || null,
       sizeType: sizeType || null,
@@ -343,7 +376,7 @@ const updateProduct = async (req, res) => {
       regularPrice: parseFloat(regularPrice) || 0,
       salePrice: parseFloat(salePrice) || null,
       platFormPrice: parseFloat(platFormPrice) || null,
-      toggleFirstDeal: toggleFirstDeal === "true" || toggleFirstDeal === true,
+      toggleFirstDeal: true,
       discountPercent: parseFloat(discountPercent) || null,
       stockQuantity: parseInt(stockQuantity) || 0,
       condition: condition || null,
@@ -466,7 +499,7 @@ const bulkUpdateProducts = async (req, res) => {
         .status(400)
         .json({ message: "No product IDs provided for bulk action." });
     }
-
+console.log("buldkUpdateProducts called with action:", action);
     let updateData = {};
     switch (action) {
       case "updateInventoryBulk":

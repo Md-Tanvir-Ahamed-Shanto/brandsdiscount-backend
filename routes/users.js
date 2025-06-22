@@ -82,7 +82,11 @@ router.post(
         }
       );
     } catch (error) {
-      next(error);
+      console.log("user create error");
+      console.error(error);
+      return res.status(500).json({
+        error: "Error creating user",
+      });
     }
   }
 );

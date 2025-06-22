@@ -228,4 +228,5 @@ enum UserRole {
   WareHouse
   PlatformUser
   Cashier
+  SuperAdmin
 }

@@ -13,7 +13,7 @@ const {
   createProduct,
 } = require("../controllers/product.controller");
 const { verifyUser } = require("../tools/authenticate");
-const { ensureRoleAdmin } = require("../tools/tools");
+const { ensureRoleAdmin, ensureUploader } = require("../tools/tools");
 const {
   multerUpload,
   uploadImagesToCloudflare,
@@ -31,7 +31,7 @@ productRoutes.get("/:id", getProductById);
 productRoutes.post(
   "/",
   verifyUser,
-  ensureRoleAdmin,
+  ensureUploader,
   multerUpload.array("images", 10), // <--- ADD THIS: Multer middleware to process 'images' field
   uploadImagesToCloudflare,
   createProduct

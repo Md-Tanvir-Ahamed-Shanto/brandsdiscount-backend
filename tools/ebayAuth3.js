@@ -181,8 +181,8 @@ async function getValidAccessToken() {
       platform: "EBAY3",
     },
   });
-  if (token.accessToken && Date.now() < token.expiresAt) {
-    return token.accessToken;
+  if (token?.accessToken && Date.now() < token?.expiresAt) {
+    return token?.accessToken;
   }
   return await refreshAccessToken();
 }

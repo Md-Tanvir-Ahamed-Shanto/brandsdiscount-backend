@@ -136,17 +136,16 @@ app.get("/ebayPurchase", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "ebayPurchase.html"));
 });
 
-// catch 404 and forward to error handler
-// app.use(function (req, res, next) {
-//   next(createError(404));
-// });
+app.use((err, req, res, next) => {
+  console.error(err.stack); // error log
 
-// app.use(function (err, req, res, next) {
-//   console.error(err.stack); // Logs full error stack
-//   res.status(err.status || 500).json({
-//     error: err.message || "Internal Server Error",
-//   });
-// });
+  // Customize error response
+  res.status(err.statusCode || 500).json({
+    success: false,
+    message: err.message || 'Server Error',
+  });
+});
+
 
 app.use(function (req, res, next) {
   const err = createError(404, `Not Found: ${req.originalUrl}`);
@@ -158,41 +157,41 @@ app.use(function (req, res, next) {
 // Initialize a lock flag
 let isRunning = false;
 
-cron.schedule("*/4 * * * * ", async () => {
-  if (isRunning) {
-    // console.log("Job is already running, skipping this execution...");
-    return; // Prevent the job from running again if it is already running
-  }
+// cron.schedule("*/4 * * * * ", async () => {
+//   if (isRunning) {
+//     // console.log("Job is already running, skipping this execution...");
+//     return; // Prevent the job from running again if it is already running
+//   }
 
-  try {
-    // Set the lock flag to true
-    isRunning = true;
-    // console.log("Job started...");
+//   try {
+//     // Set the lock flag to true
+//     isRunning = true;
+//     // console.log("Job started...");
 
-    // Simulated job logic
-    try {
-      const ebayOrder = ebayOrderSync();
-      const ebayOrder2 = ebayOrderSync2();
-      const ebayOrder3 = ebayOrderSync3();
-      const walmartOrder = walmartOrderSync();
-      // const wooOrder = woocommerceOrderSync();
-    } catch (error) {
-      console.error("Error occurred during order sync:", error);
-    }
-    const userList = await prisma.user.findMany({
-      where: { loyaltyStatus: "Eligible" },
-    });
-    // userList.map(async (user) => {
-    //   await sendAbandonedOfferEmail(user.email, user.username);
-    // });
-  } catch (error) {
-    console.error("Error occurred during job execution:", error);
-  } finally {
-    // Release the lock flag
-    isRunning = false;
-    // console.log("Job finished.");
-  }
-});
+//     // Simulated job logic
+//     try {
+//       const ebayOrder = ebayOrderSync();
+//       const ebayOrder2 = ebayOrderSync2();
+//       const ebayOrder3 = ebayOrderSync3();
+//       const walmartOrder = walmartOrderSync();
+//       // const wooOrder = woocommerceOrderSync();
+//     } catch (error) {
+//       console.error("Error occurred during order sync:", error);
+//     }
+//     const userList = await prisma.user.findMany({
+//       where: { loyaltyStatus: "Eligible" },
+//     });
+//     // userList.map(async (user) => {
+//     //   await sendAbandonedOfferEmail(user.email, user.username);
+//     // });
+//   } catch (error) {
+//     console.error("Error occurred during job execution:", error);
+//   } finally {
+//     // Release the lock flag
+//     isRunning = false;
+//     // console.log("Job finished.");
+//   }
+// });
 
 // error handler
 app.use(function (err, req, res, next) {
