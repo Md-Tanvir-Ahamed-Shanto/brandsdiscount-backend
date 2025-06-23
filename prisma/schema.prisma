@@ -8,11 +8,11 @@ datasource db {
 }
 
 model User {
-  id             String  @id @default(uuid())
+  id             String   @id @default(uuid())
   username       String
   hashedPassword Bytes
   salt           Bytes
-  email          String  @unique
+  email          String   @unique
   role           UserRole
   profilePicture Json?
   userDetails    Json?
@@ -21,191 +21,187 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  updatedById    String?  // Foreign key reference to another User
-  updatedBy      User?    @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  updatedUsers   User[]   @relation("UserUpdatedBy") // Inverse relation: Tracks users this user has updated
-  orders         Order[]  @relation("UserOrders") // Unique relation name for the relation with orders
-  
+  updatedById  String? // Foreign key reference to another User
+  updatedBy    User?   @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedUsers User[]  @relation("UserUpdatedBy") // Inverse relation: Tracks users this user has updated
+  orders       Order[] @relation("UserOrders") // Unique relation name for the relation with orders
+
   @@index([email]) // Index on email for faster queries
 }
 
 model Size {
-  id        String  @id @default(uuid())
-  name      String  @unique
+  id        String   @id @default(uuid())
+  name      String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  products  Product[] @relation("ProductSizeRelation") // Inverse relation: Tracks products that belong to this size
-  
-  @@index([name])  // Index on size name for better query performance
+  @@index([name]) // Index on size name for better query performance
 }
 
 model Category {
-  id               String     @id @default(uuid())
-  name             String     @unique
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  parentCategoryId String? 
-  parentCategory   Category?   @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
-  subcategories    Category[]  @relation("CategoryHierarchy") // Self-relation for subcategories
+  parentCategoryId String?
+  parentCategory   Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
+  subcategories    Category[] @relation("CategoryHierarchy") // Self-relation for subcategories
 
-  products         Product[]   @relation("ProductCategoryRelation") // Products linked to this category
-  parentProducts   Product[]   @relation("ProductParentCategoryRelation") // Products linked to this category as a parent
+  products            Product[] @relation("ProductCategoryRelation") // Products linked to this category
+  parentProducts      Product[] @relation("ProductParentCategoryRelation") // Products linked to this category as a parent
   subcategoryProducts Product[] @relation("ProductSubCategoryRelation") // Products linked to this category as a subcategory
 
   @@index([name]) // Index on category name for better query performance
 }
 
-
 model Product {
-  id               String     @id @default(uuid())
-  title           String
-  brandName       String?
-  color           String?
-  sku             String     @unique
-  images          Json[]   // Assuming images are stored as URLs
-  itemLocation    String?    // Warehouse/store location
-  sizeId          String?
-  sizeType        String?
-  size            Size?      @relation(fields: [sizeId], references: [id], name: "ProductSizeRelation")
+  id           String  @id @default(uuid())
+  title        String
+  brandName    String?
+  color        String?
+  sku          String  @unique
+  images       Json[] // Assuming images are stored as URLs
+  itemLocation String? // Warehouse/store location
+  sizeId       String?
+  sizeType     String?
+  sizes        String?
 
-  postName        String?
+  postName String?
 
-  categoryId      String?    // Child category ID
-  category        Category?  @relation(fields: [categoryId], references: [id], name: "ProductCategoryRelation")
-  
-  subCategoryId   String?    // Subcategory ID
-  subCategory     Category?  @relation(fields: [subCategoryId], references: [id], name: "ProductSubCategoryRelation")
+  categoryId String? // Child category ID
+  category   Category? @relation(fields: [categoryId], references: [id], name: "ProductCategoryRelation")
 
-  parentCategoryId String?   // Parent category ID
+  subCategoryId String? // Subcategory ID
+  subCategory   Category? @relation(fields: [subCategoryId], references: [id], name: "ProductSubCategoryRelation")
+
+  parentCategoryId String? // Parent category ID
   parentCategory   Category? @relation(fields: [parentCategoryId], references: [id], name: "ProductParentCategoryRelation")
 
-  ebayId String?
-  wallmartId String?
-  sheinId String?
+  ebayId        String?
+  wallmartId    String?
+  sheinId       String?
   woocommerceId String?
 
   regularPrice    Float?
   salePrice       Float?
   platFormPrice   Float?
-  toggleFirstDeal   Boolean? @default(true) // toggle 10% discount for first deal
+  toggleFirstDeal Boolean? @default(true) // toggle 10% discount for first deal
   discountPercent Float?
   stockQuantity   Int?
-  condition       String?    // New, Used, Refurbished, etc.
+  condition       String? // New, Used, Refurbished, etc.
   description     String?
   status          String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
-  updatedById     String?    // Foreign key reference to another User
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  updatedById     String? // Foreign key reference to another User
 
-  search_vector  Unsupported("tsvector")?
+  search_vector Unsupported("tsvector")?
 
-  orderDetails    OrderDetail[]  @relation("ProductOrderDetails")
+  orderDetails OrderDetail[] @relation("ProductOrderDetails")
 
-  @@index([sku])  
-  @@index([brandName])  
-  @@index([title])  
-  @@index([categoryId])  
-  @@index([subCategoryId])  
-  @@index([parentCategoryId])  // Index for fast lookup by parent category
+  @@index([sku])
+  @@index([brandName])
+  @@index([title])
+  @@index([categoryId])
+  @@index([subCategoryId])
+  @@index([parentCategoryId]) // Index for fast lookup by parent category
 }
-
 
 model Order {
   id            String        @id @default(uuid())
   userId        String
-  user          User         @relation("UserOrders", fields: [userId], references: [id]) // Unique relation name for User
-  status        String        // Pending, Completed, Cancelled, etc.
-  totalAmount   Float         // Total amount for the order
+  user          User          @relation("UserOrders", fields: [userId], references: [id]) // Unique relation name for User
+  status        String // Pending, Completed, Cancelled, etc.
+  totalAmount   Float // Total amount for the order
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   transactionId String?
   transaction   Transaction?  @relation("OrderTransaction") // Unique relation name for Transaction
   orderDetails  OrderDetail[] @relation("OrderOrderDetails") // Unique relation name for OrderDetails
 
-  @@index([userId])       // Index on userId for faster filtering by user
-  @@index([status])       // Index on status for faster filtering by order status
-  @@index([createdAt])    // Index on createdAt for faster date-based queries
+  @@index([userId]) // Index on userId for faster filtering by user
+  @@index([status]) // Index on status for faster filtering by order status
+  @@index([createdAt]) // Index on createdAt for faster date-based queries
   @@index([transactionId]) // Index on transactionId for faster lookup
 }
 
 model WalmartOrder {
-  id            String        @id @default(uuid())
-  orderId       String        @unique
-  orderCreationDate DateTime  // Date when the order was created
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                String   @id @default(uuid())
+  orderId           String   @unique
+  orderCreationDate DateTime // Date when the order was created
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  @@index([orderId])    // Index on createdAt for faster date-based queries
+  @@index([orderId]) // Index on createdAt for faster date-based queries
 }
 
 model EbayOrder {
-  id            String        @id @default(uuid())
-  orderId       String        @unique
-  status        String        // Pending, Completed, Cancelled, etc.
-  orderCreationDate DateTime  // Date when the order was created
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                String   @id @default(uuid())
+  orderId           String   @unique
+  status            String // Pending, Completed, Cancelled, etc.
+  orderCreationDate DateTime // Date when the order was created
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  @@index([status])       // Index on status for faster filtering by order status
-  @@index([createdAt])    // Index on createdAt for faster date-based queries
+  @@index([status]) // Index on status for faster filtering by order status
+  @@index([createdAt]) // Index on createdAt for faster date-based queries
 }
 
 model SheinOrder {
-  id            String        @id @default(uuid())
-  orderId       String        @unique
-  status        String        // Pending, Completed, Cancelled, etc.
-  orderCreationDate DateTime  // Date when the order was created
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                String   @id @default(uuid())
+  orderId           String   @unique
+  status            String // Pending, Completed, Cancelled, etc.
+  orderCreationDate DateTime // Date when the order was created
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  @@index([status])       // Index on status for faster filtering by order status
-  @@index([createdAt])    // Index on createdAt for faster date-based queries
+  @@index([status]) // Index on status for faster filtering by order status
+  @@index([createdAt]) // Index on createdAt for faster date-based queries
 }
 
 model OrderDetail {
-  id              String   @id @default(uuid())
-  sku             String
-  orderId         String
-  order           Order    @relation("OrderOrderDetails", fields: [orderId], references: [id]) // Unique relation name for Order
-  productId       String
-  product         Product  @relation("ProductOrderDetails", fields: [productId], references: [id]) // Unique relation name for Product
-  quantity        Int
-  price           Float    // Price of the product per unit
-  total           Float    // Total price for the quantity
-  productName     String   // Denormalized product name (for avoiding join with Product table)
-  categoryName    String   // Denormalized category name (for avoiding join with Category table)
-  sizeName        String   // Denormalized size name (for avoiding join with Size table)
-  createdAt       DateTime @default(now())
+  id           String   @id @default(uuid())
+  sku          String
+  orderId      String
+  order        Order    @relation("OrderOrderDetails", fields: [orderId], references: [id]) // Unique relation name for Order
+  productId    String
+  product      Product  @relation("ProductOrderDetails", fields: [productId], references: [id]) // Unique relation name for Product
+  quantity     Int
+  price        Float // Price of the product per unit
+  total        Float // Total price for the quantity
+  productName  String // Denormalized product name (for avoiding join with Product table)
+  categoryName String // Denormalized category name (for avoiding join with Category table)
+  sizeName     String // Denormalized size name (for avoiding join with Size table)
+  createdAt    DateTime @default(now())
 
   @@index([productId]) // Index on productId for fast lookup
-  @@index([orderId])   // Index on orderId for better performance
+  @@index([orderId]) // Index on orderId for better performance
 }
 
 model Transaction {
-  id        String   @id @default(uuid())
-  transactionId   String
-  orderId   String   @unique
-  amount    Float    // Amount for the transaction
-  status    String   // Transaction status: Pending, Successful, Failed
-  createdAt DateTime @default(now())
-  order     Order    @relation("OrderTransaction", fields: [orderId], references: [id]) // Unique relation name for Order
-  
-  @@index([orderId])  // Index on orderId for faster lookup
-  @@index([status])   // Index on status for faster filtering by transaction status
+  id            String   @id @default(uuid())
+  transactionId String
+  orderId       String   @unique
+  amount        Float // Amount for the transaction
+  status        String // Transaction status: Pending, Successful, Failed
+  createdAt     DateTime @default(now())
+  order         Order    @relation("OrderTransaction", fields: [orderId], references: [id]) // Unique relation name for Order
+
+  @@index([orderId]) // Index on orderId for faster lookup
+  @@index([status]) // Index on status for faster filtering by transaction status
 }
 
 model ApiToken {
-  id            String   @id @default(uuid()) // Unique Token ID
-  platform      Platform @unique // Enum (eBay, Walmart, Shein)
+  id       String   @id @default(uuid()) // Unique Token ID
+  platform Platform @unique // Enum (eBay, Walmart, Shein)
 
-  accessToken   String   // Short-lived access token
-  refreshToken  String   // Long-lived refresh token
-  expiresAt     DateTime // Access token expiry
+  accessToken  String // Short-lived access token
+  refreshToken String // Long-lived refresh token
+  expiresAt    DateTime // Access token expiry
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Platform {
