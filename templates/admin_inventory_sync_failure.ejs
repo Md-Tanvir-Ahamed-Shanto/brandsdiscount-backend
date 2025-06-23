@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URGENT: Inventory Sync Failure</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #f0ad4e; /* Orange for warning */
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        strong {
+            color: #333;
+        }
+        pre {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>⚠️ URGENT: Inventory Sync Failure for SKU: <%= sku %></h3>
+        <p>The system failed to update the inventory for a product on an external platform.</p>
+        <ul>
+            <li><strong>Product SKU:</strong> <%= sku %></li>
+            <li><strong>Product Name:</strong> <%= productName %></li>
+            <li><strong>Platform that Failed:</strong> <%= platformName %></li>
+            <li><strong>Reason for Failure:</strong>
+                <pre><%= errorMessage %></pre>
+            </li>
+        </ul>
+        <p>Please manually review the inventory for this product on <%= platformName %> and in the admin dashboard to prevent overselling.</p>
+        <p><a href="https://brandsdiscounts.com/admin/products/sku/<%= sku %>">View Product in Admin</a></p>
+        <div class="footer">
+            <p>This is an automated alert. Action is required.</p>
+            <p>&copy; <%= new Date().getFullYear() %> Brands Discounts. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Order is Confirmed! (And a Special Offer For Next Time)</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Order is Confirmed!</h1>
+        <p>Hi <%= customerName %>,</p>
+        <p>Thank you for your recent purchase at Brands Discounts! Your order #<%= orderNumber %> is confirmed.</p>
+        <p>We noticed you didn't use our exclusive $10 first item offer this time. We’d love for you to enjoy this deal on your next order! Remember, when you spend $60 or more, you can get <strong>any item for just $10</strong> – and you’ll be automatically enrolled in our loyalty program.</p>
+        <p>If you have any questions, feel free to reach out.</p>
+        <p>Warm regards,<br/>The Brands Discounts Team</p>
+        <p>Need help? Contact us at <a href="mailto:hello@brandsdiscounts.com">hello@brandsdiscounts.com</a></p>
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> Brands Discounts. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

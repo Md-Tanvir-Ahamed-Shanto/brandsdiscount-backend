@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Brands Discounts Order is Processing</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff !important;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Brands Discounts Order is Processing</h1>
+        <p>Hi <%= customerName %>,</p>
+        <p>Just a quick update: Your recent order <strong>#<%= orderNumber %></strong> is now being processed by our team.</p>
+        <p>We're carefully checking and preparing your items. We'll let you know as soon as it moves to the next stage.</p>
+        <p><a href="https://brandsdiscounts.com/order" class="button">Track My Order</a></p>
+        <p>Thanks for your patience!</p>
+        <p>Best regards,<br/>The Brands Discounts Team</p>
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> Brands Discounts. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

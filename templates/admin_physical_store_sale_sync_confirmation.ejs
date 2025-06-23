@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physical Store Sale Confirmed & Sync Started</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #5cb85c; /* Green for confirmation */
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        ul li {
+            margin-bottom: 8px;
+        }
+        strong {
+            color: #333;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>✅ Physical Store Sale Processed</h3>
+        <p>An item was sold in the physical store. Inventory has been deducted locally and a sync job has been triggered to update all online platforms.</p>
+        <ul>
+            <li><strong>SKU:</strong> <%= sku %></li>
+            <li><strong>Product Title:</strong> <%= title %></li>
+            <li><strong>Quantity Sold:</strong> <%= quantitySold %></li>
+            <li><strong>Remaining Stock:</strong> <%= remainingStock %></li>
+            <li><strong>Item Location:</strong> <%= itemLocation %></li>
+        </ul>
+        <p>This is a confirmation that the inventory sync to eBay, Walmart, WooCommerce, and SHEIN has been initiated.</p>
+        <div class="footer">
+            <p>This is an automated notification. Do not reply.</p>
+            <p>&copy; <%= new Date().getFullYear() %> Brands Discounts. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

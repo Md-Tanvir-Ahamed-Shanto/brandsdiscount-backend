@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivered! Your Brands Discounts Order Has Arrived!</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .button {
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff !important;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Delivered! Your Brands Discounts Order #<%= orderNumber %> Has Arrived!</h1>
+        <p>Hi <%= customerName %>,</p>
+        <p>Great news! Tracking shows your order <strong>#<%= orderNumber %></strong> was successfully delivered.</p>
+        <p>We hope you're already enjoying your new items! If you have any questions or concerns, please contact us at <a href="mailto:hello@brandsdiscounts.com">hello@brandsdiscounts.com</a>.</p>
+        <p><a href="https://brandsdiscounts.com/order" class="button">View Order Details</a></p>
+        <p>Love your look? Tag <strong>@brandsdiscounts.official</strong> on Instagram with <strong>#BrandsDiscountsStyle</strong> to be featured!</p>
+        <p>Best regards,<br/>The Brands Discounts Team</p>
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> Brands Discounts. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

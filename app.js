@@ -49,6 +49,7 @@ const { ebayOrderSync3 } = require("./tools/ebayOrderSync3");
 const { productRoutes } = require("./routes/product.route");
 const orderRoutes = require("./routes/order.route");
 const categoryRoutes = require("./routes/category.route");
+const emailRoutes = require("./routes/email.route");
 
 let app = express();
 
@@ -81,11 +82,16 @@ const corsOptions = {
   // credentials: true,
 };
 
+// Set EJS as the templating engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'templates')); 
+
 app.use(cors(corsOptions));
 
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/emails', emailRoutes)
 
 
 app.use("/userroute", usersRouter);

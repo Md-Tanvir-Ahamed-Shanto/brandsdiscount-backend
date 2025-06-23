@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Brands Discounts Order Has Been Cancelled</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Your Brands Discounts Order #<%= orderNumber %> has been cancelled</h1>
+        <p>Hi <%= customerName %>,</p>
+        <p>This is a confirmation that your order <strong>#<%= orderNumber %></strong> has been cancelled and a full refund has been issued.</p>
+        <p>The refund may take 5-7 business days to appear on your original payment method. If you have any questions, please don't hesitate to contact us.</p>
+        <p>We hope to see you again soon.</p>
+        <p>Best regards,<br/>The Brands Discounts Team</p>
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> Brands Discounts. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

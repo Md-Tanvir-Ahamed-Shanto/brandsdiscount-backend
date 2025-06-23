@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Order is Confirmed & Welcome to the Loyalty Program!</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        ul {
+            list-style: disc;
+            padding-left: 20px;
+        }
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 Your Order is Confirmed & Welcome to the Loyalty Program!</h1>
+        <p>Hi <%= customerName %>,</p>
+        <p>Thank you for making your first purchase with us! We’re excited that you took advantage of our exclusive offer – any item for just <strong>$10</strong> when you spend $60 or more.</p>
+        <p>With this purchase, you’ve automatically joined our loyalty program. Here’s how it works:</p>
+        <ul>
+            <li><strong>Earn Points:</strong> For every $1 spent (excluding shipping), you earn 1 point.</li>
+            <li><strong>Redeem Rewards:</strong> 1 point equals a $0.01 discount on your future orders.</li>
+        </ul>
+        <p>Visit your dashboard anytime to track your loyalty points, order status, and exclusive rewards.</p>
+        <p>Welcome to the Brands Discounts family – happy shopping!</p>
+        <p>Best regards,<br/>The Brands Discounts Team</p>
+        <p>For any questions, please reach us at <a href="mailto:hello@brandsdiscounts.com">hello@brandsdiscounts.com</a></p>
+        <div class="footer">
+            <p>&copy; <%= new Date().getFullYear() %> Brands Discounts. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
