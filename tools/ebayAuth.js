@@ -1,58 +1,61 @@
 const axios = require("axios");
 const querystring = require("querystring");
-require("dotenv").config();
-const eBayApi = require("ebay-api");
+require("dotenv").config(); // Ensure this is at the very top
 const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-// const EBAY_AUTH_URL = "https://auth.sandbox.ebay.com/oauth2/authorize";
-// const EBAY_TOKEN_URL = "https://api.sandbox.ebay.com/identity/v1/oauth2/token";
+// --- Configuration Variables ---
+// IMPORTANT: These should ideally be loaded from process.env for easy switching
+// but for now, we'll hardcode them to SANDBOX as you're debugging this.
 
-// const EBAY_CLIENT_ID = process.env.EBAY2_CLIENT_ID;
-// const EBAY_CLIENT_SECRET = process.env.EBAY2_CLIENT_SECRET;
-// const EBAY_REDIRECT_URI = process.env.EBAY2_REDIRECT_URI;
+// Replace these with the SANDBOX URLs
+const EBAY_AUTH_URL = "https://auth.sandbox.ebay.com/oauth2/authorize";
+const EBAY_TOKEN_URL = "https://api.sandbox.ebay.com/identity/v1/oauth2/token";
+const EBAY_API_BASE_URL = "https://api.sandbox.ebay.com"; // Fixed variable name consistency
 
-//PRODUCTION_KEYS!!!
-const EBAY_AUTH_URL = "https://auth.ebay.com/oauth2/authorize";
-const EBAY_TOKEN_URL = "https://api.ebay.com/identity/v1/oauth2/token";
+// Your Sandbox Client ID and Secret (as provided by you)
+const EBAY_CLIENT_ID = "BrandSto-BrandSto-PRD-60e716b3d-0515ea65";
+const EBAY_CLIENT_SECRET = "PRD-0e716b3dc5b7-c922-44a3-aa29-3613";
+const EBAY_REDIRECT_URI = "https://69cf-103-87-213-127.ngrok-free.app/ebay/auth/callback";
 
-const EBAY_CLIENT_ID = process.env.EBAY_CLIENT_ID;
-const EBAY_CLIENT_SECRET = process.env.EBAY_CLIENT_SECRET;
-const EBAY_REDIRECT_URI = process.env.EBAY_REDIRECT_URI;
+// You'll also need sandbox policy IDs for testing inventory APIs
+// You might need to create these for your test user in the Sandbox environment
+const EBAY_PAYMENT_POLICY_ID = process.env.EBAY_PAYMENT_POLICY_ID_SANDBOX || "YOUR_SANDBOX_PAYMENT_POLICY_ID";
+const EBAY_RETURN_POLICY_ID = process.env.EBAY_RETURN_POLICY_ID_SANDBOX || "YOUR_SANDBOX_RETURN_POLICY_ID";
+const EBAY_FULFILLMENT_POLICY_ID = process.env.EBAY_FULFILLMENT_POLICY_ID_SANDBOX || "YOUR_SANDBOX_FULFILLMENT_POLICY_ID";
 
-// const eBay = new eBayApi({
-//   appId: EBAY_CLIENT_ID,
-//   certId: EBAY_CLIENT_SECRET,
-//   sandbox: true,
-//   siteId: eBayApi.SiteId.EBAY_US,
-//   ruName: EBAY_REDIRECT_URI,
-// });
-
-// 1️⃣ Redirect User to eBay for Login
+/**
+ * 1️⃣ Redirect User to eBay for Login
+ * Generates the eBay authentication URL.
+ * @returns {string} The eBay authorization URL.
+ */
 function getEbayAuthUrl() {
   const params = {
     client_id: EBAY_CLIENT_ID,
     response_type: "code",
     redirect_uri: EBAY_REDIRECT_URI,
+    // Ensure these scopes are valid for Sandbox too. They usually are.
+    scope:
+      "https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/buy.order.readonly https://api.ebay.com/oauth/api_scope/buy.guest.order https://api.ebay.com/oauth/api_scope/sell.marketing.readonly https://api.ebay.com/oauth/api_scope/sell.marketing https://api.ebay.com/oauth/api_scope/sell.inventory.readonly https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account.readonly https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly https://api.ebay.com/oauth/api_scope/sell.fulfillment https://api.ebay.com/oauth/api_scope/sell.analytics.readonly https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly https://api.ebay.com/oauth/api_scope/commerce.catalog.readonly https://api.ebay.com/oauth/api_scope/buy.shopping.cart https://api.ebay.com/oauth/api_scope/buy.offer.auction https://api.ebay.com/oauth/api_scope/commerce.identity.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.email.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.phone.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.address.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.name.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.status.readonly https://api.ebay.com/oauth/api_scope/sell.finances https://api.ebay.com/oauth/api_scope/sell.payment.dispute https://api.ebay.com/oauth/api_scope/sell.item.draft https://api.ebay.com/oauth/api_scope/sell.item https://api.ebay.com/oauth/api_scope/sell.reputation https://api.ebay.com/oauth/api_scope/sell.reputation.readonly https://api.ebay.com/oauth/api_scope/commerce.notification.subscription https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly https://api.ebay.com/oauth/api_scope/sell.stores https://api.ebay.com/oauth/api_scope/sell.stores.readonly",
   };
 
   return `${EBAY_AUTH_URL}?${querystring.stringify(params)}`;
 }
 
-// Get New Access Token Using Auth Code
+/**
+ * Gets a new access token using an authorization code.
+ * @param {string} authCode The authorization code obtained from eBay.
+ * @returns {Object} The response data containing access token, refresh token, and expiry.
+ * @throws {Error} If the request to eBay fails.
+ */
 async function getAccessToken(authCode) {
-  console.log("getAccessToken");
+  console.log("Attempting to get access token...");
   const authHeader = `Basic ${Buffer.from(
     `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
   ).toString("base64")}`;
 
-  console.log(authCode);
-  console.log(authHeader);
-  console.log(EBAY_TOKEN_URL);
-
   try {
-    // Making the POST request to get the access token
     const response = await axios.post(
       EBAY_TOKEN_URL,
       querystring.stringify({
@@ -71,104 +74,76 @@ async function getAccessToken(authCode) {
       }
     );
 
-    const expiresAt = new Date(Date.now() + response.data.expires_in * 1000); // Convert to Date object
+    const expiresAt = new Date(Date.now() + response.data.expires_in * 1000);
 
     const ebayApiData = await prisma.apiToken.upsert({
-      where: { platform: "EBAY" }, // Check if an entry for "EBAY" exists
+      where: { platform: "EBAY" },
       update: {
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
         expiresAt: expiresAt,
-      }, // Update if found
+      },
       create: {
         platform: "EBAY",
         accessToken: response.data.access_token,
         refreshToken: response.data.refresh_token,
         expiresAt: expiresAt,
-      }, // Create if not found
+      },
     });
 
-    console.log(ebayApiData);
-
-    console.log(ebayApiData);
-
+    console.log("Access token successfully obtained and saved:", ebayApiData);
     return response.data;
   } catch (error) {
-    console.log("error");
-    console.log(error);
-    // Log the error response from eBay
+    console.error("Error getting access token from eBay:");
     if (error.response) {
-      // eBay returned an error (e.g., invalid code, expired token, etc.)
-      console.error("Error response from eBay:", error.response.data);
-      console.error("Error status from eBay:", error.response.status);
+      console.error("Error response data:", error.response.data);
+      console.error("Error status:", error.response.status);
     } else if (error.request) {
-      // Request was made, but no response was received
-      console.error("No response received:", error.request);
+      console.error("No response received from eBay:", error.request);
     } else {
-      // Something else went wrong
       console.error("Error during request setup:", error.message);
     }
-
-    throw new Error("Failed to get access token from eBay");
+    throw new Error("Failed to get access token from eBay.");
   }
 }
 
-// async function getAccessToken(authCode) {
-//   //   const authCode2 = decodeURIComponent(authCode);
-
-//   const token = await eBay.oAuth2.getToken(authCode);
-//   console.log(token);
-//   return token;
-// }
-
-// Use Refresh Token to Get a New Access Token
+/**
+ * Uses a refresh token to get a new access token.
+ * @returns {string} The new access token.
+ * @throws {Error} If no refresh token is found or the refresh fails.
+ */
 async function refreshAccessToken() {
-  const refreshToken = await prisma.apiToken.findUnique({
+  console.log("Attempting to refresh access token...");
+  const refreshTokenData = await prisma.apiToken.findUnique({
     where: {
       platform: "EBAY",
     },
   });
-  console.log(refreshToken);
 
-  if (!refreshToken) {
-    throw new Error("No refresh token found");
+  if (!refreshTokenData || !refreshTokenData.refreshToken) {
+    throw new Error("No refresh token found for eBay. User needs to re-authenticate.");
   }
 
   const authHeader = `Basic ${Buffer.from(
     `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
   ).toString("base64")}`;
+  console.log("Attempting to refresh with token ending in:", refreshTokenData.refreshToken.slice(-10));
 
-  // const response = await axios.post(
-  //   EBAY_TOKEN_URL,
-  //   querystring.stringify({
-  //     grant_type: "refresh_token",
-  //     refresh_token: refreshToken.refreshToken,
-  //     scope:
-  //       "https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/buy.order.readonly https://api.ebay.com/oauth/api_scope/buy.guest.order https://api.ebay.com/oauth/api_scope/sell.marketing.readonly https://api.ebay.com/oauth/api_scope/sell.marketing https://api.ebay.com/oauth/api_scope/sell.inventory.readonly https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account.readonly https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly https://api.ebay.com/oauth/api_scope/sell.fulfillment https://api.ebay.com/oauth/api_scope/sell.analytics.readonly https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly https://api.ebay.com/oauth/api_scope/commerce.catalog.readonly https://api.ebay.com/oauth/api_scope/buy.shopping.cart https://api.ebay.com/oauth/api_scope/buy.offer.auction https://api.ebay.com/oauth/api_scope/commerce.identity.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.email.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.phone.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.address.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.name.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.status.readonly https://api.ebay.com/oauth/api_scope/sell.finances https://api.ebay.com/oauth/api_scope/sell.payment.dispute https://api.ebay.com/oauth/api_scope/sell.item.draft https://api.ebay.com/oauth/api_scope/sell.item https://api.ebay.com/oauth/api_scope/sell.reputation https://api.ebay.com/oauth/api_scope/sell.reputation.readonly https://api.ebay.com/oauth/api_scope/commerce.notification.subscription https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly https://api.ebay.com/oauth/api_scope/sell.stores https://api.ebay.com/oauth/api_scope/sell.stores.readonly",
-  //   }),
-  //   {
-  //     headers: {
-  //       Authorization: authHeader,
-  //       "Content-Type": "application/x-www-form-urlencoded",
-  //     },
-  //   }
-  // );
-
-  // const expiresAt = new Date(Date.now() + response.data.expires_in * 1000);
   try {
     const response = await axios.post(
       EBAY_TOKEN_URL,
       querystring.stringify({
         grant_type: "refresh_token",
-        refresh_token: refreshToken.refreshToken,
-        // scope:
-        //   "https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/buy.order.readonly https://api.ebay.com/oauth/api_scope/buy.guest.order https://api.ebay.com/oauth/api_scope/sell.marketing.readonly https://api.ebay.com/oauth/api_scope/sell.marketing https://api.ebay.com/oauth/api_scope/sell.inventory.readonly https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account.readonly https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly https://api.ebay.com/oauth/api_scope/sell.fulfillment https://api.ebay.com/oauth/api_scope/sell.analytics.readonly https://api.ebay.com/oauth/api_scope/sell.marketplace.insights.readonly https://api.ebay.com/oauth/api_scope/commerce.catalog.readonly https://api.ebay.com/oauth/api_scope/buy.shopping.cart https://api.ebay.com/oauth/api_scope/buy.offer.auction https://api.ebay.com/oauth/api_scope/commerce.identity.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.email.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.phone.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.address.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.name.readonly https://api.ebay.com/oauth/api_scope/commerce.identity.status.readonly https://api.ebay.com/oauth/api_scope/sell.finances https://api.ebay.com/oauth/api_scope/sell.payment.dispute https://api.ebay.com/oauth/api_scope/sell.item.draft https://api.ebay.com/oauth/api_scope/sell.item https://api.ebay.com/oauth/api_scope/sell.reputation https://api.ebay.com/oauth/api_scope/sell.reputation.readonly https://api.ebay.com/oauth/api_scope/commerce.notification.subscription https://api.ebay.com/oauth/api_scope/commerce.notification.subscription.readonly https://api.ebay.com/oauth/api_scope/sell.stores https://api.ebay.com/oauth/api_scope/sell.stores.readonly",
+        refresh_token: refreshTokenData.refreshToken,
+        // Use a minimal scope for refresh to avoid issues
+        scope: "https://api.ebay.com/oauth/api_scope https://api.ebay.com/oauth/api_scope/sell.inventory https://api.ebay.com/oauth/api_scope/sell.account https://api.ebay.com/oauth/api_scope/sell.fulfillment",
       }),
       {
         headers: {
           Authorization: authHeader,
           "Content-Type": "application/x-www-form-urlencoded",
         },
+        timeout: 30000,
       }
     );
 
@@ -176,359 +151,140 @@ async function refreshAccessToken() {
     const tokenUpdate = await prisma.apiToken.update({
       where: { platform: "EBAY" },
       data: {
-        platform: "EBAY",
         accessToken: response.data.access_token,
-        refreshToken: refreshToken.refreshToken,
+        refreshToken: response.data.refresh_token || refreshTokenData.refreshToken,
         expiresAt: expiresAt,
       },
     });
+    console.log("Access token refreshed successfully");
     return response.data.access_token;
   } catch (error) {
-    console.log("error", error);
+    console.error("Error refreshing access token:", error.response?.data || error.message);
+    
+    // Handle specific eBay refresh token errors
+    if (error.response?.data?.error === 'invalid_grant') {
+      console.error("Refresh token is invalid or expired. Clearing token data...");
+      
+      // Clear the invalid token from database
+      await prisma.apiToken.delete({
+        where: { platform: "EBAY" },
+      }).catch(deleteError => {
+        console.error("Error clearing invalid token:", deleteError);
+      });
+      
+      throw new Error("REFRESH_TOKEN_EXPIRED: User needs to re-authenticate with eBay.");
+    }
+    
+    throw new Error(`Failed to refresh access token from eBay: ${error.response?.data?.error_description || error.message}`);
   }
 }
 
-// Get a Valid Access Token (Refresh if Needed)
+/**
+ * Gets a valid eBay access token, refreshing it if it's expired.
+ * @returns {string} A valid eBay access token.
+ * @throws {Error} If no token is found or refreshing fails.
+ */
 async function getValidAccessToken() {
   const token = await prisma.apiToken.findUnique({
     where: {
       platform: "EBAY",
     },
   });
-  if (token.accessToken && Date.now() < token.expiresAt) {
+
+  if (!token) {
+    throw new Error("AUTHENTICATION_REQUIRED: No eBay API token found in the database. Please authenticate first.");
+  }
+
+  // Check if the current token is still valid (add a 5-minute buffer for safety)
+  if (token.accessToken && new Date(token.expiresAt).getTime() > Date.now() + 5 * 60 * 1000) {
+    console.log("Using existing valid eBay access token.");
     return token.accessToken;
   }
-  return await refreshAccessToken();
+
+  console.log("eBay access token expired or expires soon, attempting to refresh.");
+  
+  try {
+    return await refreshAccessToken();
+  } catch (error) {
+    // If refresh fails due to invalid refresh token, clear the token and require re-auth
+    if (error.message.includes('REFRESH_TOKEN_EXPIRED')) {
+      throw new Error("AUTHENTICATION_REQUIRED: Refresh token expired. Please re-authenticate with eBay.");
+    }
+    throw error;
+  }
 }
 
-// async function ebayUpdateInventory(sku, quantity) {
-//   const token = await getValidAccessToken();
-
-//   try {
-//     const offerId = await axios.get(
-//       `https://api.ebay.com/sell/inventory/v1/offer?sku=${sku}`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           Accept: "application/json",
-//         },
-//       }
-//     );
-
-//     const reqBody = {
-//       requests: [
-//         {
-//           offers: [
-//             {
-//               availableQuantity: quantity,
-//               offerId: offerId,
-//             },
-//           ],
-//           shipToLocationAvailability: {
-//             availabilityDistributions: [
-//               {
-//                 fulfillmentTime: {
-//                   unit: "DAY",
-//                   value: 3,
-//                 },
-//                 merchantLocationKey: "mk1",
-//                 quantity: quantity,
-//               },
-//             ],
-//             quantity: quantity,
-//           },
-//           sku: sku,
-//         },
-//       ],
-//     };
-
-//     const newInventory = await axios.put(
-//       "https://api.ebay.com/sell/inventory/v1/bulk_update_price_quantity",
-//       reqBody,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//           Accept: "application/json",
-//         },
-//       }
-//     );
-//   } catch (error) {
-//     console.log("ebay item update error", error);
-//   }
-// }
-
-// async function ebayOrderSync() {
-//   const token = await getValidAccessToken();
-
-//   try {
-//     const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
-
-//     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B${now}..%5D&limit=180`;
-//     // const url = `https://marketplace.walmartapis.com/v3/orders?status=Created&productInfo=false&shipNodeType=SellerFulfilled&replacementInfo=false&createdStartDate=${encodeURIComponent(
-//     //   now
-//     // )}`;
-
-//     const headers = {
-//       Authorization: `Bearer ${token}`,
-//       "Content-Type": "application/json",
-//     };
-
-//     const response = await axios.get(url, { headers });
-//     const data = response.data;
-//     const existingOrders = await prisma.ebayOrder.findMany();
-//     console.log("exisitng orders", existingOrders);
-//     const newOrders = data.orders.filter(
-//       (order) =>
-//         !existingOrders.find((existing) => existing.orderId === order.orderId)
-//     );
-
-//     console.log(`new ordersssss`, newOrders);
-
-//     const clearDB = await prisma.ebayOrder.deleteMany({});
-//     const createOrders = await prisma.ebayOrder.createMany({
-//       data: newOrders.map((order) => ({
-//         orderId: order.orderId,
-//         orderCreationDate: new Date(order.creationDate),
-//         status: order.orderFulfillmentStatus,
-//       })),
-//     });
-//     console.log(`new ordersssss222222`, newOrders);
-
-//     newOrders.forEach(async (order) => {
-//       order.lineItems.forEach(async (item) => {
-//         console.log("syncing order:", order);
-//         const productData = await prisma.product.findUnique({
-//           where: {
-//             sku: item.sku,
-//           },
-//         });
-//         if (productData) {
-//           const updateProduct = await prisma.product.update({
-//             where: {
-//               sku: item.sku,
-//             },
-//             data: {
-//               stockQuantity: productData.stockQuantity - item.quantity,
-//             },
-//           });
-//           ebayInventorySync2(
-//             item.sku,
-//             productData.stockQuantity - item.quantity,
-//             getValidAccessToken
-//           );
-//         }
-//       });
-//     });
-//     return newOrders;
-//   } catch (error) {
-//     console.error(
-//       "Error fetching Walmart orders:",
-//       error.response?.data || error.message
-//     );
-//     console.log(error);
-//   }
-// }
-
-// async function ebayInventorySync(sku, quantity, getValidAccessToken) {
-//   await ebayUpdateInventory(sku, quantity, getValidAccessToken);
-// }
-
-// async function createEbayProduct({ title, price, sku, quantity, ebayAuth }) {
-//   const EBAY_SANDBOX_URL = "https://api.sandbox.ebay.com";
-//   // const EBAY_SANDBOX_URL = "https://api.ebay.com";
-//   try {
-//     const token = await getValidAccessToken();
-//     if (!token) throw new Error("Failed to get eBay token");
-
-//     // Step 1: Create Inventory Item
-//     await axios.put(
-//       `${EBAY_SANDBOX_URL}/sell/inventory/v1/inventory_item/${sku}`,
-//       {
-//         product: {
-//           title,
-//           description: "Test product for eBay API",
-//           brand: "Generic",
-//           aspects: { Brand: ["Generic"] },
-//           imageUrls: ["https://via.placeholder.com/300"],
-//           ean: [],
-//           mpn: "ss453",
-//           upc: [],
-//         },
-//         availability: {
-//           shipToLocationAvailability: {
-//             availabilityDistributions: [
-//               {
-//                 availabilityType: "IN_STOCK",
-//                 fulfillmentTime: {
-//                   unit: "BUSINESS_DAY",
-//                   value: 2,
-//                 },
-//                 merchantLocationKey: "mk1",
-//                 quantity,
-//               },
-//             ],
-//             quantity,
-//           },
-//           pickupAtLocationAvailability: [
-//             {
-//               availabilityType: "IN_STOCK",
-//               fulfillmentTime: {
-//                 unit: "DAY",
-//                 value: 1,
-//               },
-//               merchantLocationKey: "mk1",
-//               quantity,
-//             },
-//           ],
-//         },
-//         condition: "NEW",
-//         conditionDescription: "Brand new item in excellent condition",
-//         conditionDescriptors: [
-//           {
-//             name: "Package Condition",
-//             additionalInfo: "Item is in original packaging.",
-//             values: ["Brand New"],
-//           },
-//         ],
-//         packageWeightAndSize: {
-//           weight: {
-//             unit: "KILOGRAM",
-//             value: 88,
-//           },
-//           shippingIrregular: false,
-//         },
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//           "Content-Language": "en-US",
-//         },
-//       }
-//     );
-
-//     // Step 2: Create Offer
-//     const offerResponse = await axios.post(
-//       `${EBAY_SANDBOX_URL}/sell/inventory/v1/offer`,
-//       {
-//         sku,
-//         marketplaceId: "EBAY_US",
-//         categoryId: "162925",
-//         format: "FIXED_PRICE",
-//         merchantLocationKey: "mk1",
-//         listingDuration: "GTC",
-//         listingDescription:
-//           "<ul><li><p>Test listing - do not bid or buy&nbsp;</p></li><li><p>Built-in GPS.&nbsp;</p></li><li><p>Water resistance to 50 meters.</p></li><li><p>Dual-core processor.&nbsp;</p></li><li><p>Bright display.&nbsp;</p></li><li><p>Apple Watch Series 2 designed for all movements</p></li></ul>",
-//         availableQuantity: quantity,
-//         quantityLimitPerBuyer: 10,
-//         listingPolicies: {
-//           paymentPolicyId: "6208689000",
-//           returnPolicyId: "6208690000",
-//           fulfillmentPolicyId: "6208688000",
-//         },
-//         pricingSummary: {
-//           price: {
-//             currency: "USD",
-//             value: price,
-//           },
-//         },
-//       },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//           "Content-Language": "en-US",
-//         },
-//       }
-//     );
-
-//     const offerId = offerResponse.data.offerId;
-
-//     // Step 3: Publish the Listing
-//     const publishing = await axios.post(
-//       `${EBAY_SANDBOX_URL}/sell/inventory/v1/offer/${offerId}/publish`,
-//       {},
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//           "Content-Language": "en-US",
-//         },
-//       }
-//     );
-
-//     return {
-//       success: true,
-//       message: "Product created and published successfully",
-//       offerId,
-//       publishResponse: publishing.data,
-//     };
-//   } catch (error) {
-//     const errorDetails = error.response?.data || error.message;
-//     console.error("eBay API Error:", errorDetails);
-//     throw new Error(
-//       `Failed to create product on eBay: ${JSON.stringify(errorDetails)}`
-//     );
-//   }
-// }
-
 /**
- * Creates a product on eBay through their Inventory API
+ * Creates a product on eBay through their Inventory API.
+ * This function orchestrates the steps: fetching category aspects, creating the inventory item,
+ * creating an offer, and publishing the listing.
+ * @param {Object} productData - An object containing product details.
+ * @param {string} productData.title - The title of the product.
+ * @param {string} productData.sku - The SKU (Stock Keeping Unit) of the product.
+ * @param {number} productData.quantity - The available quantity of the product.
+ * @param {number} productData.price - The price of the product.
+ * @param {string} [productData.categoryId="155201"] - The eBay category ID. Defaults to "155201".
+ * @param {string} [productData.description=""] - The product description.
+ * @param {string} [productData.brand="Generic"] - The brand of the product.
+ * @param {string[]} [productData.imageUrls=[]] - An array of image URLs for the product.
+ * @param {string} [productData.condition="NEW"] - The condition of the product (e.g., "NEW", "USED_GOOD").
+ * @param {string} [productData.color=""] - The color of the product.
+ * @param {string} [productData.size=""] - The size of the product.
+ * @param {string} [productData.type=""] - The type of the product.
+ * @returns {Object} An object indicating success and the eBay offer ID.
+ * @throws {Error} If any step in the product creation process fails.
  */
 async function createEbayProduct(productData) {
   try {
-    // Get eBay API token
     const token = await getValidAccessToken();
     if (!token) {
-      res.status(500).json({ error: "Failed to get eBay token" });
-      return;
+      throw new Error("Failed to obtain a valid eBay token.");
     }
 
-    // Process the category ID
     const ebayCategoryId = productData.categoryId || "155201"; // Default category if not provided
 
     // 1. Fetch category aspects from eBay API
     const aspects = await fetchCategoryAspects(token, ebayCategoryId);
+    console.log("Fetched category aspects:", aspects);
 
     // 2. Create inventory item
     await createInventoryItem(token, productData, aspects);
+    console.log(`Inventory item created for SKU: ${productData.sku}`);
 
     // 3. Create offer for listing
     const offerId = await createOffer(token, productData, ebayCategoryId);
+    console.log(`Offer created with ID: ${offerId}`);
 
     // 4. Publish the listing
     await publishListing(token, offerId);
+    console.log(`Listing published for offer ID: ${offerId}`);
 
-    res.json({
+    return {
       success: true,
-      message: "Product created successfully",
+      message: "Product created and published successfully on eBay.",
       offerId,
-    });
+    };
   } catch (error) {
-    console.error(
-      "Error creating eBay product:",
-      error.response?.data?.parameters
-        ? JSON.stringify(error.response.data.parameters)
-        : error.message
+    const errorDetails = error.response?.data || error.message;
+    console.error("Error creating eBay product:", JSON.stringify(errorDetails, null, 2));
+    throw new Error(
+      `Failed to create product on eBay: ${JSON.stringify(error.response?.data || error.message)}`
     );
-    console.log(JSON.stringify(error));
-    res.status(500).json({ error: "Failed to create product on eBay" });
   }
 }
 
 /**
- * Fetches category aspects from eBay API
- * @param {string} token - Valid eBay API token
- * @param {string} categoryId - eBay category ID
- * @returns {Object} Processed aspects object
+ * Fetches category aspects from eBay API for a given category ID.
+ * @param {string} token - Valid eBay API token.
+ * @param {string} categoryId - eBay category ID.
+ * @returns {Object} A processed aspects object, suitable for eBay inventory item creation.
  */
 async function fetchCategoryAspects(token, categoryId) {
-  const excludedAspects = ["size", "brand", "color", "style"];
+  const excludedAspects = ["size", "brand", "color", "style", "type", "condition"]; // Add 'condition' to excluded if you handle it separately
 
   try {
     const response = await axios.get(
-      `${process.env.EBAY_PRODUCTION_URL}/commerce/taxonomy/v1/category_tree/0/get_item_aspects_for_category?category_id=${categoryId}`,
+      `${EBAY_API_BASE_URL}/commerce/taxonomy/v1/category_tree/0/get_item_aspects_for_category?category_id=${categoryId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -542,21 +298,26 @@ async function fetchCategoryAspects(token, categoryId) {
     return response.data.aspects.reduce((acc, value) => {
       const name = value.localizedAspectName?.toLowerCase();
       if (!name || excludedAspects.includes(name)) return acc;
-      return { ...acc, [value.localizedAspectName]: ["ㅤ"] };
+
+      // For aspects that are required but you don't have a specific value,
+      // use a placeholder like "N/A" or "Other" instead of 'ㅤ'.
+      // Double-check eBay's documentation for acceptable values for empty/generic aspects.
+      return { ...acc, [value.localizedAspectName]: ["N/A"] };
     }, {});
   } catch (error) {
-    console.error("Error fetching category aspects:", error.message);
-    // Return empty aspects object if there's an error
+    console.error("Error fetching category aspects:", error.response?.data || error.message);
+    // Return empty aspects object if there's an error, allowing the process to continue
+    // but without dynamic aspects.
     return {};
   }
 }
 
 /**
- * Creates an inventory item on eBay
- * @param {string} token - Valid eBay API token
- * @param {Object} productData - Product data from request
- * @param {Object} aspects - Processed category aspects
- * @returns {Promise} Result of the API call
+ * Creates an inventory item on eBay.
+ * @param {string} token - Valid eBay API token.
+ * @param {Object} productData - Product data from request.
+ * @param {Object} aspects - Processed category aspects.
+ * @returns {Promise} Result of the API call.
  */
 async function createInventoryItem(token, productData, aspects) {
   const {
@@ -570,24 +331,28 @@ async function createInventoryItem(token, productData, aspects) {
     imageUrls,
     condition,
     color,
+    mpn, // Make MPN dynamic if possible
   } = productData;
 
+  const productAspects = { ...aspects };
+  if (color) productAspects.Color = [color];
+  if (size) productAspects.Size = [size];
+  if (brand) productAspects.Brand = [brand];
+  if (type) productAspects.Type = [type];
+  if (productData.style) productAspects.Style = [productData.style]; // Add style if available
+
   return axios.put(
-    `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/inventory_item/${sku}`,
+    `${EBAY_API_BASE_URL}/sell/inventory/v1/inventory_item/${sku}`,
     {
       product: {
         title,
-        style: "ㅤ",
-        color,
-        size,
-        type,
-        description,
-        brand,
-        aspects,
-        imageUrls,
-        ean: [],
-        mpn: "ss453", // Consider making this dynamic
-        upc: [],
+        description: description || "Product description will be updated soon.",
+        brand: brand || "Generic", // Default to Generic if not provided
+        aspects: productAspects,
+        imageUrls: imageUrls && imageUrls.length > 0 ? imageUrls : ["https://via.placeholder.com/300"],
+        ean: [], // Populate if you have EANs
+        mpn: mpn || "NOTAPPLICABLE", // Use a dynamic MPN or a standard placeholder
+        upc: [], // Populate if you have UPCs
       },
       availability: {
         shipToLocationAvailability: {
@@ -598,33 +363,22 @@ async function createInventoryItem(token, productData, aspects) {
                 unit: "BUSINESS_DAY",
                 value: 2,
               },
-              merchantLocationKey: "mk1",
+              merchantLocationKey: "warehouse-1", // Updated merchant location key
               quantity,
             },
           ],
           quantity,
         },
-        pickupAtLocationAvailability: [
-          {
-            availabilityType: "IN_STOCK",
-            fulfillmentTime: {
-              unit: "DAY",
-              value: 1,
-            },
-            merchantLocationKey: "mk1",
-            quantity,
-          },
-        ],
       },
-      condition,
-      conditionDescription: "Brand new item in excellent condition",
-      conditionDescriptors: [
-        {
-          name: "Package Condition",
-          additionalInfo: "Item is in original packaging.",
-          values: "ㅤ",
+      condition: condition || "NEW", // Default condition
+      conditionDescription: "Brand new item in excellent condition", // Customize as needed
+      packageWeightAndSize: { // Consider making this dynamic based on product data
+        weight: {
+          unit: "KILOGRAM",
+          value: 1, // Default weight
         },
-      ],
+        shippingIrregular: false,
+      },
     },
     {
       headers: {
@@ -637,32 +391,30 @@ async function createInventoryItem(token, productData, aspects) {
 }
 
 /**
- * Creates an offer for the inventory item
- * @param {string} token - Valid eBay API token
- * @param {Object} productData - Product data from request
- * @param {string} categoryId - eBay category ID
- * @returns {string} eBay offer ID
+ * Creates an offer for the inventory item on eBay.
+ * @param {string} token - Valid eBay API token.
+ * @param {Object} productData - Product data from request.
+ * @param {string} categoryId - eBay category ID.
+ * @returns {string} The eBay offer ID.
  */
 async function createOffer(token, productData, categoryId) {
-  const { sku, quantity, price } = productData;
+  const { sku, quantity, price, listingDescription } = productData;
 
   const response = await axios.post(
-    `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/offer`,
+    `${EBAY_API_BASE_URL}/sell/inventory/v1/offer`,
     {
       sku,
       marketplaceId: "EBAY_US",
       categoryId,
       format: "FIXED_PRICE",
-      merchantLocationKey: "US-SAMPLEDEALS-WH1",
-      listingDuration: "GTC",
-      listingDescription:
-        '<ul><li><font face="Arial"><span style="font-size: 18.6667px;"><p class="p1">Test listing - do not bid or buy&nbsp;</p></span></font></li><li><p class="p1">Built-in GPS.&nbsp;</p></li><li><p class="p1">Water resistance to 50 meters.</p></li><li><p class="p1">&nbsp;A new lightning-fast dual-core processor.&nbsp;</p></li><li><p class="p1">And a display that\u2019s two times brighter than before.&nbsp;</p></li><li><p class="p1">Full of features that help you stay active, motivated, and connected, Apple Watch Series 2 is designed for all the ways you move</p></li></ul>',
+      listingDuration: "GTC", // Good 'Til Cancelled
+      listingDescription: listingDescription || `<h1>${productData.title}</h1><p>A great product for you!</p>`, // Make dynamic
       availableQuantity: quantity,
-      quantityLimitPerBuyer: 2,
+      quantityLimitPerBuyer: 2, // Consider making this configurable
       listingPolicies: {
-        paymentPolicyId: "243417962010",
-        returnPolicyId: "243417673010",
-        fulfillmentPolicyId: "243417625010",
+        paymentPolicyId: EBAY_PAYMENT_POLICY_ID,
+        returnPolicyId: EBAY_RETURN_POLICY_ID,
+        fulfillmentPolicyId: EBAY_FULFILLMENT_POLICY_ID,
       },
       pricingSummary: {
         price: {
@@ -670,6 +422,7 @@ async function createOffer(token, productData, categoryId) {
           value: price,
         },
       },
+      // You can add more offer details here if needed, e.g., taxes, shipping costs.
     },
     {
       headers: {
@@ -684,14 +437,14 @@ async function createOffer(token, productData, categoryId) {
 }
 
 /**
- * Publishes the offer (listing) on eBay
- * @param {string} token - Valid eBay API token
- * @param {string} offerId - eBay offer ID to publish
- * @returns {Promise} Result of the API call
+ * Publishes the offer (listing) on eBay.
+ * @param {string} token - Valid eBay API token.
+ * @param {string} offerId - eBay offer ID to publish.
+ * @returns {Promise} Result of the API call.
  */
 async function publishListing(token, offerId) {
   return axios.post(
-    `${process.env.EBAY_PRODUCTION_URL}/sell/inventory/v1/offer/${offerId}/publish`,
+    `${EBAY_API_BASE_URL}/sell/inventory/v1/offer/${offerId}/publish`,
     {},
     {
       headers: {
@@ -703,11 +456,24 @@ async function publishListing(token, offerId) {
   );
 }
 
+/**
+ * Checks if user needs to re-authenticate with eBay
+ * @returns {boolean} True if user needs to re-authenticate
+ */
+async function needsReauthentication() {
+  try {
+    await getValidAccessToken();
+    return false;
+  } catch (error) {
+    return error.message.includes('AUTHENTICATION_REQUIRED');
+  }
+}
+
 module.exports = {
   getEbayAuthUrl,
   getAccessToken,
   refreshAccessToken,
   getValidAccessToken,
   createEbayProduct,
-  createEbayProduct,
+  needsReauthentication,
 };
