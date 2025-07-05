@@ -83,7 +83,15 @@ async function onError(error) {
  */
 
 function onListening() {
-  console.log("Server is running on port 3000");
+  console.log(`Server is running on port http://localhost:${port}`);
+   prisma.$connect()
+    .then(() => {
+      console.log("✅ Prisma is connected to the database");
+    })
+    .catch((err) => {
+      console.error("❌ Failed to connect to the database:", err);
+      process.exit(1); // optional: stop the server
+    });
   let addr = server.address();
   let bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
   debug("Listening on " + bind);

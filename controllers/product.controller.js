@@ -1,5 +1,17 @@
 const { PrismaClient } = require("@prisma/client");
 const { deleteCloudflareImage } = require("../utils/imageUpload");
+const {
+  createEbayProduct,
+  createEbayProduct2,
+  createEbayProduct3,
+} = require("../services/ebayCreateProduct");
+
+const { updateStockBySku } = require("../services/wooComService");
+const {
+  ebayUpdateStock,
+  ebayUpdateStock2,
+  ebayUpdateStock3,
+} = require("../services/ebayUpdateStock");
 
 const prisma = new PrismaClient();
 
@@ -168,38 +180,69 @@ const getProductById = async (req, res) => {
 };
 
 const createProduct = async (req, res) => {
+  const {
+    title,
+    brandName,
+    color,
+    sku,
+    itemLocation,
+    sizeId,
+    sizeType,
+    sizes,
+    postName,
+    categoryId,
+    subCategoryId,
+    parentCategoryId,
+    ebayId,
+    wallmartId,
+    sheinId,
+    woocommerceId,
+    regularPrice,
+    salePrice,
+    platFormPrice,
+    discountPercent,
+    stockQuantity,
+    condition,
+    description,
+    status,
+    department,
+    updatedById,
+  } = req.body;
+
+  if (!title || !sku) {
+    return res.status(400).json({
+      success: false,
+      message: "Title and SKU are required fields.",
+    });
+  }
+
+  const eBayProduct = {
+    title: title || "Untitled Product",
+    brandName: brandName || "Generic Brand",
+    images: req.uploadedImageUrls || [],
+    sku: sku || `SKU-${Date.now()}`,
+    regularPrice: parseFloat(regularPrice) || 0,
+    stockQuantity: parseInt(stockQuantity) || 0,
+    description: description || "",
+    categoryId: categoryId || "53159",
+    size: sizeId || "N/A",
+    sizeType: sizeType || "Regular",
+    type: "T-Shirt",
+    department: department || "Men's Clothing",
+    color: color || "N/A",
+  };
+
   try {
-    const {
-      title,
-      brandName,
-      color,
-      sku,
-      itemLocation,
-      sizeId,
-      sizeType,
-      sizes,
-      postName,
-      categoryId,
-      subCategoryId,
-      parentCategoryId,
-      ebayId,
-      wallmartId,
-      sheinId,
-      woocommerceId,
-      regularPrice,
-      salePrice,
-      platFormPrice,
-      discountPercent,
-      stockQuantity,
-      condition,
-      description,
-      status,
-      updatedById,
-    } = req.body;
-    if (!title || !sku) {
-      return res.status(400).json({
+    const [eBayOne, eBayTwo, eBayThree] = await Promise.all([
+      createEbayProduct(eBayProduct),
+      createEbayProduct2(eBayProduct),
+      createEbayProduct3(eBayProduct),
+    ]);
+
+    if (!eBayOne || !eBayTwo || !eBayThree) {
+      return res.status(500).json({
         success: false,
-        message: "Title and SKU are required fields.",
+        message: "One or more eBay product creations failed",
       });
     }
 
@@ -234,17 +277,19 @@ const createProduct = async (req, res) => {
         updatedById: updatedById || null,
       },
     });
-    res.status(201).json({
+
+    return res.status(201).json({
       success: true,
-      message: "Product created successfully",
+      message: "Product created and listed on eBay successfully",
       product: newProduct,
+      ebay: { eBayOne, eBayTwo, eBayThree },
     });
   } catch (error) {
-    console.error("Error creating product:", error);
-    res.status(500).json({
+    console.error("❌ Error during product creation or eBay:", error);
+    return res.status(500).json({
       success: false,
-      message: "Failed to create product",
-      error: error.message,
+      message: "Failed to create product or list on eBay",
+      error: error?.message || "Unknown error",
     });
   }
 };
@@ -496,7 +541,7 @@ const bulkUpdateProducts = async (req, res) => {
         .status(400)
         .json({ message: "No product IDs provided for bulk action." });
     }
-console.log("buldkUpdateProducts called with action:", action);
+    console.log("buldkUpdateProducts called with action:", action);
     let updateData = {};
     switch (action) {
       case "updateInventoryBulk":
@@ -570,6 +615,145 @@ console.log("buldkUpdateProducts called with action:", action);
   }
 };
 
+const updateProductQuantities = async (req, res) => {
+  const { data, sku, quantity } = req.body;
+
+  if (!data && (!sku || typeof quantity === "undefined")) {
+    return res.status(400).json({
+      success: false,
+      message:
+        'Invalid request body. Expected "data" array for bulk update or "sku" and "quantity" for single update.',
+    });
+  }
+
+  if (data && (!Array.isArray(data) || data.length === 0)) {
+    return res.status(400).json({
+      success: false,
+      message:
+        'Invalid "data" format for bulk update. Expected a non-empty array.',
+    });
+  }
+
+  if (sku && typeof quantity === "undefined") {
+    return res.status(400).json({
+      success: false,
+      message: 'For single update, "quantity" is required along with "sku".',
+    });
+  }
+
+  const updatesToPerform = [];
+
+  if (data) {
+    for (const item of data) {
+      if (
+        !item.sku ||
+        typeof item.quantity === "undefined" ||
+        item.quantity < 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid item in bulk update: { sku: "${item.sku}", quantity: ${item.quantity} }. SKU and non-negative quantity are required.`,
+        });
+      }
+      updatesToPerform.push(item);
+    }
+  } else {
+    if (typeof quantity !== "number" || quantity < 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid quantity for single update: ${quantity}. Must be a non-negative number.`,
+      });
+    }
+    updatesToPerform.push({ sku, quantity });
+  }
+
+  const results = [];
+  let allSuccessful = true;
+
+  for (const update of updatesToPerform) {
+    const { sku: currentSku, quantity: newQuantity } = update;
+    try {
+      const product = await prisma.product.findUnique({
+        where: { sku: currentSku },
+        select: { id: true, sku: true, stockQuantity: true },
+      });
+
+      if (!product) {
+        allSuccessful = false;
+        results.push({
+          sku: currentSku,
+          status: "failed",
+          message: "Product not found.",
+        });
+        continue;
+      }
+
+      const oldQuantity = product.stockQuantity;
+
+      await prisma.product.update({
+        where: { sku: currentSku },
+        data: { stockQuantity: parseInt(oldQuantity - newQuantity) },
+      });
+
+      const sku = currentSku;
+      const stock_quantity = parseInt(oldQuantity - newQuantity);
+      // try {
+      //   await Promise.allSettled([
+      //     ebayUpdateStock(sku, stock_quantity),
+      //     ebayUpdateStock2(sku, stock_quantity),
+      //     ebayUpdateStock3(sku, stock_quantity),
+      //     updateStockBySku(sku, stock_quantity),
+      //   ]);
+      //   console.log(
+      //     "All order syncs initiated after product quantity updates."
+      //   );
+      // } catch (syncError) {
+      //   console.error("Error during external order syncs:", syncError);
+      //   allSuccessful = false;
+      //   results.push({
+      //     sku: currentSku,
+      //     status: "failed",
+      //     message:
+      //       "Failed to sync with external platforms after quantity update.",
+      //   });
+      // }
+
+      results.push({
+        sku: currentSku,
+        status: "success",
+        oldQuantity: oldQuantity,
+        newQuantity: oldQuantity - newQuantity,
+      });
+    } catch (error) {
+      allSuccessful = false;
+      console.error(`Error updating product ${currentSku}:`, error);
+      results.push({
+        sku: currentSku,
+        status: "failed",
+        message: error.message || "Internal server error.",
+      });
+    }
+  }
+
+  if (allSuccessful && results.length > 0) {
+    return res.status(200).json({
+      success: true,
+      message: `${updatesToPerform.length} product(s) updated successfully.`,
+      results,
+    });
+  } else if (results.length === 0) {
+    return res
+      .status(200)
+      .json({ success: true, message: "No products provided for update." });
+  } else {
+    return res.status(207).json({
+      success: false,
+      message: "Some products failed to update. Check results for details.",
+      results,
+    });
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -580,4 +764,5 @@ module.exports = {
   updateProductStatus,
   toggleProductOffer,
   bulkUpdateProducts,
+  updateProductQuantities,
 };

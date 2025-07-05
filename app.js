@@ -1,18 +1,12 @@
-require("dotenv").config(); // load .env variables
-
-const { DATABASE_URL, SECRET, SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USER } =
-  process.env;
-
-let createError = require("http-errors");
+require("dotenv").config();
 let express = require("express");
 var cors = require("cors");
 let path = require("path");
 let cookieParser = require("cookie-parser");
 let logger = require("morgan");
-let session = require("express-session");
 const bodyParser = require("body-parser");
-
-const { Client } = require("basic-ftp");
+let cron = require("node-cron");
+const createError = require("http-errors");
 let usersRouter = require("./routes/users");
 let authRouter = require("./routes/auth");
 let productRouter = require("./routes/product");
@@ -24,32 +18,23 @@ let ebayRouter3 = require("./routes/ebay3");
 let orderRouter = require("./routes/order");
 let webhookRouter = require("./webhook/ebayWebhook");
 let sheinRouter = require("./routes/shein");
-let wallmartRouter = require("./routes/wallmart");
+const { wooComOrderSync } = require("./services/wooComService");
+const productSyncRoutes = require("./routes/productSync.route");
 
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
-
-const nodemailer = require("nodemailer");
-let cron = require("node-cron");
-const {
-  getValidAccessToken,
-  getNewAccessToken,
-  walmartOrderSync,
-} = require("./tools/wallmartAuth");
-const { sendAbandonedOfferEmail } = require("./tools/email");
-const {
-  getRecentOrders,
-  getFirstFiftyProducts,
-  woocommerceOrderSync,
-} = require("./tools/wooCommerce");
-const { ebayOrderSync2 } = require("./tools/ebayOrderSync2");
-const { ebayOrderSync } = require("./tools/ebayOrderSync");
-const { woocommerceItemUpdate } = require("./tools/woocommerceInventory");
-const { ebayOrderSync3 } = require("./tools/ebayOrderSync3");
 const { productRoutes } = require("./routes/product.route");
 const orderRoutes = require("./routes/order.route");
 const categoryRoutes = require("./routes/category.route");
 const emailRoutes = require("./routes/email.route");
+const {
+  ebayOrderSync,
+  ebayOrderSync2,
+  ebayOrderSync3,
+} = require("./services/ebayOrderSync");
+const ebayRoutes = require("./routes/ebay.routes");
+const { getAccessToken } = require("./tools/ebayAuth");
+const wooComRoutes = require("./routes/wooCom.route");
+const { getAccessToken2 } = require("./tools/ebayAuth2");
+const { getAccessToken3 } = require("./tools/ebayAuth3");
 
 let app = express();
 
@@ -63,36 +48,76 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(bodyParser.text({ type: "text/xml" }));
 app.use(bodyParser.text({ type: "application/xml" }));
 
-// const whitelist = process.env.WHITELISTED_DOMAINS
-//   ? process.env.WHITELISTED_DOMAINS.split(",")
-//   : [];
-
-// console.log(whitelist);
-
 const corsOptions = {
-  // origin: function (origin, callback) {
-  //   if (!origin || whitelist.indexOf(origin) !== -1) {
-  //     console.log("valid req");
-  //     callback(null, true);
-  //   } else {
-  //     callback(new Error("Not allowed by CORS"));
-  //   }
-  // },
   origin: "*",
-  // credentials: true,
 };
 
 // Set EJS as the templating engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'templates')); 
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "templates"));
 
 app.use(cors(corsOptions));
 
-app.use('/api/products', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/emails', emailRoutes)
+app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/emails", emailRoutes);
+app.use("/api", productSyncRoutes);
+app.use("/api/ebay", ebayRoutes);
+app.use("/api/woo-com", wooComRoutes);
 
+app.get("/ebay/auth/callback", async (req, res) => {
+  try {
+    const rawCode = req.query.code;
+    const code = decodeURIComponent(rawCode);
+
+    console.log("Decoded eBay Code:", code);
+
+    await getAccessToken(code);
+
+    res.send("✅ Access token saved successfully!");
+  } catch (err) {
+    console.error("Error in eBay callback:", err.message);
+    res.status(500).send("❌ Failed to get eBay token");
+  }
+});
+
+app.get("/ebay2/auth/callback", async (req, res) => {
+  try {
+    const rawCode = req.query.code;
+    const code = decodeURIComponent(rawCode);
+
+    console.log("Decoded eBay Code:", code);
+
+    await getAccessToken2(code);
+
+    res.send("✅ Access token saved successfully!");
+  } catch (err) {
+    console.error("Error in eBay callback:", err.message);
+    res.status(500).send("❌ Failed to get eBay token");
+  }
+});
+
+
+app.get("/ebay3/auth/callback", async (req, res) => {
+  try {
+    const rawCode = req.query.code;
+    const code = decodeURIComponent(rawCode);
+
+    console.log("Decoded eBay Code:", code);
+
+    await getAccessToken3(code);
+
+    res.send("✅ Access token saved successfully!");
+  } catch (err) {
+    console.error("Error in eBay callback:", err.message);
+    res.status(500).send("❌ Failed to get eBay token");
+  }
+});
+
+app.get("/ebay/auth/cancel",async (req, res)=>{
+  res.send("❌ eBay authentication cancelled.");
+})
 
 app.use("/userroute", usersRouter);
 app.use("/authroute", authRouter);
@@ -107,107 +132,58 @@ app.use("/order", orderRouter);
 app.use("/webhook", webhookRouter);
 app.use("/api", require("./routes/import"));
 
-// Serve the Checkout Page
-app.get("/wallmart/token", async (req, res) => {
-  const token = await getValidAccessToken();
-  res.json(token);
-});
-app.post("/wallmart/auth/callback", async (req, res) => {
-  const token = await getNewAccessToken();
-  res.json(token);
-});
-app.use("/wallmart", wallmartRouter);
-// Serve the Checkout Page
-app.get("/wallmart/order", async (req, res) => {
-  const data = await walmartOrderSync();
-  res.json(data);
-});
+let isRunning = true;
 
-app.get("/woocommerce/order", async (req, res) => {
-  const data = await getRecentOrders();
-  res.json(data);
-});
-
-app.get("/woocommerce/updateInventory", async (req, res) => {
-  const wooData = req.body;
-  const data = await woocommerceItemUpdate(wooData.sku, {
-    manage_stock: true,
-    stock_quantity: wooData.quantity,
-  });
-  res.json(data);
-});
-// Serve the Checkout Page
-app.get("/ebayPurchase", (req, res) => {
-  res.set("Cache-Control", "no-store");
-  res.sendFile(path.join(__dirname, "public", "ebayPurchase.html"));
-});
-
-app.use((err, req, res, next) => {
-  console.error(err.stack); // error log
-
-  // Customize error response
-  res.status(err.statusCode || 500).json({
-    success: false,
-    message: err.message || 'Server Error',
-  });
-});
-
-
-app.use(function (req, res, next) {
-  const err = createError(404, `Not Found: ${req.originalUrl}`);
-  console.error(err.message); // Log the error in console
-  res.status(404).json({ error: err.message }); // Send a JSON response
-});
-/* Recommendation email */
-
-// Initialize a lock flag
-let isRunning = false;
-
-cron.schedule("*/2 * * * *", async () => {
+cron.schedule("*/5 * * * *", async () => {
   if (isRunning) {
-    // console.log("Job is already running, skipping this execution...");
-    return; // Prevent the job from running again if it is already running
+    console.log(`[${new Date().toISOString()}] Job already running, skipping.`);
+    return;
   }
+
+  isRunning = true;
+  console.log(`[${new Date().toISOString()}] Job started.`);
 
   try {
-    // Set the lock flag to true
-    isRunning = true;
-    // console.log("Job started...");
+    // ========== Order Sync Section ==========
 
-    // Simulated job logic
-    try {
-      const ebayOrder = ebayOrderSync();
-      const ebayOrder2 = ebayOrderSync2();
-      const ebayOrder3 = ebayOrderSync3();
-      const walmartOrder = walmartOrderSync();
-      // const wooOrder = woocommerceOrderSync();
-    } catch (error) {
-      console.error("Error occurred during order sync:", error);
-    }
-    const userList = await prisma.user.findMany({
-      where: { loyaltyStatus: "Eligible" },
-    });
-    // userList.map(async (user) => {
-    //   await sendAbandonedOfferEmail(user.email, user.username);
-    // });
+    const [ebayOrders, ebayOrders2, ebayOrders3, wooOrders] = await Promise.all(
+      [ebayOrderSync(), ebayOrderSync2(), ebayOrderSync3(), wooComOrderSync()]
+    );
+
+    console.log("✅ eBay Orders Synced:", ebayOrders.length);
+    console.log("✅ eBay Orders 2 Synced:", ebayOrders2.length);
+    console.log("✅ eBay Orders 3 Synced:", ebayOrders3.length);
+    console.log("✅ WooCommerce Orders Synced:", wooOrders.length);
   } catch (error) {
-    console.error("Error occurred during job execution:", error);
+    console.error(
+      `[${new Date().toISOString()}] ❌ Job execution error:`,
+      error.message
+    );
   } finally {
-    // Release the lock flag
     isRunning = false;
-    // console.log("Job finished.");
+    console.log(`[${new Date().toISOString()}] Job finished.`);
   }
 });
 
-// error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get("env") === "development" ? err : {};
+app.use((req, res, next) => {
+  const err = createError(404, `Not Found: ${req.originalUrl}`);
+  next(err);
+});
 
-  // render the error page
-  console.log(err);
-  res.status(err.status || 500).send(err);
+// Global Error Handler (for API)
+app.use((err, req, res, next) => {
+  const status = err.status || err.statusCode || 500;
+
+  console.error(
+    `[${new Date().toISOString()}] ❌ Error:`,
+    err.stack || err.message
+  );
+
+  res.status(status).json({
+    success: false,
+    message: err.message || "Internal Server Error",
+    ...(req.app.get("env") === "development" && { stack: err.stack }),
+  });
 });
 
 module.exports = app;

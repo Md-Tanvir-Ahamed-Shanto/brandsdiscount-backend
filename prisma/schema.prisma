@@ -39,20 +39,22 @@ model Size {
 }
 
 model Category {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String    @id @default(uuid())
+  name                String    // No @unique here
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  parentCategoryId String?
-  parentCategory   Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
-  subcategories    Category[] @relation("CategoryHierarchy") // Self-relation for subcategories
+  parentCategoryId    String?
+  parentCategory      Category? @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id], onDelete: SetNull)
+  subcategories       Category[] @relation("CategoryHierarchy")
 
-  products            Product[] @relation("ProductCategoryRelation") // Products linked to this category
-  parentProducts      Product[] @relation("ProductParentCategoryRelation") // Products linked to this category as a parent
-  subcategoryProducts Product[] @relation("ProductSubCategoryRelation") // Products linked to this category as a subcategory
+  products            Product[] @relation("ProductCategoryRelation")
+  parentProducts      Product[] @relation("ProductParentCategoryRelation")
+  subcategoryProducts Product[] @relation("ProductSubCategoryRelation")
 
-  @@index([name]) // Index on category name for better query performance
+  // This ensures 'name' is unique only within its parent category
+  @@unique([name, parentCategoryId])
+  @@index([name]) // Still keep an index on name for general queries
 }
 
 model Product {
@@ -126,6 +128,38 @@ model Order {
   @@index([transactionId]) // Index on transactionId for faster lookup
 }
 
+model OrderDetail {
+  id           String   @id @default(uuid())
+  sku          String
+  orderId      String
+  order        Order    @relation("OrderOrderDetails", fields: [orderId], references: [id]) // Unique relation name for Order
+  productId    String
+  product      Product  @relation("ProductOrderDetails", fields: [productId], references: [id]) // Unique relation name for Product
+  quantity     Int
+  price        Float // Price of the product per unit
+  total        Float // Total price for the quantity
+  productName  String // Denormalized product name (for avoiding join with Product table)
+  categoryName String // Denormalized category name (for avoiding join with Category table)
+  sizeName     String // Denormalized size name (for avoiding join with Size table)
+  createdAt    DateTime @default(now())
+
+  @@index([productId]) // Index on productId for fast lookup
+  @@index([orderId]) // Index on orderId for better performance
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  transactionId String
+  orderId       String   @unique
+  amount        Float // Amount for the transaction
+  status        String // Transaction status: Pending, Successful, Failed
+  createdAt     DateTime @default(now())
+  order         Order    @relation("OrderTransaction", fields: [orderId], references: [id]) // Unique relation name for Order
+
+  @@index([orderId]) // Index on orderId for faster lookup
+  @@index([status]) // Index on status for faster filtering by transaction status
+}
+
 model WalmartOrder {
   id                String   @id @default(uuid())
   orderId           String   @unique
@@ -160,37 +194,9 @@ model SheinOrder {
   @@index([createdAt]) // Index on createdAt for faster date-based queries
 }
 
-model OrderDetail {
-  id           String   @id @default(uuid())
-  sku          String
-  orderId      String
-  order        Order    @relation("OrderOrderDetails", fields: [orderId], references: [id]) // Unique relation name for Order
-  productId    String
-  product      Product  @relation("ProductOrderDetails", fields: [productId], references: [id]) // Unique relation name for Product
-  quantity     Int
-  price        Float // Price of the product per unit
-  total        Float // Total price for the quantity
-  productName  String // Denormalized product name (for avoiding join with Product table)
-  categoryName String // Denormalized category name (for avoiding join with Category table)
-  sizeName     String // Denormalized size name (for avoiding join with Size table)
-  createdAt    DateTime @default(now())
 
-  @@index([productId]) // Index on productId for fast lookup
-  @@index([orderId]) // Index on orderId for better performance
-}
 
-model Transaction {
-  id            String   @id @default(uuid())
-  transactionId String
-  orderId       String   @unique
-  amount        Float // Amount for the transaction
-  status        String // Transaction status: Pending, Successful, Failed
-  createdAt     DateTime @default(now())
-  order         Order    @relation("OrderTransaction", fields: [orderId], references: [id]) // Unique relation name for Order
 
-  @@index([orderId]) // Index on orderId for faster lookup
-  @@index([status]) // Index on status for faster filtering by transaction status
-}
 
 model ApiToken {
   id       String   @id @default(uuid()) // Unique Token ID

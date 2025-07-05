@@ -11,6 +11,7 @@ const {
   toggleProductOffer,
   bulkUpdateProducts,
   createProduct,
+  updateProductQuantities,
 } = require("../controllers/product.controller");
 const { verifyUser } = require("../tools/authenticate");
 const { ensureRoleAdmin, ensureUploader } = require("../tools/tools");
@@ -69,5 +70,7 @@ productRoutes.patch("/:id/toggle-offer", toggleProductOffer);
 
 // POST for bulk actions
 productRoutes.post("/bulk-actions", bulkUpdateProducts);
+
+productRoutes.post("/update-quantities", updateProductQuantities)
 
 module.exports = { productRoutes };

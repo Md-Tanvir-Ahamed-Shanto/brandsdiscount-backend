@@ -18,13 +18,6 @@ const images = require("../tools/images");
 
 const { PrismaClient } = require("@prisma/client");
 const { uploadImages, deleteCloudflareImage } = require("../tools/images.js");
-const { createEbayProduct } = require("../tools/ebayAuth.js");
-const { createEbayProduct2 } = require("../tools/ebayAuth2.js");
-const { ebayUpdateInventory } = require("../tools/ebayInventory.js");
-const { ebayUpdateInventory2 } = require("../tools/ebayInventory2.js");
-const { ebayUpdateInventory3 } = require("../tools/ebayInventory3.js");
-const { walmartItemUpdate } = require("../tools/wallmartInventory.js");
-const { woocommerceItemUpdate } = require("../tools/woocommerceInventory.js");
 // const { uploadImages, deleteCloudflareImage } = require("../tools/images");
 const prisma = new PrismaClient();
 
@@ -175,12 +168,6 @@ router.post(
         condition,
         itemLocation,
       };
-      try {
-        createEbayProduct(ebayProductData);
-        createEbayProduct2(ebayProductData);
-      } catch (error) {
-        console.error("Error creating eBay product:", error);
-      }
       res.status(201).json(product);
     } catch (error) {
       console.error("Error creating product:", error);
@@ -244,19 +231,6 @@ router.patch(
 
       if (req.body.discountPercent) {
         updateData.discountPercent = parseFloat(req.body.discountPercent);
-      }
-
-      if (req.body.stockQuantity) {
-        const sold =
-          productDetails.stockQuantity - parseInt(req.body.stockQuantity);
-        if (sold > 0) {
-          ebayUpdateInventory(req.body.sku, sold);
-          ebayUpdateInventory2(req.body.sku, sold);
-          ebayUpdateInventory3(req.body.sku, sold);
-          walmartItemUpdate(req.body.sku, sold);
-          woocommerceItemUpdate(req.body.sku, sold);
-        }
-        updateData.stockQuantity = parseInt(req.body.stockQuantity);
       }
 
       if (req.body.condition) {

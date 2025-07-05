@@ -59,7 +59,7 @@ async function getRecentOrders() {
 // Check inventory instead of orders
 async function woocommerceOrderSync() {
   try {
-    const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
+    const now = new Date(Date.now() - 5 * 60 * 1000).toISOString(); 
 
     const response = await wooAPI.get("/orders", {
       params: {
@@ -71,6 +71,7 @@ async function woocommerceOrderSync() {
     });
 
     const data = response.data;
+ 
     const existingOrders = await prisma.woocommmerceOrder.findMany();
     console.log("exisitng orders", existingOrders);
     const newOrders = data.orders.filter(
