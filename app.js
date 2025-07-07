@@ -35,6 +35,8 @@ const { getAccessToken } = require("./tools/ebayAuth");
 const wooComRoutes = require("./routes/wooCom.route");
 const { getAccessToken2 } = require("./tools/ebayAuth2");
 const { getAccessToken3 } = require("./tools/ebayAuth3");
+const walmartRoutes = require("./routes/walmart.routes");
+const { walmartOrderSync } = require("./services/walmartService");
 
 let app = express();
 
@@ -65,6 +67,7 @@ app.use("/api/emails", emailRoutes);
 app.use("/api", productSyncRoutes);
 app.use("/api/ebay", ebayRoutes);
 app.use("/api/woo-com", wooComRoutes);
+app.use("/api/walmart", walmartRoutes)
 
 app.get("/ebay/auth/callback", async (req, res) => {
   try {
@@ -147,13 +150,14 @@ cron.schedule("*/5 * * * *", async () => {
     // ========== Order Sync Section ==========
 
     const [ebayOrders, ebayOrders2, ebayOrders3, wooOrders] = await Promise.all(
-      [ebayOrderSync(), ebayOrderSync2(), ebayOrderSync3(), wooComOrderSync()]
+      [ebayOrderSync(), ebayOrderSync2(), ebayOrderSync3(), wooComOrderSync(), walmartOrderSync()]
     );
 
     console.log("✅ eBay Orders Synced:", ebayOrders.length);
     console.log("✅ eBay Orders 2 Synced:", ebayOrders2.length);
     console.log("✅ eBay Orders 3 Synced:", ebayOrders3.length);
     console.log("✅ WooCommerce Orders Synced:", wooOrders.length);
+    console.log("✅ Walmart Orders Synced:", ebayOrders.length);
   } catch (error) {
     console.error(
       `[${new Date().toISOString()}] ❌ Job execution error:`,

@@ -9,6 +9,7 @@ const { getValidAccessToken2 } = require("../tools/ebayAuth2");
 const { getValidAccessToken3 } = require("../tools/ebayAuth3");
 const { getValidAccessToken } = require("../tools/ebayAuth");
 const { updateStockBySku } = require("./wooComService");
+const { walmartItemUpdate } = require("./walmartService");
 
 async function ebayOrderSync() {
   try {
@@ -89,11 +90,11 @@ async function ebayOrderSync() {
             console.warn("WooCommerce inventory update failed:", error.message);
           }
 
-          // try {
-          //   walmartItemUpdate(sku, newStock);
-          // } catch (err) {
-          //   console.warn("Walmart inventory update failed:", err.message);
-          // }
+          try {
+            walmartItemUpdate(sku, newStock);
+          } catch (err) {
+            console.warn("Walmart inventory update failed:", err.message);
+          }
 
           // try {
           //   woocommerceItemUpdate(sku, newStock);
@@ -192,6 +193,11 @@ async function ebayOrderSync2() {
           } catch (error) {
             console.warn("WooCommerce inventory update failed:", error.message);
           }
+           try {
+            walmartItemUpdate(sku, newStock);
+          } catch (err) {
+            console.warn("Walmart inventory update failed:", err.message);
+          }
         }
       }
     }
@@ -284,11 +290,11 @@ async function ebayOrderSync3() {
           } catch (error) {
             console.warn("WooCommerce inventory update failed:", error.message);
           }
-          //   try {
-          //     walmartItemUpdate(sku, newStock);
-          //   } catch (err) {
-          //     console.warn("Walmart inventory update failed:", err.message);
-          //   }
+            try {
+              walmartItemUpdate(sku, newStock);
+            } catch (err) {
+              console.warn("Walmart inventory update failed:", err.message);
+            }
 
           //   try {
           //     woocommerceItemUpdate(sku, newStock);

@@ -1,6 +1,7 @@
 const axios = require("axios");
 const { PrismaClient } = require("@prisma/client");
 const { ebayUpdateStock, ebayUpdateStock2, ebayUpdateStock3 } = require("./ebayUpdateStock");
+const { walmartItemUpdate } = require("./walmartService");
 require("dotenv").config();
 
 const consumerKey = process.env.WC_CONSUMER_KEY;
@@ -118,6 +119,7 @@ async function wooComOrderSync() {
           ebayUpdateStock(sku, stock_quantity),
           ebayUpdateStock2(sku, stock_quantity),
           ebayUpdateStock3(sku, stock_quantity),
+          walmartItemUpdate(sku, stock_quantity),
         ]);
 
         console.log(`✅ Updated stock for ${name} (SKU: ${sku})`);

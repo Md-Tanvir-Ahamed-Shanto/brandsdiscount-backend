@@ -1,9 +1,10 @@
 const axios = require("axios");
 const { getValidAccessToken } = require("../tools/ebayAuth");
+const { getValidAccessToken2 } = require("../tools/ebayAuth2");
 
 async function createEbayLocation() {
   try {
-    const token = await getValidAccessToken();
+    const token = await getValidAccessToken2();
     const key = "warehouse1"; // unique within 36 chars
 
     const payload = {
