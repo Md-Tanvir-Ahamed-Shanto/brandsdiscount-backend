@@ -37,6 +37,8 @@ const { getAccessToken2 } = require("./tools/ebayAuth2");
 const { getAccessToken3 } = require("./tools/ebayAuth3");
 const walmartRoutes = require("./routes/walmart.routes");
 const { walmartOrderSync } = require("./services/walmartService");
+const { exchangeSheinTempToken, generateSheinAuthUrl } = require("./services/shein/sheinAuthService");
+const sheinRoutes = require("./routes/shein.route");
 
 let app = express();
 
@@ -68,6 +70,8 @@ app.use("/api", productSyncRoutes);
 app.use("/api/ebay", ebayRoutes);
 app.use("/api/woo-com", wooComRoutes);
 app.use("/api/walmart", walmartRoutes)
+app.use("/api/shein", sheinRoutes)
+
 
 app.get("/ebay/auth/callback", async (req, res) => {
   try {
@@ -118,9 +122,98 @@ app.get("/ebay3/auth/callback", async (req, res) => {
   }
 });
 
+app.get('/shein/auth/callback', async (req, res) => {
+  const { tempToken, state, error, error_description } = req.query;
+
+  if (error) {
+    console.error(`Shein Authorization Error: ${error} - ${error_description || 'No description'}`);
+    return res.redirect('/auth/error?message=Shein authorization failed');
+  }
+  if (!tempToken) {
+    console.error('Shein callback: No tempToken received.');
+    return res.redirect('/auth/error?message=Shein authorization failed: Missing token');
+  }
+
+  try {
+    await exchangeSheinTempToken(tempToken);
+    res.redirect(`/auth/success?platform=shein&state=${state || ''}`);
+  } catch (err) {
+    console.error('❌ Error in Shein auth callback:', err.message);
+    res.redirect(`/auth/error?message=Shein authorization failed: ${encodeURIComponent(err.message)}`);
+  }
+});
+
+app.get('/shein/auth', (req, res) => {
+  const state = crypto.randomUUID(); // Generate a unique state for CSRF protection
+  // You should store this state in the user's session or a cookie
+  // to verify it when Shein redirects back.
+  const authUrl = generateSheinAuthUrl(state);
+  res.redirect(authUrl);
+});
+
 app.get("/ebay/auth/cancel",async (req, res)=>{
   res.send("❌ eBay authentication cancelled.");
 })
+app.get("/shein/callback", async (req, res) => {
+  const { tempToken } = req.query;
+  if (!tempToken) return res.status(400).send("Missing tempToken");
+  const tokens = await exchangeSheinTempToken(tempToken);
+  // Save openKeyId & secretKey…
+  res.send("Authorized!");
+});
+
+app.get("/auth/error", async (req,res)=>{
+  try {
+    res.status(404).json({message:"Feild"})
+  } catch (error) {
+    console.log("Error",error)
+    res.status(500).json({message:"Someting Went Wrong"})
+  }
+})
+
+app.get('/shein/oauth/callback', async (req, res) => {
+  const { tempToken, state, error, error_description } = req.query;
+
+  // Optional: Verify the 'state' parameter against what you stored
+  // if (state !== req.session.sheinAuthState) {
+  //   return res.status(403).send('CSRF attack detected or invalid state.');
+  // }
+  // delete req.session.sheinAuthState;
+
+  if (error) {
+    console.error('Shein Authorization Error:', error_description || error);
+    return res.status(400).send(`Shein authorization failed: ${error_description || error}`);
+  }
+
+  if (!tempToken) {
+    return res.status(400).send('tempToken not received from Shein authorization.');
+  }
+
+  try {
+    // Call your service function with the obtained tempToken
+    const { openKeyId, encryptedSecretKey } = await sheinAuthService.exchangeSheinTempToken(tempToken);
+    console.log('Shein tokens exchanged successfully!');
+    // Redirect to a success page or send a success response
+    res.status(200).json({
+      message: 'Shein authorization successful and tokens exchanged.',
+      openKeyId: openKeyId, // You might not want to send these back to client directly
+      encryptedSecretKey: encryptedSecretKey
+    });
+  } catch (err) {
+    console.error('Error exchanging Shein tempToken:', err);
+    res.status(500).send('Failed to exchange Shein temporary token.');
+  }
+});
+
+app.get('/shein/authorize', (req, res) => {
+  // You might want to generate a 'state' parameter to prevent CSRF attacks
+  const state = Math.random().toString(36).substring(2, 15);
+  // Store this state in session or database linked to the user for verification later
+  // req.session.sheinAuthState = state; // Example if using express-session
+
+  const authUrl = generateSheinAuthUrl(state);
+  res.redirect(authUrl); // Redirect the user to Shein's authorization page
+});
 
 app.use("/userroute", usersRouter);
 app.use("/authroute", authRouter);

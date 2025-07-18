@@ -194,8 +194,16 @@ model SheinOrder {
   @@index([createdAt]) // Index on createdAt for faster date-based queries
 }
 
+model WooComOrder {
+  id                String   @id @default(uuid())
+  orderId           String   @unique
+  status            String 
+  orderCreationDate DateTime 
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-
+  @@index([createdAt]) 
+}
 
 
 model ApiToken {
