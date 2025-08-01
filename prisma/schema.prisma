@@ -68,7 +68,7 @@ model Product {
   sizeId       String?
   sizeType     String?
   sizes        String?
-
+  postName     String?
   categoryId String? // Child category ID
   category   Category? @relation(fields: [categoryId], references: [id], name: "ProductCategoryRelation")
 
@@ -77,10 +77,16 @@ model Product {
 
   parentCategoryId String? // Parent category ID
   parentCategory   Category? @relation(fields: [parentCategoryId], references: [id], name: "ProductParentCategoryRelation")
+  ebayId        String?
+  wallmartId    String?
+  sheinId       String?
+  woocommerceId String?
 
   regularPrice    Float?
   salePrice       Float?
+    platFormPrice   Float?
   toggleFirstDeal Boolean? @default(true) // toggle 10% discount for first deal
+  discountPercent Float?
   stockQuantity   Int?
   condition       String? // New, Used, Refurbished, etc.
   description     String?

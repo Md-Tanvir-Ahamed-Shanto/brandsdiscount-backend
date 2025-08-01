@@ -105,7 +105,7 @@ const getProducts = async (req, res) => {
         category: getCategoryInclude("category"),
         subCategory: getCategoryInclude("subCategory"),
         parentCategory: getCategoryInclude("parentCategory"),
-        variants: true, // Include variants
+        // variants: true, // Include variants
       },
     });
 
