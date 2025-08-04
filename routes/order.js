@@ -5,43 +5,86 @@ const { paginateOverview } = require("../tools/pagination");
 const { sendLoyaltyEmail, sendAbandonedOfferEmail } = require("../tools/email");
 const { ensureRoleAdmin } = require("../tools/tools");
 
-
 const prisma = new PrismaClient();
 const router = express.Router();
 
 /**
  * @route   GET /api/orders
- * @desc    Get all orders with optional filtering
- * @access  Public
+ * @desc    Get all orders with optional filtering and pagination
+ * @access  Admin
  */
 router.get("/", verifyUser, paginateOverview("order"), async (req, res) => {
-  //   try {
-  //     const { userId, status } = req.query;
-  //     const orders = await prisma.order.findMany({
-  //       where: {
-  //         userId: userId || undefined,
-  //         status: status || undefined,
-  //       },
-  //       include: {
-  //         orderDetails: {
-  //           include: { product: true },
-  //         },
-  //         transaction: true,
-  //         user: true,
-  //       },
-  //       orderBy: { createdAt: "desc" },
-  //     });
-  //     res.json(orders);
-  //   } catch (error) {
-  //     console.error("Error fetching orders:", error);
-  //     res.status(500).json({ message: "Server error" });
-  //   }
+  try {
+    const { userId, status } = req.query;
+    const { skip, take, page, totalPages, totalItems } = req.pagination;
+
+    const whereClause = {};
+    if (userId) whereClause.userId = userId;
+    if (status) whereClause.status = status;
+
+    const orders = await prisma.order.findMany({
+      where: whereClause,
+      include: {
+        orderDetails: {
+          include: { product: true },
+        },
+        transaction: true,
+        user: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    });
+    
+    res.json({
+      orders,
+      pagination: { page, totalPages, totalItems, take },
+    });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/**
+ * @route   GET /api/orders/me
+ * @desc    Get all orders for the authenticated user with pagination
+ * @access  User
+ */
+router.get("/me", verifyUser, paginateOverview("order", { userId: "req.user.id" }), async (req, res) => {
+  try {
+    const { skip, take, page, totalPages, totalItems } = req.pagination;
+
+    const orders = await prisma.order.findMany({
+      where: { userId: req.user.id },
+      include: {
+        orderDetails: {
+          include: { product: true },
+        },
+        transaction: true,
+        user: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    });
+
+    if (orders.length === 0) return res.status(404).json({ message: "No orders found for this user" });
+
+    res.json({
+      orders,
+      pagination: { page, totalPages, totalItems, take },
+    });
+  } catch (error) {
+    console.error("Error fetching user's orders:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 /**
  * @route   GET /api/orders/:id
  * @desc    Get a single order by ID
- * @access  Public
+ * @access  User (only their own orders) or Admin
  */
 router.get("/:id", verifyUser, async (req, res) => {
   try {
@@ -57,33 +100,10 @@ router.get("/:id", verifyUser, async (req, res) => {
 
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    res.json(order);
-  } catch (error) {
-    console.error("Error fetching order:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-/**
- * @route   GET /api/orders/userOrders
- * @desc    Get all order
- * @access  Public
- */
-router.get("/user/allOrders", verifyUser, async (req, res) => {
-  try {
-    const id = req.user.id;
-    console.log("id", id);
-    const order = await prisma.order.findMany({
-      where: { userId: id },
-      include: {
-        orderDetails: { include: { product: true } },
-        transaction: true,
-        user: true,
-      },
-    });
-    console.log("order", order);
-
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    // Ensure the user is either the order owner or an admin
+    if (order.userId !== req.user.id && req.user.role !== "Admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
 
     res.json(order);
   } catch (error) {
@@ -95,77 +115,76 @@ router.get("/user/allOrders", verifyUser, async (req, res) => {
 /**
  * @route   POST /api/orders
  * @desc    Create a new order
- * @access  Public
+ * @access  User
  */
 router.post("/", verifyUser, async (req, res) => {
-  console.log("order");
-  console.log("user", req.user);
   const userId = req.user.id;
 
   try {
     const {
       orderDetails,
-      sku,
-      totalAmount,
+      totalAmount: clientTotalAmount, // Rename to avoid confusion
       status,
       transactionId,
       claimLoyaltyOffer,
-      redeemPoint,
+      redeemPoint = 0,
     } = req.body;
-    console.log(orderDetails);
-    // Validate request
-    if (!orderDetails || orderDetails.length === 0 || !transactionId) {
-      return res.status(400).json({ message: "Invalid order data" });
+
+    // 1. Basic validation
+    if (!orderDetails || orderDetails.length === 0) {
+      return res.status(400).json({ message: "Invalid order data: orderDetails and transactionId are required." });
     }
 
-    if (
-      claimLoyaltyOffer &&
-      req.user.loyaltyStatus != "Loyal" &&
-      totalAmount >= 60
-    ) {
-      console.log("loyalty offer claimed!");
-      console.log("user", req.user);
-      const userId = req.user.id;
-      const updateUser = await prisma.user.update({
-        where: { id: userId },
-        data: { loyaltyStatus: "Loyal" },
-      });
-      //TODO Email
-      console.log("sending email");
+    // 2. Calculate the server-side total amount to prevent manipulation
+    const calculatedTotalAmount = orderDetails.reduce((sum, item) => sum + (item.quantity * item.price), 0);
 
-      await sendLoyaltyEmail(req.user.email, req.user.username);
-    } else {
-      const userData = await prisma.user.findUnique({
-        where: { id: userId },
-      });
-      if (
-        (userData.loyaltyStatus == "Not_Eligible" ||
-          userData.loyaltyStatus == "Eligible") &&
-        totalAmount >= 60
-      ) {
-        const updateUser = await prisma.user.update({
-          where: { id: userId },
-          data: { loyaltyStatus: "Eligible" },
-        });
-        console.log("sending email");
-
-        //TODO Email
-        await sendAbandonedOfferEmail(req.user.email, req.user.username);
-      }
+    if (calculatedTotalAmount !== clientTotalAmount) {
+      console.warn(`Client totalAmount mismatch. Expected: ${calculatedTotalAmount}, Received: ${clientTotalAmount}`);
     }
 
-    // Create order with transaction
-    // Create order with transaction
+    // Use the server-calculated totalAmount for all logic
+    const finalTotalAmount = calculatedTotalAmount;
+
+    // 3. Get user data
+    const userData = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { loyaltyStatus: true, orderPoint: true, email: true, username: true },
+    });
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 4. Loyalty logic (remains the same but uses finalTotalAmount)
+    const newLoyaltyStatus = calculateLoyaltyStatus(userData, finalTotalAmount, claimLoyaltyOffer);
+
+    const newPoint = userData.orderPoint + finalTotalAmount - redeemPoint;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        loyaltyStatus: newLoyaltyStatus,
+        orderPoint: newPoint,
+      },
+    });
+
+    if (newLoyaltyStatus === "Loyal" && userData.loyaltyStatus !== "Loyal") {
+      await sendLoyaltyEmail(userData.email, userData.username);
+    } else if (newLoyaltyStatus === "Eligible" && userData.loyaltyStatus === "Not_Eligible") {
+      await sendAbandonedOfferEmail(userData.email, userData.username);
+    }
+
+    // 5. Create order with correct totalAmount
     const newOrder = await prisma.order.create({
       data: {
         userId,
         status: status || "Pending",
-        totalAmount,
+        totalAmount: finalTotalAmount, // Use the corrected total amount
         transactionId: transactionId,
         orderDetails: {
           create: orderDetails.map((item) => ({
             productId: item.productId,
-            sku: sku,
+            sku: item.sku, // Assuming sku is now correctly passed in orderDetails
             quantity: item.quantity,
             price: item.price,
             total: item.quantity * item.price,
@@ -177,22 +196,14 @@ router.post("/", verifyUser, async (req, res) => {
         transaction: {
           create: {
             transactionId: transactionId,
-            amount: totalAmount,
-            status: "Completed", // Initial transaction status
+            amount: finalTotalAmount,
+            status: "Completed",
           },
         },
       },
       include: { orderDetails: true, transaction: true },
     });
-    // orderPoint
-    const userData = await prisma.user.findUnique({
-      where: { id: req.user.id },
-    });
-    const newPoint = userData.orderPoint + totalAmount - redeemPoint;
-    const updateUser = await prisma.user.update({
-      where: { id: req.user.id },
-      data: { orderPoint: newPoint },
-    });
+
     res.status(201).json(newOrder);
   } catch (error) {
     console.error("Error creating order:", error);
@@ -203,7 +214,7 @@ router.post("/", verifyUser, async (req, res) => {
 /**
  * @route   PUT /api/orders/:id
  * @desc    Update an order status or details
- * @access  Public
+ * @access  Admin
  */
 router.patch("/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
@@ -214,7 +225,6 @@ router.patch("/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
     if (!existingOrder)
       return res.status(404).json({ message: "Order not found" });
 
-    // Update order
     const updatedOrder = await prisma.order.update({
       where: { id },
       data: {
@@ -231,16 +241,37 @@ router.patch("/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
 
 /**
  * @route   DELETE /api/orders/:id
- * @desc    Delete an order
- * @access  Public
+ * @desc    Delete an order and revert user points
+ * @access  Admin
  */
 router.delete("/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    await prisma.orderDetail.deleteMany({ where: { orderId: id } }); // Delete related order details
-    await prisma.transaction.deleteMany({ where: { orderId: id } }); // Delete related transaction
-    await prisma.order.delete({ where: { id } }); // Delete order
+    const orderToDelete = await prisma.order.findUnique({
+      where: { id },
+      select: { userId: true, totalAmount: true },
+    });
+
+    if (!orderToDelete) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Use a transaction to ensure atomicity
+    await prisma.$transaction(async (prisma) => {
+      // Revert user's order points
+      await prisma.user.update({
+        where: { id: orderToDelete.userId },
+        data: {
+          orderPoint: {
+            decrement: orderToDelete.totalAmount,
+          },
+        },
+      });
+
+      // Delete the order and related records
+      await prisma.order.delete({ where: { id } });
+    });
 
     res.json({ message: "Order deleted successfully" });
   } catch (error) {
@@ -250,3 +281,13 @@ router.delete("/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
 });
 
 module.exports = router;
+
+
+function calculateLoyaltyStatus(userData, totalAmount, claimLoyaltyOffer) {
+  if (userData.loyaltyStatus === "Not_Eligible" && totalAmount >= 60) {
+    return "Eligible";
+  } else if (userData.loyaltyStatus === "Eligible" && claimLoyaltyOffer) {
+    return "Loyal";
+  }
+  return userData.loyaltyStatus; // Return current status if no changes
+}
