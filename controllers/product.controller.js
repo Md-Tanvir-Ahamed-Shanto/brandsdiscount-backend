@@ -186,6 +186,170 @@ const getProductById = async (req, res) => {
 };
 
 
+const getAvailableProducts = async (req, res) => {
+    try {
+        const {
+            searchTerm,
+            category,
+            brand,
+            priceMin,
+            priceMax,
+            page = 1,
+            pageSize = 10,
+            sortBy = "createdAt",
+            sortOrder = "desc",
+        } = req.query;
+
+        const skip = (parseInt(page) - 1) * parseInt(pageSize);
+        const take = parseInt(pageSize);
+
+        let where = {
+            OR: [
+                { stockQuantity: { gt: 0 } },
+                {
+                    variants: {
+                        some: {
+                            quantity: { gt: 0 },
+                        },
+                    },
+                },
+            ],
+        };
+
+        // Search term filter
+        if (searchTerm) {
+            where.AND = [{
+                OR: [
+                    { title: { contains: searchTerm, mode: "insensitive" } },
+                    { sku: { contains: searchTerm, mode: "insensitive" } },
+                    { description: { contains: searchTerm, mode: "insensitive" } },
+                    { brandName: { contains: searchTerm, mode: "insensitive" } },
+                ],
+            }, ];
+        }
+
+        // Category filter (assuming category format: "Parent > Sub > Type")
+        if (category) {
+            const categoryParts = category.split(" > ").map((part) => part.trim());
+            if (categoryParts.length === 3) {
+                where.AND = where.AND ?
+                    [...where.AND, {
+                        parentCategory: { name: categoryParts[0] }
+                    }, {
+                        subCategory: { name: categoryParts[1] }
+                    }, {
+                        category: { name: categoryParts[2] }
+                    }, ] :
+                    [{
+                        parentCategory: { name: categoryParts[0] }
+                    }, {
+                        subCategory: { name: categoryParts[1] }
+                    }, {
+                        category: { name: categoryParts[2] }
+                    }, ];
+            } else if (categoryParts.length === 2) {
+                where.AND = where.AND ?
+                    [...where.AND, {
+                        parentCategory: { name: categoryParts[0] }
+                    }, {
+                        subCategory: { name: categoryParts[1] }
+                    }, ] :
+                    [{
+                        parentCategory: { name: categoryParts[0] }
+                    }, {
+                        subCategory: { name: categoryParts[1] }
+                    }, ];
+            } else if (categoryParts.length === 1) {
+                const categoryOr = {
+                    OR: [{
+                        parentCategory: { name: categoryParts[0] }
+                    }, {
+                        subCategory: { name: categoryParts[0] }
+                    }, {
+                        category: { name: categoryParts[0] }
+                    }, ],
+                };
+                where.AND = where.AND ? [...where.AND, categoryOr] : [categoryOr];
+            }
+        }
+
+        // Brand filter
+        if (brand) {
+            where.AND = where.AND ?
+                [...where.AND, { brandName: brand
+                }] :
+                [{ brandName: brand
+                }];
+        }
+
+        // Price range filter
+        if (priceMin || priceMax) {
+            const priceFilter = {};
+            if (priceMin) priceFilter.gte = parseFloat(priceMin);
+            if (priceMax) priceFilter.lte = parseFloat(priceMax);
+            where.AND = where.AND ?
+                [...where.AND, { salePrice: priceFilter
+                }] :
+                [{ salePrice: priceFilter
+                }];
+        }
+
+        const products = await prisma.product.findMany({
+            where,
+            skip,
+            take,
+            orderBy: {
+                [sortBy]: sortOrder,
+            },
+            include: {
+                category: true,
+                subCategory: true,
+                parentCategory: true,
+                variants: true,
+            },
+        });
+
+        const totalProducts = await prisma.product.count({ where });
+
+        // Manually add client-side properties
+        const productsWithClientSideProps = products.map((product) => {
+            const imageUrl =
+                product.images && product.images.length > 0 ?
+                typeof product.images[0] === "object" ?
+                product.images[0].url :
+                product.images[0] :
+                null;
+            const name = product.title;
+            const hasTenDollarOffer = product.toggleFirstDeal;
+            const offerPrice = product.salePrice || product.regularPrice;
+            const quantity =
+                product.variants && product.variants.length > 0 ?
+                product.variants.reduce((sum, variant) => sum + variant.quantity, 0) :
+                product.stockQuantity;
+
+            return {
+                ...product,
+                imageUrl,
+                name,
+                hasTenDollarOffer,
+                offerPrice,
+                quantity,
+            };
+        });
+
+        res.status(200).json({
+            products: productsWithClientSideProps,
+            totalPages: Math.ceil(totalProducts / pageSize),
+            currentPage: parseInt(page),
+            totalItems: totalProducts,
+        });
+    } catch (error) {
+        console.error("Error fetching available products:", error);
+        res
+            .status(500)
+            .json({ message: "Failed to fetch available products", error: error.message });
+    }
+};
 
 
 
@@ -1174,4 +1338,5 @@ module.exports = {
   toggleProductOffer,
   bulkUpdateProducts,
   updateProductQuantities,
+  getAvailableProducts
 };

@@ -12,6 +12,7 @@ const {
   bulkUpdateProducts,
   createProduct,
   updateProductQuantities,
+  getAvailableProducts,
 } = require("../controllers/product.controller");
 const { verifyUser } = require("../tools/authenticate");
 const { ensureRoleAdmin, ensureUploader } = require("../tools/tools");
@@ -24,7 +25,7 @@ const productRoutes = express.Router();
 
 // GET all products with filtering, searching, sorting, and pagination
 productRoutes.get("/", getProducts);
-
+productRoutes.get("/all", getAvailableProducts)
 // GET a single product by ID
 productRoutes.get("/:id", getProductById);
 

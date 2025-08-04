@@ -49,10 +49,8 @@ const uploadImagesToCloudflare = async (req, res, next) => {
         if (err) console.error(`Error deleting temporary file ${file.path}:`, err);
       });
 
-      uploadedImages.push({
-        id: response.data.result.id,
-        url: response.data.result.variants[0], // Assuming the first variant is the desired public URL
-      });
+      uploadedImages.push(response.data.result.variants[0] // Assuming the first variant is the desired public URL
+      );
     }
     req.uploadedImageUrls = uploadedImages;
     next(); // Pass control to the next middleware (e.g., createProduct)
