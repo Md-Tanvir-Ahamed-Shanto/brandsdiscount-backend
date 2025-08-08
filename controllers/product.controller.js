@@ -105,7 +105,7 @@ const getProducts = async (req, res) => {
         category: getCategoryInclude("category"),
         subCategory: getCategoryInclude("subCategory"),
         parentCategory: getCategoryInclude("parentCategory"),
-        // variants: true, // Include variants
+        variants: true, // Include variants
       },
     });
 
@@ -132,7 +132,7 @@ const getProducts = async (req, res) => {
       // Quantity can be either the main product's stockQuantity or calculated from variants
       const quantity =
         product.variants && product.variants.length > 0
-          ? product.variants.reduce((sum, variant) => sum + variant.quantity, 0)
+          ? product.variants.reduce((sum, variant) => sum + variant.stockQuantity, 0)
           : product.stockQuantity;
 
 
