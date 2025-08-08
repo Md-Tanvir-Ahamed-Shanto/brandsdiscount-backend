@@ -209,7 +209,7 @@ const getAvailableProducts = async (req, res) => {
                 {
                     variants: {
                         some: {
-                            quantity: { gt: 0 },
+                            stockQuantity: { gt: 0 },
                         },
                     },
                 },
@@ -444,8 +444,8 @@ const createProduct = async (req, res) => {
           productId: product.id,
           color: v.color,
           sizeType: v.sizeType,
-          customSize: v.customSize || null,
-          quantity: parseInt(v.quantity),
+          sizes: v.customSize || null,
+          stockQuantity: parseInt(v.quantity),
           skuSuffix: v.skuSuffix || null,
           regularPrice: parseFloat(v.regularPrice),
           salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
@@ -698,8 +698,8 @@ const updateProduct = async (req, res) => {
             data: {
               color: v.color,
               sizeType: v.sizeType,
-              customSize: v.customSize || null,
-              quantity: parseInt(v.quantity),
+              sizes: v.customSize || null,
+              stockQuantity: parseInt(v.quantity),
               skuSuffix: v.skuSuffix || null,
               regularPrice: parseFloat(v.regularPrice),
               salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
@@ -712,8 +712,8 @@ const updateProduct = async (req, res) => {
             productId: productId, // Associate with current product
             color: v.color,
             sizeType: v.sizeType,
-            customSize: v.customSize || null,
-            quantity: parseInt(v.quantity),
+            sizes: v.customSize || null,
+            stockQuantity: parseInt(v.quantity),
             skuSuffix: v.skuSuffix || null,
             regularPrice: parseFloat(v.regularPrice),
             salePrice: v.salePrice ? parseFloat(v.salePrice) : null,

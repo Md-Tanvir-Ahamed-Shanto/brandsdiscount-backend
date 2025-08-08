@@ -8,6 +8,8 @@ const LocalStrategy = require("passport-local");
 const { PrismaClient } = require("@prisma/client");
 const { getToken, verifyUser, COOKIE_OPTIONS, getRefreshToken } = require("../tools/authenticate");
 const prisma = new PrismaClient();
+const util = require("util");
+const pbkdf2Async = util.promisify(crypto.pbkdf2);
 
 passport.use(
   new LocalStrategy(async function verify(username, password, done) {
@@ -81,57 +83,39 @@ passport.use(new (require("passport-jwt").Strategy)(opts, async (jwt_payload, do
 
 router.post("/signup", async (req, res, next) => {
   try {
-    const salt = crypto.randomBytes(16);
-    crypto.pbkdf2(
-      req.body.password,
-      salt,
-      310000,
-      32,
-      "sha256",
-      async (err, hashedPassword) => {
-        if (err) return next(err);
-
-        try {
-          const newUser = await prisma.user.create({
-            data: {
-              username: req.body.username,
-
-              hashedPassword,
-
-              salt,
-
-              email: req.body.email,
-
-              role: req.body.role,
-
-              profilePicture: req.body.profilePicture || null,
-            },
-          });
-
-          const token = getToken({ id: newUser.id });
-          const refreshToken = getRefreshToken({ id: newUser.id });
-
-          // res.cookie(
-          //   "token",
-          //   JSON.stringify({ token, refreshToken }),
-          //   COOKIE_OPTIONS
-          // );
-          res.json({
-            success: true,
-            access_token: token,
-            refresh_token: refreshToken,
-            user: { id: newUser.id, role: newUser.role },
-          });
-        } catch (error) {
-          return res.status(500).json({
-            message: "Error creating user",
-          });
+        const salt = crypto.randomBytes(16);
+        const hashedPassword = await pbkdf2Async(
+          req.body.password,
+          salt,
+          310000,
+          32,
+          "sha256"
+        );
+  
+        const newUser = await prisma.user.create({
+          data: {
+            username: req.body.username,
+            hashedPassword,
+            salt,
+            email: req.body.email,
+            role: req.body.role,
+            // Set profilePicture to the first image object or null
+            profilePicture: null,
+          },
+        });
+  
+        res.status(201).json({
+          success: true,
+          user: { id: newUser.id, role: newUser.role, email: newUser.email },
+        });
+      } catch (error) {
+        console.error("User create error:", error);
+        // Handle unique constraint error (e.g., email already exists)
+        if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+          return res.status(409).json({ error: "Email already in use" });
         }
+        return res.status(500).json({ error: "Error creating user" });
       }
-    );
-  } catch (error) {
-    next(error);
-  }
 });
 
 router.get("/refreshtoken", async (req, res) => {
