@@ -23,7 +23,6 @@ const getCategoryInclude = (type) => ({
   },
 });
 
-
 const getProducts = async (req, res) => {
   try {
     const {
@@ -132,9 +131,11 @@ const getProducts = async (req, res) => {
       // Quantity can be either the main product's stockQuantity or calculated from variants
       const quantity =
         product.variants && product.variants.length > 0
-          ? product.variants.reduce((sum, variant) => sum + variant.stockQuantity, 0)
+          ? product.variants.reduce(
+              (sum, variant) => sum + variant.stockQuantity,
+              0
+            )
           : product.stockQuantity;
-
 
       return {
         ...product,
@@ -185,439 +186,199 @@ const getProductById = async (req, res) => {
   }
 };
 
-
 const getAvailableProducts = async (req, res) => {
-    try {
-        const {
-            searchTerm,
-            category,
-            brand,
-            priceMin,
-            priceMax,
-            page = 1,
-            pageSize = 10,
-            sortBy = "createdAt",
-            sortOrder = "desc",
-        } = req.query;
-
-        const skip = (parseInt(page) - 1) * parseInt(pageSize);
-        const take = parseInt(pageSize);
-
-        let where = {
-            OR: [
-                { stockQuantity: { gt: 0 } },
-                {
-                    variants: {
-                        some: {
-                            stockQuantity: { gt: 0 },
-                        },
-                    },
-                },
-            ],
-        };
-
-        // Search term filter
-        if (searchTerm) {
-            where.AND = [{
-                OR: [
-                    { title: { contains: searchTerm, mode: "insensitive" } },
-                    { sku: { contains: searchTerm, mode: "insensitive" } },
-                    { description: { contains: searchTerm, mode: "insensitive" } },
-                    { brandName: { contains: searchTerm, mode: "insensitive" } },
-                ],
-            }, ];
-        }
-
-        // Category filter (assuming category format: "Parent > Sub > Type")
-        if (category) {
-            const categoryParts = category.split(" > ").map((part) => part.trim());
-            if (categoryParts.length === 3) {
-                where.AND = where.AND ?
-                    [...where.AND, {
-                        parentCategory: { name: categoryParts[0] }
-                    }, {
-                        subCategory: { name: categoryParts[1] }
-                    }, {
-                        category: { name: categoryParts[2] }
-                    }, ] :
-                    [{
-                        parentCategory: { name: categoryParts[0] }
-                    }, {
-                        subCategory: { name: categoryParts[1] }
-                    }, {
-                        category: { name: categoryParts[2] }
-                    }, ];
-            } else if (categoryParts.length === 2) {
-                where.AND = where.AND ?
-                    [...where.AND, {
-                        parentCategory: { name: categoryParts[0] }
-                    }, {
-                        subCategory: { name: categoryParts[1] }
-                    }, ] :
-                    [{
-                        parentCategory: { name: categoryParts[0] }
-                    }, {
-                        subCategory: { name: categoryParts[1] }
-                    }, ];
-            } else if (categoryParts.length === 1) {
-                const categoryOr = {
-                    OR: [{
-                        parentCategory: { name: categoryParts[0] }
-                    }, {
-                        subCategory: { name: categoryParts[0] }
-                    }, {
-                        category: { name: categoryParts[0] }
-                    }, ],
-                };
-                where.AND = where.AND ? [...where.AND, categoryOr] : [categoryOr];
-            }
-        }
-
-        // Brand filter
-        if (brand) {
-            where.AND = where.AND ?
-                [...where.AND, { brandName: brand
-                }] :
-                [{ brandName: brand
-                }];
-        }
-
-        // Price range filter
-        if (priceMin || priceMax) {
-            const priceFilter = {};
-            if (priceMin) priceFilter.gte = parseFloat(priceMin);
-            if (priceMax) priceFilter.lte = parseFloat(priceMax);
-            where.AND = where.AND ?
-                [...where.AND, { salePrice: priceFilter
-                }] :
-                [{ salePrice: priceFilter
-                }];
-        }
-
-        const products = await prisma.product.findMany({
-            where,
-            skip,
-            take,
-            orderBy: {
-                [sortBy]: sortOrder,
-            },
-            include: {
-                category: true,
-                subCategory: true,
-                parentCategory: true,
-                variants: true,
-            },
-        });
-
-        const totalProducts = await prisma.product.count({ where });
-
-        // Manually add client-side properties
-        const productsWithClientSideProps = products.map((product) => {
-            const imageUrl =
-                product.images && product.images.length > 0 ?
-                typeof product.images[0] === "object" ?
-                product.images[0].url :
-                product.images[0] :
-                null;
-            const name = product.title;
-            const hasTenDollarOffer = product.toggleFirstDeal;
-            const offerPrice = product.salePrice || product.regularPrice;
-            const quantity =
-                product.variants && product.variants.length > 0 ?
-                product.variants.reduce((sum, variant) => sum + variant.quantity, 0) :
-                product.stockQuantity;
-
-            return {
-                ...product,
-                imageUrl,
-                name,
-                hasTenDollarOffer,
-                offerPrice,
-                quantity,
-            };
-        });
-
-        res.status(200).json({
-            products: productsWithClientSideProps,
-            totalPages: Math.ceil(totalProducts / pageSize),
-            currentPage: parseInt(page),
-            totalItems: totalProducts,
-        });
-    } catch (error) {
-        console.error("Error fetching available products:", error);
-        res
-            .status(500)
-            .json({ message: "Failed to fetch available products", error: error.message });
-    }
-};
-
-
-
-const createProduct = async (req, res) => {
   try {
-    // 1. Parse data from FormData (productData and variants come as JSON strings)
-    const productData = JSON.parse(req.body.productData);
-    const variants = JSON.parse(req.body.variants || "[]"); // Ensure variants is an array, default to empty
-
-    // req.uploadedImageUrls is populated by your image upload middleware
-    const uploadedImageUrls = req.uploadedImageUrls || [];
-
-    // 2. Destructure fields from parsed productData
     const {
-      title,
-      brandName,
-      color,
-      sku,
-      itemLocation,
-      sizeId, // Note: your schema has sizeId, sizeType, sizes, but not a separate 'size' model
-      sizeType,
-      sizes,
-      categoryId,
-      subCategoryId,
-      parentCategoryId,
-      regularPrice,
-      salePrice,
-      toggleFirstDeal,
-      stockQuantity,
-      condition,
-      description,
-      status,
-      // New eBay flags from frontend
-      ebayOne,
-      ebayTwo,
-      ebayThree,
-    } = productData;
+      searchTerm,
+      category,
+      brand,
+      priceMin,
+      priceMax,
+      page = 1,
+      pageSize = 10,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = req.query;
 
-    // Basic validation
-    if (!title || !sku) {
-      return res.status(400).json({
-        success: false,
-        message: "Title and SKU are required fields.",
-      });
-    }
+    const skip = (parseInt(page) - 1) * parseInt(pageSize);
+    const take = parseInt(pageSize);
 
-    // 3. Prepare data for main Product creation
-    const createProductInput = {
-      title,
-      sku: sku.toUpperCase(), // Ensure SKU is uppercase as per your previous logic
-      images: uploadedImageUrls, // Array of { url: "...", id: "..." } objects
-      brandName: brandName || null,
-      color: color || null,
-      itemLocation: itemLocation || null,
-      sizeId: sizeId || null,
-      sizeType: sizeType || null,
-      sizes: sizes || null,
-      // Categories will be connected via `connect` in the Prisma create call
-      regularPrice: parseFloat(regularPrice) || null, // Allow null if empty string
-      salePrice: parseFloat(salePrice) || null, // Allow null if empty string
-      toggleFirstDeal: toggleFirstDeal ?? true, // Use nullish coalescing for booleans
-      stockQuantity: parseInt(stockQuantity) || null, // Allow null if empty string
-      condition: condition || "New",
-      status: status || "Draft",
-      description: description || null,
-      // New eBay flags
-      ebayOne: ebayOne ?? false,
-      ebayTwo: ebayTwo ?? false,
-      ebayThree: ebayThree ?? false,
-      // updatedById: req.user.id || null, // Uncomment if you have user context
+    let where = {
+      OR: [
+        { stockQuantity: { gt: 0 } },
+        {
+          variants: {
+            some: {
+              stockQuantity: { gt: 0 },
+            },
+          },
+        },
+      ],
     };
 
-    // 4. Create product and its variants in a transaction
-    const newProduct = await prisma.$transaction(async (prisma) => {
-      const product = await prisma.product.create({
-        data: {
-          ...createProductInput,
-          // Handle category relations using connect
-          ...(categoryId && { category: { connect: { id: categoryId } } }),
-          ...(subCategoryId && {
-            subCategory: { connect: { id: subCategoryId } },
-          }),
-          ...(parentCategoryId && {
-            parentCategory: { connect: { id: parentCategoryId } },
-          }),
+    // Search term filter
+    if (searchTerm) {
+      where.AND = [
+        {
+          OR: [
+            { title: { contains: searchTerm, mode: "insensitive" } },
+            { sku: { contains: searchTerm, mode: "insensitive" } },
+            { description: { contains: searchTerm, mode: "insensitive" } },
+            { brandName: { contains: searchTerm, mode: "insensitive" } },
+          ],
         },
-      });
+      ];
+    }
 
-      // Create variants associated with the new product
-      if (variants && variants.length > 0) {
-        const productVariantsData = variants.map((v) => ({
-          productId: product.id,
-          color: v.color,
-          sizeType: v.sizeType,
-          sizes: v.customSize || null,
-          stockQuantity: parseInt(v.quantity),
-          skuSuffix: v.skuSuffix || null,
-          regularPrice: parseFloat(v.regularPrice),
-          salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
-        }));
-        await prisma.productVariant.createMany({
-          data: productVariantsData,
-        });
-      }
-
-      // 5. Conditionally call eBay creation services ONLY if status is 'Active'
-      const eBayResponses = {};
-      if (status === "Active") {
-        const eBayProductForService = {
-          title: product.title,
-          brandName: product.brandName,
-          images: product.images, // Use the URLs from the created product
-          sku: product.sku,
-          regularPrice: product.regularPrice,
-          stockQuantity: product.stockQuantity,
-          description: product.description,
-          categoryId: categoryId, // Pass the ID, not the object
-          size: product.sizeId || "N/A", // Use product's sizeId if you want
-          sizeType: product.sizeType || "Regular",
-          color: product.color || "N/A",
-         
+    // Category filter (assuming category format: "Parent > Sub > Type")
+    if (category) {
+      const categoryParts = category.split(" > ").map((part) => part.trim());
+      if (categoryParts.length === 3) {
+        where.AND = where.AND
+          ? [
+              ...where.AND,
+              {
+                parentCategory: { name: categoryParts[0] },
+              },
+              {
+                subCategory: { name: categoryParts[1] },
+              },
+              {
+                category: { name: categoryParts[2] },
+              },
+            ]
+          : [
+              {
+                parentCategory: { name: categoryParts[0] },
+              },
+              {
+                subCategory: { name: categoryParts[1] },
+              },
+              {
+                category: { name: categoryParts[2] },
+              },
+            ];
+      } else if (categoryParts.length === 2) {
+        where.AND = where.AND
+          ? [
+              ...where.AND,
+              {
+                parentCategory: { name: categoryParts[0] },
+              },
+              {
+                subCategory: { name: categoryParts[1] },
+              },
+            ]
+          : [
+              {
+                parentCategory: { name: categoryParts[0] },
+              },
+              {
+                subCategory: { name: categoryParts[1] },
+              },
+            ];
+      } else if (categoryParts.length === 1) {
+        const categoryOr = {
+          OR: [
+            {
+              parentCategory: { name: categoryParts[0] },
+            },
+            {
+              subCategory: { name: categoryParts[0] },
+            },
+            {
+              category: { name: categoryParts[0] },
+            },
+          ],
         };
-
-        // Use Promise.allSettled to allow some eBay calls to fail without stopping others
-        const ebayPromises = [];
-        if (ebayOne) {
-          ebayPromises.push(
-            createEbayProduct(eBayProductForService)
-              .then((res) => ({
-                platform: "eBayOne",
-                status: "fulfilled",
-                value: res,
-              }))
-              .catch((err) => ({
-                platform: "eBayOne",
-                status: "rejected",
-                reason: err,
-              }))
-          );
-        }
-        if (ebayTwo) {
-          ebayPromises.push(
-            createEbayProduct2(eBayProductForService)
-              .then((res) => ({
-                platform: "eBayTwo",
-                status: "fulfilled",
-                value: res,
-              }))
-              .catch((err) => ({
-                platform: "eBayTwo",
-                status: "rejected",
-                reason: err,
-              }))
-          );
-        }
-        if (ebayThree) {
-          ebayPromises.push(
-            createEbayProduct3(eBayProductForService)
-              .then((res) => ({
-                platform: "eBayThree",
-                status: "fulfilled",
-                value: res,
-              }))
-              .catch((err) => ({
-                platform: "eBayThree",
-                status: "rejected",
-                reason: err,
-              }))
-          );
-        }
-
-        const results = await Promise.allSettled(ebayPromises);
-
-        results.forEach((result) => {
-          if (result.status === "fulfilled") {
-            eBayResponses[result.value.platform] = result.value.value;
-          } else {
-            console.error(
-              `Error listing on ${result.reason.platform}:`,
-              result.reason.reason
-            );
-            eBayResponses[result.reason.platform] = {
-              error: result.reason.reason.message || "Failed to list",
-            };
-          }
-        });
+        where.AND = where.AND ? [...where.AND, categoryOr] : [categoryOr];
       }
+    }
 
-      return { product, eBayResponses };
+    // Brand filter
+    if (brand) {
+      where.AND = where.AND
+        ? [...where.AND, { brandName: brand }]
+        : [{ brandName: brand }];
+    }
+
+    // Price range filter
+    if (priceMin || priceMax) {
+      const priceFilter = {};
+      if (priceMin) priceFilter.gte = parseFloat(priceMin);
+      if (priceMax) priceFilter.lte = parseFloat(priceMax);
+      where.AND = where.AND
+        ? [...where.AND, { salePrice: priceFilter }]
+        : [{ salePrice: priceFilter }];
+    }
+
+    const products = await prisma.product.findMany({
+      where,
+      skip,
+      take,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+      include: {
+        category: true,
+        subCategory: true,
+        parentCategory: true,
+        variants: true,
+      },
     });
 
-    return res.status(201).json({
-      success: true,
-      message:
-        "Product created and listing attempts initiated on eBay platforms.",
-      product: newProduct.product,
-      ebayListingResults: newProduct.eBayResponses,
+    const totalProducts = await prisma.product.count({ where });
+
+    // Manually add client-side properties
+    const productsWithClientSideProps = products.map((product) => {
+      const imageUrl =
+        product.images && product.images.length > 0
+          ? typeof product.images[0] === "object"
+            ? product.images[0].url
+            : product.images[0]
+          : null;
+      const name = product.title;
+      const hasTenDollarOffer = product.toggleFirstDeal;
+      const offerPrice = product.salePrice || product.regularPrice;
+      const quantity =
+        product.variants && product.variants.length > 0
+          ? product.variants.reduce((sum, variant) => sum + variant.quantity, 0)
+          : product.stockQuantity;
+
+      return {
+        ...product,
+        imageUrl,
+        name,
+        hasTenDollarOffer,
+        offerPrice,
+        quantity,
+      };
+    });
+
+    res.status(200).json({
+      products: productsWithClientSideProps,
+      totalPages: Math.ceil(totalProducts / pageSize),
+      currentPage: parseInt(page),
+      totalItems: totalProducts,
     });
   } catch (error) {
-    console.error("❌ Error during product creation or eBay listing:", error);
-    // Handle Prisma unique constraint error specifically for SKU
-    if (error.code === "P2002" && error.meta?.target?.includes("sku")) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "A product with this SKU already exists. Please use a unique SKU.",
+    console.error("Error fetching available products:", error);
+    res
+      .status(500)
+      .json({
+        message: "Failed to fetch available products",
+        error: error.message,
       });
-    }
-    return res.status(500).json({
-      success: false,
-      message: "Failed to create product or list on eBay",
-      error: error?.message || "Unknown error",
-    });
   }
 };
 
-const updateProduct = async (req, res) => {
+const createProduct = async (req, res) => {
   try {
-    const productId = req.params.id;
-
-    // 1. Parse data from FormData (all relevant parts are JSON strings)
     const productData = JSON.parse(req.body.productData);
     const variants = JSON.parse(req.body.variants || "[]");
-    const existingImages = JSON.parse(req.body.existingImages || "[]"); // Images kept by frontend
-    const newImageFiles = req.files || []; // New image files uploaded via Multer
-
-    // `req.uploadedImageUrls` will contain the URLs for the `newImageFiles` after your upload middleware runs.
     const uploadedImageUrls = req.uploadedImageUrls || [];
+    const uploadedVariantUrls = req.uploadedVariantUrls || [];
 
-    // Combine existing images (that frontend wanted to keep) with newly uploaded images
-    const allImagesForProduct = [...existingImages, ...uploadedImageUrls];
-
-    const currentProduct = await prisma.product.findUnique({
-      where: { id: productId },
-      include: { variants: true }, // Also fetch existing variants for comparison
-    });
-
-    if (!currentProduct) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Product not found." });
-    }
-
-    // Identify images to delete from Cloudflare
-    const oldCloudflareImageIds = currentProduct.images
-      .filter((img) => img.id) // Filter for objects with an 'id' (Cloudflare IDs)
-      .map((img) => img.id);
-
-    const newCloudflareImageIds = allImagesForProduct
-      .filter((img) => img.id)
-      .map((img) => img.id);
-
-    const imageIdsToDelete = oldCloudflareImageIds.filter(
-      (id) => !newCloudflareImageIds.includes(id)
-    );
-
-    // Execute deletions (consider doing this asynchronously or in a background job)
-    for (const imageId of imageIdsToDelete) {
-      console.log(`Deleting image from Cloudflare: ${imageId}`);
-      await deleteCloudflareImage(imageId).catch((deleteError) => {
-        console.error(
-          `Failed to delete Cloudflare image ${imageId}:`,
-          deleteError.message
-        );
-      });
-    }
-
-    // 2. Destructure updated fields from parsed productData
     const {
       title,
       brandName,
@@ -636,14 +397,13 @@ const updateProduct = async (req, res) => {
       stockQuantity,
       condition,
       description,
-      status, // Get the new status
-      // New eBay flags from frontend
+      status,
+      isPublished,
       ebayOne,
       ebayTwo,
       ebayThree,
     } = productData;
 
-    // Basic validation
     if (!title || !sku) {
       return res.status(400).json({
         success: false,
@@ -651,11 +411,220 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    // 3. Prepare data for main Product update
+    const createProductInput = {
+      title,
+      sku: sku.toUpperCase(),
+      images: uploadedImageUrls,
+      brandName: brandName || null,
+      color: color || null,
+      itemLocation: itemLocation || null,
+      sizeId: sizeId || null,
+      sizeType: sizeType || null,
+      sizes: sizes || null,
+      regularPrice: parseFloat(regularPrice) || null,
+      salePrice: parseFloat(salePrice) || null,
+      toggleFirstDeal: toggleFirstDeal ?? true,
+      stockQuantity: stockQuantity,
+      condition: condition || "New",
+      status: status || "Draft",
+      isPublished: isPublished ?? true,
+      description: description || null,
+      ebayOne: ebayOne ?? false,
+      ebayTwo: ebayTwo ?? false,
+      ebayThree: ebayThree ?? false,
+    };
+
+    let newProduct;
+    try {
+      // ✅ Transaction only for DB operations
+      newProduct = await prisma.$transaction(async (tx) => {
+        const product = await tx.product.create({
+          data: {
+            ...createProductInput,
+            ...(categoryId && { category: { connect: { id: categoryId } } }),
+            ...(subCategoryId && {
+              subCategory: { connect: { id: subCategoryId } },
+            }),
+            ...(parentCategoryId && {
+              parentCategory: { connect: { id: parentCategoryId } },
+            }),
+          },
+        });
+
+        if (variants && variants.length > 0) {
+          const productVariantsData = variants.map((v, index) => ({
+            productId: product.id,
+            color: v.color,
+            sizeType: v.sizeType,
+            sizes: v.customSize || null,
+            stockQuantity: v.quantity ?? 0, // ✅ ensure it's never undefined
+            skuSuffix: v.skuSuffix || null,
+            regularPrice: parseFloat(v.regularPrice),
+            salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
+            images: uploadedVariantUrls[index]
+              ? [uploadedVariantUrls[index]]
+              : [], // ✅ FIX
+          }));
+
+          await tx.productVariant.createMany({
+            data: productVariantsData,
+          });
+        }
+
+        return product;
+      });
+    } catch (dbError) {
+      if (dbError.code === "P2002" && dbError.meta?.target?.includes("sku")) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "A product with this SKU already exists. Please use a unique SKU.",
+        });
+      }
+      throw dbError;
+    }
+
+    // ✅ eBay API calls AFTER DB transaction is committed
+    const eBayResponses = {};
+    if (status === "Active") {
+      const eBayProductForService = {
+        title: newProduct.title,
+        brandName: newProduct.brandName,
+        images: newProduct.images,
+        sku: newProduct.sku,
+        regularPrice: newProduct.regularPrice,
+        stockQuantity: newProduct.stockQuantity,
+        description: newProduct.description,
+        categoryId: categoryId,
+        size: newProduct.sizeId || "N/A",
+        sizeType: newProduct.sizeType || "Regular",
+        color: newProduct.color || "N/A",
+      };
+
+      const ebayPromises = [];
+
+      if (ebayOne) {
+        ebayPromises.push(
+          createEbayProduct(eBayProductForService)
+            .then((res) => ({ platform: "eBayOne", value: res }))
+            .catch((err) => ({ platform: "eBayOne", error: err.message }))
+        );
+      }
+      if (ebayTwo) {
+        ebayPromises.push(
+          createEbayProduct2(eBayProductForService)
+            .then((res) => ({ platform: "eBayTwo", value: res }))
+            .catch((err) => ({ platform: "eBayTwo", error: err.message }))
+        );
+      }
+      if (ebayThree) {
+        ebayPromises.push(
+          createEbayProduct3(eBayProductForService)
+            .then((res) => ({ platform: "eBayThree", value: res }))
+            .catch((err) => ({ platform: "eBayThree", error: err.message }))
+        );
+      }
+
+      const results = await Promise.all(ebayPromises);
+
+      results.forEach((r) => {
+        eBayResponses[r.platform] = r.error ? { error: r.error } : r.value;
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "Product created successfully and eBay listing attempts completed.",
+      product: newProduct,
+      ebayListingResults: eBayResponses,
+    });
+  } catch (error) {
+    console.error("❌ Error during product creation or eBay listing:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create product or list on eBay",
+      error: error?.message || "Unknown error",
+    });
+  }
+};
+
+const updateProduct = async (req, res) => {
+  try {
+    const productId = req.params.id;
+
+    const productData = JSON.parse(req.body.productData);
+    const variants = JSON.parse(req.body.variants || "[]");
+    const existingImages = JSON.parse(req.body.existingImages || "[]");
+    const uploadedImageUrls = req.uploadedImageUrls || [];
+    const allImagesForProduct = [...existingImages, ...uploadedImageUrls];
+
+    const currentProduct = await prisma.product.findUnique({
+      where: { id: productId },
+      include: { variants: true },
+    });
+
+    if (!currentProduct) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found." });
+    }
+
+    const oldCloudflareImageIds = currentProduct.images
+      .filter((img) => img.id)
+      .map((img) => img.id);
+    const newCloudflareImageIds = allImagesForProduct
+      .filter((img) => img.id)
+      .map((img) => img.id);
+    const imageIdsToDelete = oldCloudflareImageIds.filter(
+      (id) => !newCloudflareImageIds.includes(id)
+    );
+
+    for (const imageId of imageIdsToDelete) {
+      await deleteCloudflareImage(imageId).catch((deleteError) => {
+        console.error(
+          `Failed to delete Cloudflare image ${imageId}:`,
+          deleteError.message
+        );
+      });
+    }
+
+    const {
+      title,
+      brandName,
+      color,
+      sku,
+      itemLocation,
+      sizeId,
+      sizeType,
+      sizes,
+      categoryId,
+      subCategoryId,
+      parentCategoryId,
+      regularPrice,
+      salePrice,
+      toggleFirstDeal,
+      stockQuantity,
+      condition,
+      description,
+      status,
+      isPublished,
+      ebayOne,
+      ebayTwo,
+      ebayThree,
+    } = productData;
+
+    if (!title || !sku) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and SKU are required fields.",
+      });
+    }
+
     const updateProductInput = {
       title,
-      sku: sku.toUpperCase(), // Ensure SKU is uppercase
-      images: allImagesForProduct, // Updated array of image objects
+      sku: sku.toUpperCase(),
+      images: allImagesForProduct,
       brandName: brandName || null,
       color: color || null,
       itemLocation: itemLocation || null,
@@ -668,21 +637,17 @@ const updateProduct = async (req, res) => {
       stockQuantity: parseInt(stockQuantity) || null,
       condition: condition || "New",
       status: status || "Draft",
+      isPublished: isPublished ?? true,
       description: description || null,
-      // New eBay flags
       ebayOne: ebayOne ?? false,
       ebayTwo: ebayTwo ?? false,
       ebayThree: ebayThree ?? false,
-      // updatedById: req.user.id || null, // Uncomment if you have user context
     };
 
-    // Store the old status to compare later
     const oldStatus = currentProduct.status;
     const newStatus = status;
 
-    // 4. Update product and its variants in a transaction
     const updatedProduct = await prisma.$transaction(async (prisma) => {
-      // --- Handle Variants ---
       const existingVariantIds = new Set(
         currentProduct.variants.map((v) => v.id)
       );
@@ -692,7 +657,6 @@ const updateProduct = async (req, res) => {
 
       variants.forEach((v) => {
         if (v.id && existingVariantIds.has(v.id)) {
-          // Existing variant, mark for update
           variantsToUpdate.push({
             id: v.id,
             data: {
@@ -703,13 +667,13 @@ const updateProduct = async (req, res) => {
               skuSuffix: v.skuSuffix || null,
               regularPrice: parseFloat(v.regularPrice),
               salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
+              images: v.images || null,
             },
           });
           variantIdsToKeep.add(v.id);
         } else {
-          // New variant, mark for creation
           variantsToCreate.push({
-            productId: productId, // Associate with current product
+            productId: productId,
             color: v.color,
             sizeType: v.sizeType,
             sizes: v.customSize || null,
@@ -717,16 +681,15 @@ const updateProduct = async (req, res) => {
             skuSuffix: v.skuSuffix || null,
             regularPrice: parseFloat(v.regularPrice),
             salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
+            images: v.images || null,
           });
         }
       });
 
-      // Determine variants to delete (those in DB but not in the incoming 'variants' array)
       const variantsToDeleteIds = currentProduct.variants
         .filter((existingV) => !variantIdsToKeep.has(existingV.id))
         .map((existingV) => existingV.id);
 
-      // Perform variant operations
       if (variantsToCreate.length > 0) {
         await prisma.productVariant.createMany({
           data: variantsToCreate,
@@ -746,12 +709,10 @@ const updateProduct = async (req, res) => {
         });
       }
 
-      // --- Update Main Product ---
       const product = await prisma.product.update({
         where: { id: productId },
         data: {
           ...updateProductInput,
-          // Handle category relations (connect if ID exists, disconnect if ID is null)
           ...(categoryId
             ? { category: { connect: { id: categoryId } } }
             : { category: { disconnect: true } }),
@@ -764,12 +725,11 @@ const updateProduct = async (req, res) => {
         },
       });
 
-      // 5. Conditionally call eBay services
       const eBayResponses = {};
       const eBayProductForService = {
         title: product.title,
         brandName: product.brandName,
-        images: product.images, // Use the URLs from the updated product
+        images: product.images,
         sku: product.sku,
         regularPrice: product.regularPrice,
         stockQuantity: product.stockQuantity,
@@ -782,7 +742,6 @@ const updateProduct = async (req, res) => {
 
       const ebayPromises = [];
 
-      // Logic for creating on eBay if status changes from Draft to Active
       if (oldStatus === "Draft" && newStatus === "Active") {
         if (ebayOne) {
           ebayPromises.push(
@@ -830,7 +789,6 @@ const updateProduct = async (req, res) => {
           );
         }
       } else if (newStatus === "Active") {
-        // If already active or changing from active to active, use update functions
         if (ebayOne) {
           ebayPromises.push(
             ebayUpdateStock(
@@ -889,7 +847,6 @@ const updateProduct = async (req, res) => {
           );
         }
       }
-      // If status is 'Draft', no eBay operations are performed.
 
       const results = await Promise.allSettled(ebayPromises);
 
@@ -932,10 +889,6 @@ const updateProduct = async (req, res) => {
     });
   }
 };
-
-
-
-
 
 const deleteProduct = async (req, res) => {
   try {
@@ -1026,6 +979,32 @@ const toggleProductOffer = async (req, res) => {
     console.error("Error toggling product offer:", error);
     res.status(500).json({
       message: "Failed to toggle product offer",
+      error: error.message,
+    });
+  }
+};
+
+const toggleProductIsPublished = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await prisma.product.findUnique({
+      where: { id },
+      select: { isPublished: true },
+    });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id },
+      data: { isPublished: !product.isPublished },
+    });
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error("Error toggling product hide:", error);
+    res.status(500).json({
+      message: "Failed to toggle product hide",
       error: error.message,
     });
   }
@@ -1338,5 +1317,6 @@ module.exports = {
   toggleProductOffer,
   bulkUpdateProducts,
   updateProductQuantities,
-  getAvailableProducts
+  getAvailableProducts,
+  toggleProductIsPublished,
 };

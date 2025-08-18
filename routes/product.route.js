@@ -13,6 +13,7 @@ const {
   createProduct,
   updateProductQuantities,
   getAvailableProducts,
+  toggleProductIsPublished,
 } = require("../controllers/product.controller");
 const { verifyUser } = require("../tools/authenticate");
 const { ensureRoleAdmin, ensureUploader } = require("../tools/tools");
@@ -34,7 +35,7 @@ productRoutes.post(
   "/",
   verifyUser,
   ensureUploader,
-  multerUpload.array("images", 10), // <--- ADD THIS: Multer middleware to process 'images' field
+   multerUpload,
   uploadImagesToCloudflare,
   createProduct
 );
@@ -44,7 +45,7 @@ productRoutes.put(
   "/:id",
   verifyUser,
   ensureRoleAdmin,
-  multerUpload.array("images", 10), // <--- ADD THIS: Multer middleware to process 'images' field
+   multerUpload,
   uploadImagesToCloudflare,
   updateProduct
 );
@@ -52,7 +53,7 @@ productRoutes.patch(
   "/:id",
   verifyUser,
   ensureRoleAdmin,
-  multerUpload.array("images", 10), // <--- ADD THIS: Multer middleware to process 'images' field
+ multerUpload,
   uploadImagesToCloudflare,
   updateProduct
 ); // Often good to have both for flexibility
@@ -68,6 +69,7 @@ productRoutes.patch("/:id/status", updateProductStatus);
 
 // PATCH toggle offer for a single product
 productRoutes.patch("/:id/toggle-offer", toggleProductOffer);
+productRoutes.patch("/:id/toggle-ispublished", toggleProductIsPublished);
 
 // POST for bulk actions
 productRoutes.post("/bulk-actions", bulkUpdateProducts);

@@ -91,6 +91,7 @@ model Product {
   condition       String? // New, Used, Refurbished, etc.
   description     String?
   status          String?
+  isPublished     Boolean? @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   updatedById     String? // Foreign key reference to another User
@@ -111,18 +112,19 @@ model Product {
 }
 
 model ProductVariant {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   productId     String
-  product       Product  @relation(fields: [productId], references: [id])
+  product       Product   @relation(fields: [productId], references: [id])
   color         String // Color is required for a variant
   sizeType      String // Size Type is required for a variant
   sizes         String? // For custom size input
-  stockQuantity Int      @default(0) // Stock quantity for this specific variant
+  stockQuantity Int       @default(0) // Stock quantity for this specific variant
   skuSuffix     String? // Suffix to append to the main product SKU for this variant
   regularPrice  Float // Custom regular price for this variant
   salePrice     Float? // Custom sale price for this variant (optional)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  images        String[] @default([])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Add a unique constraint to ensure no duplicate variants for the same product based on color and sizeType
   @@unique([productId, color, sizeType, sizes]) // Include customSize in unique constraint if it further defines uniqueness
