@@ -39,6 +39,7 @@ const walmartRoutes = require("./routes/walmart.routes");
 const { walmartOrderSync } = require("./services/walmartService");
 const { exchangeSheinTempToken, generateSheinAuthUrl } = require("./services/shein/sheinAuthService");
 const sheinRoutes = require("./routes/shein.route");
+const notificationRoutes = require("./routes/notification.routes");
 
 let app = express();
 
@@ -65,6 +66,7 @@ app.use(cors(corsOptions));
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/emails", emailRoutes);
 app.use("/api", productSyncRoutes);
 app.use("/api/ebay", ebayRoutes);

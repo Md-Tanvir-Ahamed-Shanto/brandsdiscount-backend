@@ -239,6 +239,28 @@ model ApiToken {
   updatedAt DateTime @updatedAt
 }
 
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  location  String
+  selledBy  SellBy
+  isRead    Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SellBy {
+  EBAY1
+  EBAY2
+  EBAY3
+  WEBSITE
+  WALMART
+  SHEIN
+  WOOCOM
+  PHYSICAL
+}
+
 enum Platform {
   EBAY
   EBAY2
