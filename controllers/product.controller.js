@@ -190,6 +190,8 @@ const getProductById = async (req, res) => {
   }
 };
 
+
+
 const getAvailableProducts = async (req, res) => {
   try {
     const {
@@ -198,6 +200,8 @@ const getAvailableProducts = async (req, res) => {
       brand,
       priceMin,
       priceMax,
+      sizeType, // 👈 multiple supported (comma separated)
+      sortPrice, // 👈 lowToHigh / highToLow
       page = 1,
       pageSize = 10,
       sortBy = "createdAt",
@@ -235,65 +239,39 @@ const getAvailableProducts = async (req, res) => {
       ];
     }
 
-    // Category filter (assuming category format: "Parent > Sub > Type")
+    // Category filter
     if (category) {
       const categoryParts = category.split(" > ").map((part) => part.trim());
       if (categoryParts.length === 3) {
         where.AND = where.AND
           ? [
               ...where.AND,
-              {
-                parentCategory: { name: categoryParts[0] },
-              },
-              {
-                subCategory: { name: categoryParts[1] },
-              },
-              {
-                category: { name: categoryParts[2] },
-              },
+              { parentCategory: { name: categoryParts[0] } },
+              { subCategory: { name: categoryParts[1] } },
+              { category: { name: categoryParts[2] } },
             ]
           : [
-              {
-                parentCategory: { name: categoryParts[0] },
-              },
-              {
-                subCategory: { name: categoryParts[1] },
-              },
-              {
-                category: { name: categoryParts[2] },
-              },
+              { parentCategory: { name: categoryParts[0] } },
+              { subCategory: { name: categoryParts[1] } },
+              { category: { name: categoryParts[2] } },
             ];
       } else if (categoryParts.length === 2) {
         where.AND = where.AND
           ? [
               ...where.AND,
-              {
-                parentCategory: { name: categoryParts[0] },
-              },
-              {
-                subCategory: { name: categoryParts[1] },
-              },
+              { parentCategory: { name: categoryParts[0] } },
+              { subCategory: { name: categoryParts[1] } },
             ]
           : [
-              {
-                parentCategory: { name: categoryParts[0] },
-              },
-              {
-                subCategory: { name: categoryParts[1] },
-              },
+              { parentCategory: { name: categoryParts[0] } },
+              { subCategory: { name: categoryParts[1] } },
             ];
       } else if (categoryParts.length === 1) {
         const categoryOr = {
           OR: [
-            {
-              parentCategory: { name: categoryParts[0] },
-            },
-            {
-              subCategory: { name: categoryParts[0] },
-            },
-            {
-              category: { name: categoryParts[0] },
-            },
+            { parentCategory: { name: categoryParts[0] } },
+            { subCategory: { name: categoryParts[0] } },
+            { category: { name: categoryParts[0] } },
           ],
         };
         where.AND = where.AND ? [...where.AND, categoryOr] : [categoryOr];
@@ -307,6 +285,14 @@ const getAvailableProducts = async (req, res) => {
         : [{ brandName: brand }];
     }
 
+    // 👇 SizeType filter (multi support: ?sizeType=Small,Medium,Large)
+    if (sizeType) {
+      const sizeArray = sizeType.split(",").map((s) => s.trim());
+      where.AND = where.AND
+        ? [...where.AND, { sizeType: { in: sizeArray } }]
+        : [{ sizeType: { in: sizeArray } }];
+    }
+
     // Price range filter
     if (priceMin || priceMax) {
       const priceFilter = {};
@@ -317,13 +303,21 @@ const getAvailableProducts = async (req, res) => {
         : [{ salePrice: priceFilter }];
     }
 
+    // Sorting
+    let orderBy = { [sortBy]: sortOrder }; // default createdAt desc
+    if (sortPrice) {
+      if (sortPrice === "lowToHigh") {
+        orderBy = { salePrice: "asc" };
+      } else if (sortPrice === "highToLow") {
+        orderBy = { salePrice: "desc" };
+      }
+    }
+
     const products = await prisma.product.findMany({
       where,
       skip,
       take,
-      orderBy: {
-        [sortBy]: sortOrder,
-      },
+      orderBy,
       include: {
         category: true,
         subCategory: true,
@@ -334,7 +328,7 @@ const getAvailableProducts = async (req, res) => {
 
     const totalProducts = await prisma.product.count({ where });
 
-    // Manually add client-side properties
+    // Add client-side props
     const productsWithClientSideProps = products.map((product) => {
       const imageUrl =
         product.images && product.images.length > 0
@@ -374,6 +368,11 @@ const getAvailableProducts = async (req, res) => {
     });
   }
 };
+
+
+
+
+
 
 const createProduct = async (req, res) => {
   try {
