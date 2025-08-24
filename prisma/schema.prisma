@@ -65,6 +65,7 @@ model Product {
   sku          String    @unique
   images       Json[] // Assuming images are stored as URLs
   itemLocation String? // Warehouse/store location
+  notes        String?
   sizeId       String?
   sizeType     String?
   sizes        String?
@@ -102,6 +103,7 @@ model Product {
   search_vector Unsupported("tsvector")?
   variants      ProductVariant[]
   orderDetails  OrderDetail[]            @relation("ProductOrderDetails")
+  changeHistory ProductChangeHistory[]
 
   @@index([sku])
   @@index([brandName])
@@ -109,6 +111,18 @@ model Product {
   @@index([categoryId])
   @@index([subCategoryId])
   @@index([parentCategoryId]) // Index for fast lookup by parent category
+}
+
+model ProductChangeHistory {
+  id              String   @id @default(uuid())
+  productId       String
+  oldItemLocation String?
+  newItemLocation String?
+  oldNotes        String?
+  newNotes        String?
+  changedAt       DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
 }
 
 model ProductVariant {

@@ -1,4 +1,4 @@
-// utils/emailSender.js
+
 
 require('dotenv').config();
 const AWS = require('aws-sdk');
