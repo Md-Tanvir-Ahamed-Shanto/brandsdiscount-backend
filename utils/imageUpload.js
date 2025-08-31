@@ -1,20 +1,29 @@
 const multer = require("multer");
 const axios = require("axios");
 const FormData = require("form-data");
+const fs = require("fs");
+const path = require("path");
 require("dotenv").config();
 
-// MEMORY storage for serverless
-const storage = multer.memoryStorage();
+// Use Vercel-compatible tmp storage
+const tmpDir = "/tmp";
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, tmpDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
 
 const upload = multer({ storage });
 
-// handle multiple fields
 const multerUpload = upload.fields([
   { name: 'productImages', maxCount: 10 },
   { name: 'variantImages', maxCount: 10 }
 ]);
 
-// Upload images to Cloudflare
 const uploadImagesToCloudflare = async (req, res, next) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     req.uploadedImageUrls = [];
@@ -26,10 +35,13 @@ const uploadImagesToCloudflare = async (req, res, next) => {
     const uploadedImages = [];
     const uploadedVariantImages = [];
 
-    // Upload product images
-    for (const file of req.files.productImages || []) {
+    const allFiles = [...(req.files.productImages || [])];
+    const variantFiles = [...(req.files.variantImages || [])];
+
+    const uploadFile = async (file) => {
+      const filePath = path.join(tmpDir, file.filename);
       const form = new FormData();
-      form.append("file", file.buffer, { filename: file.originalname });
+      form.append("file", fs.createReadStream(filePath), file.originalname);
 
       const response = await axios.post(
         `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/images/v1`,
@@ -44,28 +56,19 @@ const uploadImagesToCloudflare = async (req, res, next) => {
         }
       );
 
-      uploadedImages.push(response.data.result.variants[0]);
+      fs.unlink(filePath, (err) => {
+        if (err) console.error("Failed to delete tmp file:", err);
+      });
+
+      return response.data.result.variants[0];
+    };
+
+    for (const file of allFiles) {
+      uploadedImages.push(await uploadFile(file));
     }
 
-    // Upload variant images
-    for (const file of req.files.variantImages || []) {
-      const form = new FormData();
-      form.append("file", file.buffer, { filename: file.originalname });
-
-      const response = await axios.post(
-        `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/images/v1`,
-        form,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.CLOUDFLARE_IMAGES_TOKEN}`,
-            ...form.getHeaders(),
-          },
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity,
-        }
-      );
-
-      uploadedVariantImages.push(response.data.result.variants[0]);
+    for (const file of variantFiles) {
+      uploadedVariantImages.push(await uploadFile(file));
     }
 
     req.uploadedImageUrls = uploadedImages;
@@ -73,20 +76,11 @@ const uploadImagesToCloudflare = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("Error during Cloudflare image upload:");
-    if (error.response) {
-      console.error("Cloudflare API Response Error:", error.response.status, error.response.data);
-    } else if (error.request) {
-      console.error("Cloudflare API No Response received:", error.request);
-    } else {
-      console.error("Cloudflare API Request setup error:", error.message);
-    }
-
-    return res.status(500).json({ error: "Image upload to Cloudflare failed." });
+    console.error("Cloudflare upload error:", error.message);
+    return res.status(500).json({ error: "Cloudflare image upload failed." });
   }
 };
 
-// Delete an image from Cloudflare
 const deleteCloudflareImage = async (imageId) => {
   try {
     const response = await axios.delete(
@@ -99,10 +93,7 @@ const deleteCloudflareImage = async (imageId) => {
     );
     return response.data;
   } catch (error) {
-    console.error(
-      "Error deleting image from Cloudflare:",
-      error.response ? error.response.data : error.message
-    );
+    console.error("Error deleting Cloudflare image:", error.message);
     throw error;
   }
 };
