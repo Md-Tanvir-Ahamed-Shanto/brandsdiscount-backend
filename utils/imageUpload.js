@@ -3,6 +3,7 @@ const FormData = require("form-data");
 const axios = require("axios");
 require("dotenv").config();
 
+// Use memory storage — no disk writes
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -12,7 +13,7 @@ const multerUpload = upload.fields([
 ]);
 
 const uploadImagesToCloudflare = async (req, res, next) => {
-  if (!req.files || Object.keys(req.files).length === 0) {
+  if (!req.files) {
     req.uploadedImageUrls = [];
     req.uploadedVariantUrls = [];
     return next();
