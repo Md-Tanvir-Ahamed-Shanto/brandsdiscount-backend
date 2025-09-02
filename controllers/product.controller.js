@@ -213,6 +213,8 @@ const getAvailableProducts = async (req, res) => {
 
     let where = {
       isPublished: true,
+      salePrice: { not: null }, // 👈 Exclude products with null sale price
+      status: { not: "draft" },  // 👈 Exclude products with draft status
       OR: [
         { stockQuantity: { gt: 0 } },
         {
