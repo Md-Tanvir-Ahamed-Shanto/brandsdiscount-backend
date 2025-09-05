@@ -1,10 +1,10 @@
 const express = require('express');
 const categoryRoutes = express.Router();
-const { getCategoryById, getAllCategories, paginate, createCategory, updateCategory, deleteCategory } = require('../controllers/category.controller');
+const { getCategoryById, getAllCategories, paginate, createCategory, updateCategory, deleteCategory, getCategoryIds } = require('../controllers/category.controller');
 const { verifyUser } = require('../tools/authenticate');
 const { ensureRoleAdmin } = require('../tools/tools');
 
-
+categoryRoutes.get("/categorieId", getCategoryIds)
 
 // GET all categories with pagination
 categoryRoutes.get(
@@ -63,5 +63,7 @@ categoryRoutes.delete(
   ensureRoleAdmin,
   deleteCategory
 );
+
+
 
 module.exports = categoryRoutes;

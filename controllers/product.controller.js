@@ -105,7 +105,7 @@ const getProducts = async (req, res) => {
         subCategory: getCategoryInclude("subCategory"),
         parentCategory: getCategoryInclude("parentCategory"),
         variants: true, // Include variants
-          changeHistory: {
+        changeHistory: {
           orderBy: { changedAt: "asc" }, // ✅ sort oldest → newest
         },
       },
@@ -175,7 +175,6 @@ const getProductById = async (req, res) => {
         subCategory: true,
         parentCategory: true,
         variants: true,
-      
       },
     });
     if (!product) {
@@ -200,8 +199,8 @@ const getAvailableProducts = async (req, res) => {
       brand,
       priceMin,
       priceMax,
-      sizeType, // 👈 multiple supported (comma separated)
-      sortPrice, // 👈 lowToHigh / highToLow
+      sizeType,
+      sortPrice,
       page = 1,
       pageSize = 10,
       sortBy = "createdAt",
@@ -213,8 +212,8 @@ const getAvailableProducts = async (req, res) => {
 
     let where = {
       isPublished: true,
-      salePrice: { not: null }, // 👈 Exclude products with null sale price
-      status: { not: "draft" },  // 👈 Exclude products with draft status
+      salePrice: { not: null },
+      status: { not: "draft" },
       OR: [
         { stockQuantity: { gt: 0 } },
         {
@@ -227,21 +226,148 @@ const getAvailableProducts = async (req, res) => {
       ],
     };
 
-    // Search term filter
-    if (searchTerm) {
-      where.AND = [
-        {
-          OR: [
-            { title: { contains: searchTerm, mode: "insensitive" } },
-            { sku: { contains: searchTerm, mode: "insensitive" } },
-            { description: { contains: searchTerm, mode: "insensitive" } },
-            { brandName: { contains: searchTerm, mode: "insensitive" } },
-          ],
-        },
+    // Helper function to find parent categories by name (case-insensitive)
+    const findParentCategoriesByName = async (categoryName) => {
+      const variations = [
+        categoryName,
+        categoryName.toLowerCase(),
+        categoryName.toUpperCase(),
+        categoryName.charAt(0).toUpperCase() + categoryName.slice(1).toLowerCase()
       ];
+
+      const categories = await prisma.category.findMany({
+        where: {
+          AND: [
+            { parentCategoryId: null }, // Only root parent categories
+            {
+              OR: variations.map(variation => ({
+                name: { contains: variation }
+              }))
+            }
+          ]
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+
+      return categories;
+    };
+
+    if (searchTerm) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      const isMenSearch = lowerSearchTerm.includes("men");
+      const isKidsSearch = lowerSearchTerm.includes("kids");
+
+      if (isMenSearch) {
+        // Find mens parent categories
+        const mensParentCategories = await findParentCategoriesByName("mens");
+        
+        console.log('Found mens parent categories:', mensParentCategories);
+
+        if (mensParentCategories.length > 0) {
+          // Filter products by mens parent category IDs
+          const categoryCondition = {
+            parentCategory: {
+              id: { in: mensParentCategories.map(cat => cat.id) }
+            }
+          };
+
+          where.AND = where.AND ? [...where.AND, categoryCondition] : [categoryCondition];
+        } else {
+          console.log('No mens parent categories found, falling back to text search');
+          // Fallback to text-based search if no mens categories found
+          const searchVariations = [
+            searchTerm,
+            searchTerm.toLowerCase(),
+            searchTerm.toUpperCase(),
+            searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1).toLowerCase()
+          ];
+
+          let searchConditions = {
+            OR: searchVariations.flatMap(term => [
+              { title: { contains: term } },
+              { sku: { contains: term } },
+              { description: { contains: term } },
+              { brandName: { contains: term } },
+            ]),
+          };
+
+          where.AND = where.AND ? [...where.AND, searchConditions] : [searchConditions];
+        }
+
+        // Always exclude womens products when searching for men
+        const womensParentCategories = await findParentCategoriesByName("womens");
+        if (womensParentCategories.length > 0) {
+          const excludeWomensCondition = {
+            parentCategory: {
+              id: { not: { in: womensParentCategories.map(cat => cat.id) } }
+            }
+          };
+          where.AND = where.AND ? [...where.AND, excludeWomensCondition] : [excludeWomensCondition];
+        }
+
+      } else if (isKidsSearch) {
+        // Find kids parent categories
+        const kidsParentCategories = await findParentCategoriesByName("kids");
+        
+        console.log('Found kids parent categories:', kidsParentCategories);
+
+        if (kidsParentCategories.length > 0) {
+          // Filter products by kids parent category IDs
+          const categoryCondition = {
+            parentCategory: {
+              id: { in: kidsParentCategories.map(cat => cat.id) }
+            }
+          };
+
+          where.AND = where.AND ? [...where.AND, categoryCondition] : [categoryCondition];
+        } else {
+          console.log('No kids parent categories found, falling back to text search');
+          // Fallback to text-based search if no kids categories found
+          const searchVariations = [
+            searchTerm,
+            searchTerm.toLowerCase(),
+            searchTerm.toUpperCase(),
+            searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1).toLowerCase()
+          ];
+
+          let searchConditions = {
+            OR: searchVariations.flatMap(term => [
+              { title: { contains: term } },
+              { sku: { contains: term } },
+              { description: { contains: term } },
+              { brandName: { contains: term } },
+            ]),
+          };
+
+          where.AND = where.AND ? [...where.AND, searchConditions] : [searchConditions];
+        }
+
+      } else {
+        // General search in product fields
+        const searchVariations = [
+          searchTerm,
+          searchTerm.toLowerCase(),
+          searchTerm.toUpperCase(),
+          searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1).toLowerCase()
+        ];
+
+        let searchConditions = {
+          OR: searchVariations.flatMap(term => [
+            { title: { contains: term } },
+            { sku: { contains: term } },
+            { description: { contains: term } },
+            { brandName: { contains: term } },
+          ]),
+        };
+
+        where.AND = where.AND ? [...where.AND, searchConditions] : [searchConditions];
+      }
     }
 
-    // Category filter
+    // Category filter (existing logic)
     if (category) {
       const categoryParts = category.split(" > ").map((part) => part.trim());
       if (categoryParts.length === 3) {
@@ -287,7 +413,7 @@ const getAvailableProducts = async (req, res) => {
         : [{ brandName: brand }];
     }
 
-    // 👇 SizeType filter (multi support: ?sizeType=Small,Medium,Large)
+    // SizeType filter
     if (sizeType) {
       const sizeArray = sizeType.split(",").map((s) => s.trim());
       where.AND = where.AND
@@ -306,7 +432,7 @@ const getAvailableProducts = async (req, res) => {
     }
 
     // Sorting
-    let orderBy = { [sortBy]: sortOrder }; // default createdAt desc
+    let orderBy = { [sortBy]: sortOrder };
     if (sortPrice) {
       if (sortPrice === "lowToHigh") {
         orderBy = { salePrice: "asc" };
@@ -314,6 +440,8 @@ const getAvailableProducts = async (req, res) => {
         orderBy = { salePrice: "desc" };
       }
     }
+
+    console.log('Final where condition:', JSON.stringify(where, null, 2));
 
     const products = await prisma.product.findMany({
       where,
@@ -370,8 +498,6 @@ const getAvailableProducts = async (req, res) => {
     });
   }
 };
-
-
 
 
 

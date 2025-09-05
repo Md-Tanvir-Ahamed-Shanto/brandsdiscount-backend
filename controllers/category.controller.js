@@ -160,11 +160,32 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+const getCategoryIds = async (req, res) => {
+  try {
+    const categories = await prisma.category.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    res.status(200).json({ categories });
+  } catch (error) {
+    console.error("Error fetching category IDs and names:", error);
+    res.status(500).json({
+      message: "Failed to fetch category IDs and names",
+      error: error.message,
+    });
+  }
+};
+
+
 module.exports = {
   getAllCategories,
   getCategoryById,
   createCategory,
   updateCategory,
   deleteCategory,
+  getCategoryIds,
   paginate 
 };
