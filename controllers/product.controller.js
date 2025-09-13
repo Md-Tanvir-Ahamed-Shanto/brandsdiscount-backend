@@ -1152,7 +1152,7 @@ const updateProductQuantities = async (req, res) => {
           id: true,
           sku: true,
           stockQuantity: true,
-          variants: { select: { id: true, quantity: true, skuSuffix: true } },
+          variants: { select: { id: true, stockQuantity: true, skuSuffix: true } },
         },
       });
 
