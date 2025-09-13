@@ -1,6 +1,7 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 const nodemailer = require("nodemailer");
+const { createNotificationService } = require("../services/notificationService");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.example.com", // Your SMTP host
@@ -63,6 +64,14 @@ const createOrder = async (req, res) => {
         user: true, // Assuming you have a User model and want to include user details
       },
     });
+
+    const notification = await createNotificationService({
+      title: "New Sale on Website",
+      message: `Order ${newOrder.orderId} for ${newOrder.orderDetails.length}x ${newOrder.orderDetails[0].productName} sold on Website. Fulfillment from ${newOrder.location}. Please ensure stock is removed from physical store if applicable.`,
+      location: newOrder.location,
+      selledBy: WEBSITE,
+    })
+
     res.status(201).json(newOrder);
   } catch (error) {
     console.error("Error creating order:", error);

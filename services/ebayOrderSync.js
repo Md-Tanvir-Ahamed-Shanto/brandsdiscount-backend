@@ -71,6 +71,13 @@ async function ebayOrderSync() {
             where: { sku },
             data: { stockQuantity: newStock },
           });
+          
+          createNotificationService({
+            title: "Product Sold on eBay1",
+            message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
+            location: "eBay1",
+            selledBy: EBAY1,
+          })
 
           // Try each platform update independently
           try {
@@ -176,6 +183,13 @@ async function ebayOrderSync2() {
             data: { stockQuantity: newStock },
           });
 
+           createNotificationService({
+            title: "Product Sold on eBay2",
+            message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
+            location: "eBay2",
+            selledBy: EBAY2,
+          })
+
           // Try each platform update independently
           try {
             ebayUpdateStock(sku, newStock);
@@ -272,6 +286,13 @@ async function ebayOrderSync3() {
             where: { sku },
             data: { stockQuantity: newStock },
           });
+
+           createNotificationService({
+            title: "Product Sold on eBay3",
+            message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
+            location: "eBay3",
+            selledBy: EBAY3,
+          })
 
           // Try each platform update independently
           try {
