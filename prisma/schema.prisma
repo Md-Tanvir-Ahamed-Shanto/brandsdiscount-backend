@@ -144,7 +144,7 @@ model ProductChangeHistory {
   newNotes        String?
   changedAt       DateTime @default(now())
 
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id],onDelete: Cascade)
 }
 
 
@@ -152,7 +152,7 @@ model ProductChangeHistory {
 model Order {
   id            String        @id @default(uuid())
   userId        String
-  user          User          @relation("UserOrders", fields: [userId], references: [id]) // Unique relation name for User
+  user          User          @relation("UserOrders", fields: [userId], references: [id],onDelete: Cascade) // Unique relation name for User
   status        String // Pending, Completed, Cancelled, etc.
   totalAmount   Float // Total amount for the order
   createdAt     DateTime      @default(now())
@@ -171,9 +171,9 @@ model OrderDetail {
   id           String   @id @default(uuid())
   sku          String
   orderId      String
-  order        Order    @relation("OrderOrderDetails", fields: [orderId], references: [id]) // Unique relation name for Order
+  order        Order    @relation("OrderOrderDetails", fields: [orderId], references: [id],onDelete: Cascade) // Unique relation name for Order
   productId    String
-  product      Product  @relation("ProductOrderDetails", fields: [productId], references: [id]) // Unique relation name for Product
+  product      Product  @relation("ProductOrderDetails", fields: [productId], references: [id],onDelete: Cascade) // Unique relation name for Product
   quantity     Int
   price        Float // Price of the product per unit
   total        Float // Total price for the quantity
