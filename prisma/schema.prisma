@@ -113,22 +113,10 @@ model Product {
   @@index([parentCategoryId]) // Index for fast lookup by parent category
 }
 
-model ProductChangeHistory {
-  id              String   @id @default(uuid())
-  productId       String
-  oldItemLocation String?
-  newItemLocation String?
-  oldNotes        String?
-  newNotes        String?
-  changedAt       DateTime @default(now())
-
-  product Product @relation(fields: [productId], references: [id])
-}
-
 model ProductVariant {
   id            String    @id @default(uuid())
   productId     String
-  product       Product   @relation(fields: [productId], references: [id])
+  product       Product   @relation(fields: [productId], references: [id],onDelete: Cascade)
   color         String // Color is required for a variant
   sizeType      String // Size Type is required for a variant
   sizes         String? // For custom size input
@@ -145,6 +133,21 @@ model ProductVariant {
   @@index([productId])
   @@index([skuSuffix]) // Index for faster lookup if you search by SKU suffix
 }
+
+
+model ProductChangeHistory {
+  id              String   @id @default(uuid())
+  productId       String
+  oldItemLocation String?
+  newItemLocation String?
+  oldNotes        String?
+  newNotes        String?
+  changedAt       DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+}
+
+
 
 model Order {
   id            String        @id @default(uuid())
