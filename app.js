@@ -230,7 +230,7 @@ app.use("/order", orderRouter);
 app.use("/webhook", webhookRouter);
 app.use("/api", require("./routes/import"));
 
-let isRunning = true;
+let isRunning = false;
 
 cron.schedule("*/5 * * * *", async () => {
   if (isRunning) {

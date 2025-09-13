@@ -122,9 +122,7 @@ async function wooComOrderSync() {
           walmartItemUpdate(sku, stock_quantity),
         ]);
 
-        console.log(`✅ Updated stock for ${name} (SKU: ${sku})`);
       } catch (err) {
-        console.error(`❌ Failed to update stock for SKU: ${sku}`, err.message);
       }
     }));
 
