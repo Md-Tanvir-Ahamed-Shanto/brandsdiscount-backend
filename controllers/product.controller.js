@@ -894,7 +894,10 @@ const deleteProduct = async (req, res) => {
     await prisma.product.delete({
       where: { id },
     });
-    res.status(204).send(); // No content for successful deletion
+    res.status(200).json({
+      success: true,
+      message: "Product deleted successfully with history tracking.",
+    }); // No content for successful deletion
   } catch (error) {
     console.error("Error deleting product:", error);
     res
