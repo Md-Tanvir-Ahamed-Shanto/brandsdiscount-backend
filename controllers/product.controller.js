@@ -575,7 +575,7 @@ const createProduct = async (req, res) => {
         });
 
         // ✅ Create initial history record
-        await tx.productHistory.create({
+        await tx.productChangeHistory.create({
           data: {
             productId: product.id,
             newItemLocation: product.itemLocation,
