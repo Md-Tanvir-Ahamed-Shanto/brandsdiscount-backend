@@ -1,5 +1,4 @@
-const { PrismaClient } = require("@prisma/client");
-const { deleteCloudflareImage } = require("../utils/imageUpload");
+const { prisma, executeWithRetry } = require('../db/connection');
 const {
   createEbayProduct,
   createEbayProduct2,
@@ -13,7 +12,6 @@ const {
   ebayUpdateStock3,
 } = require("../services/ebayUpdateStock");
 
-const prisma = new PrismaClient();
 
 // Helper function to build category relations for Prisma includes
 const getCategoryInclude = (type) => ({
