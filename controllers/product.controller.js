@@ -1,4 +1,4 @@
-const { prisma, executeWithRetry } = require('../db/connection');
+const { prisma, executeWithRetry } = require("../db/connection");
 const {
   createEbayProduct,
   createEbayProduct2,
@@ -12,7 +12,6 @@ const {
   ebayUpdateStock3,
 } = require("../services/ebayUpdateStock");
 
-
 // Helper function to build category relations for Prisma includes
 const getCategoryInclude = (type) => ({
   select: {
@@ -20,7 +19,6 @@ const getCategoryInclude = (type) => ({
     name: true, // Assuming your Category model has a 'name' field
   },
 });
-
 
 const getProducts = async (req, res) => {
   try {
@@ -113,7 +111,6 @@ const getProducts = async (req, res) => {
     const totalProducts = await prisma.product.count({ where });
 
     const productsWithClientSideProps = products.map((product) => {
-     
       const imageUrl =
         product.images && product.images.length > 0
           ? typeof product.images[0] === "object"
@@ -157,7 +154,6 @@ const getProducts = async (req, res) => {
   }
 };
 
-
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -182,8 +178,6 @@ const getProductById = async (req, res) => {
       .json({ message: "Failed to fetch product", error: error.message });
   }
 };
-
-
 
 const getAvailableProducts = async (req, res) => {
   try {
@@ -222,129 +216,158 @@ const getAvailableProducts = async (req, res) => {
 
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase().trim();
-      
+
       // Determine search type - be very specific
-      const isWomenSearch = lowerSearchTerm === "women" || lowerSearchTerm === "woman";
-      const isMenSearch = (lowerSearchTerm === "men" || lowerSearchTerm === "man") && !isWomenSearch;
-      const isKidsSearch = lowerSearchTerm === "kids" || lowerSearchTerm === "kid";
+      const isWomenSearch =
+        lowerSearchTerm === "women" || lowerSearchTerm === "woman";
+      const isMenSearch =
+        (lowerSearchTerm === "men" || lowerSearchTerm === "man") &&
+        !isWomenSearch;
+      const isKidsSearch =
+        lowerSearchTerm === "kids" || lowerSearchTerm === "kid";
 
       if (isWomenSearch) {
-        console.log('Searching for WOMEN products only');
-        
+        console.log("Searching for WOMEN products only");
+
         // Find womens parent category by exact name match
         const womensCategory = await prisma.category.findFirst({
           where: {
             AND: [
               { parentCategoryId: null },
-              { 
+              {
                 OR: [
                   { name: { equals: "womens" } },
                   { name: { equals: "Womens" } },
                   { name: { equals: "WOMENS" } },
                   { name: { equals: "women" } },
                   { name: { equals: "Women" } },
-                  { name: { equals: "WOMEN" } }
-                ]
-              }
-            ]
-          }
+                  { name: { equals: "WOMEN" } },
+                ],
+              },
+            ],
+          },
         });
 
         if (womensCategory) {
-          console.log('Found womens category:', womensCategory);
-          where.AND = where.AND ? [...where.AND, {
-            parentCategory: { id: womensCategory.id }
-          }] : [{
-            parentCategory: { id: womensCategory.id }
-          }];
+          console.log("Found womens category:", womensCategory);
+          where.AND = where.AND
+            ? [
+                ...where.AND,
+                {
+                  parentCategory: { id: womensCategory.id },
+                },
+              ]
+            : [
+                {
+                  parentCategory: { id: womensCategory.id },
+                },
+              ];
         } else {
-          console.log('No womens category found');
+          console.log("No womens category found");
           // If no category found, return empty results for women search
-          where.AND = where.AND ? [...where.AND, { id: "non-existent-id" }] : [{ id: "non-existent-id" }];
+          where.AND = where.AND
+            ? [...where.AND, { id: "non-existent-id" }]
+            : [{ id: "non-existent-id" }];
         }
-
       } else if (isMenSearch) {
-        console.log('Searching for MEN products only');
-        
+        console.log("Searching for MEN products only");
+
         // Find mens parent category by exact name match
         const mensCategory = await prisma.category.findFirst({
           where: {
             AND: [
               { parentCategoryId: null },
-              { 
+              {
                 OR: [
                   { name: { equals: "mens" } },
                   { name: { equals: "Mens" } },
                   { name: { equals: "MENS" } },
                   { name: { equals: "men" } },
                   { name: { equals: "Men" } },
-                  { name: { equals: "MEN" } }
-                ]
-              }
-            ]
-          }
+                  { name: { equals: "MEN" } },
+                ],
+              },
+            ],
+          },
         });
 
         if (mensCategory) {
-          console.log('Found mens category:', mensCategory);
-          where.AND = where.AND ? [...where.AND, {
-            parentCategory: { id: mensCategory.id }
-          }] : [{
-            parentCategory: { id: mensCategory.id }
-          }];
+          console.log("Found mens category:", mensCategory);
+          where.AND = where.AND
+            ? [
+                ...where.AND,
+                {
+                  parentCategory: { id: mensCategory.id },
+                },
+              ]
+            : [
+                {
+                  parentCategory: { id: mensCategory.id },
+                },
+              ];
         } else {
-          console.log('No mens category found');
+          console.log("No mens category found");
           // If no category found, return empty results for men search
-          where.AND = where.AND ? [...where.AND, { id: "non-existent-id" }] : [{ id: "non-existent-id" }];
+          where.AND = where.AND
+            ? [...where.AND, { id: "non-existent-id" }]
+            : [{ id: "non-existent-id" }];
         }
-
       } else if (isKidsSearch) {
-        console.log('Searching for KIDS products only');
-        
+        console.log("Searching for KIDS products only");
+
         // Find kids parent category by exact name match
         const kidsCategory = await prisma.category.findFirst({
           where: {
             AND: [
               { parentCategoryId: null },
-              { 
+              {
                 OR: [
                   { name: { equals: "kids" } },
                   { name: { equals: "Kids" } },
                   { name: { equals: "KIDS" } },
                   { name: { equals: "children" } },
                   { name: { equals: "Children" } },
-                  { name: { equals: "CHILDREN" } }
-                ]
-              }
-            ]
-          }
+                  { name: { equals: "CHILDREN" } },
+                ],
+              },
+            ],
+          },
         });
 
         if (kidsCategory) {
-          console.log('Found kids category:', kidsCategory);
-          where.AND = where.AND ? [...where.AND, {
-            parentCategory: { id: kidsCategory.id }
-          }] : [{
-            parentCategory: { id: kidsCategory.id }
-          }];
+          console.log("Found kids category:", kidsCategory);
+          where.AND = where.AND
+            ? [
+                ...where.AND,
+                {
+                  parentCategory: { id: kidsCategory.id },
+                },
+              ]
+            : [
+                {
+                  parentCategory: { id: kidsCategory.id },
+                },
+              ];
         } else {
-          console.log('No kids category found');
+          console.log("No kids category found");
           // If no category found, return empty results for kids search
-          where.AND = where.AND ? [...where.AND, { id: "non-existent-id" }] : [{ id: "non-existent-id" }];
+          where.AND = where.AND
+            ? [...where.AND, { id: "non-existent-id" }]
+            : [{ id: "non-existent-id" }];
         }
-
       } else {
-        console.log('General search for term:', searchTerm);
+        console.log("General search for term:", searchTerm);
         // General search in product fields for other terms
         const searchVariations = [
           searchTerm,
           searchTerm.toLowerCase(),
           searchTerm.toUpperCase(),
-          searchTerm.charAt(0).toUpperCase() + searchTerm.slice(1).toLowerCase()
+          searchTerm.charAt(0).toUpperCase() +
+            searchTerm.slice(1).toLowerCase(),
         ];
 
         let searchConditions = {
-          OR: searchVariations.flatMap(term => [
+          OR: searchVariations.flatMap((term) => [
             { title: { contains: term } },
             { sku: { contains: term } },
             { description: { contains: term } },
@@ -352,7 +375,9 @@ const getAvailableProducts = async (req, res) => {
           ]),
         };
 
-        where.AND = where.AND ? [...where.AND, searchConditions] : [searchConditions];
+        where.AND = where.AND
+          ? [...where.AND, searchConditions]
+          : [searchConditions];
       }
     }
 
@@ -430,7 +455,7 @@ const getAvailableProducts = async (req, res) => {
       }
     }
 
-    console.log('Final where condition:', JSON.stringify(where, null, 2));
+    console.log("Final where condition:", JSON.stringify(where, null, 2));
 
     const products = await prisma.product.findMany({
       where,
@@ -487,8 +512,6 @@ const getAvailableProducts = async (req, res) => {
     });
   }
 };
-
-
 
 const createProduct = async (req, res) => {
   try {
@@ -556,61 +579,72 @@ const createProduct = async (req, res) => {
 
     let newProduct;
     try {
-      console.log("开始创建产品，使用带重试机制的数据库事务...");
+      console.log(
+        "Starting product creation with database transaction retry mechanism..."
+      );
       // ✅ Transaction with retry mechanism for DB operations
-      newProduct = await executeWithRetry(async () => {
-        return await prisma.$transaction(async (tx) => {
-          console.log("创建产品记录...");
-          const product = await tx.product.create({
-            data: {
-              ...createProductInput,
-              ...(categoryId && { category: { connect: { id: categoryId } } }),
-              ...(subCategoryId && {
-                subCategory: { connect: { id: subCategoryId } },
-              }),
-              ...(parentCategoryId && {
-                parentCategory: { connect: { id: parentCategoryId } },
-              }),
+      newProduct = await executeWithRetry(
+        async () => {
+          return await prisma.$transaction(
+            async (tx) => {
+              console.log("Creating product record...");
+              const product = await tx.product.create({
+                data: {
+                  ...createProductInput,
+                  ...(categoryId && {
+                    category: { connect: { id: categoryId } },
+                  }),
+                  ...(subCategoryId && {
+                    subCategory: { connect: { id: subCategoryId } },
+                  }),
+                  ...(parentCategoryId && {
+                    parentCategory: { connect: { id: parentCategoryId } },
+                  }),
+                },
+              });
+
+              console.log("Creating product history record...");
+              // ✅ Create initial history record
+              await tx.productChangeHistory.create({
+                data: {
+                  productId: product.id,
+                  newItemLocation: product.itemLocation,
+                  newNotes: product.notes, // or separate notes field
+                },
+              });
+
+              if (variants?.length > 0) {
+                console.log(`Creating ${variants.length} product variants...`);
+                const productVariantsData = variants.map((v, index) => ({
+                  productId: product.id,
+                  color: v.color,
+                  sizeType: v.sizeType,
+                  sizes: v.sizes || null,
+                  stockQuantity: v.stockQuantity ?? 0,
+                  skuSuffix: v.skuSuffix || null,
+                  regularPrice: parseFloat(v.regularPrice),
+                  salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
+                  images: uploadedVariantUrls[index]
+                    ? [uploadedVariantUrls[index]]
+                    : [],
+                }));
+
+                await tx.productVariant.createMany({
+                  data: productVariantsData,
+                });
+              }
+
+              console.log("Product database operations completed");
+              return product;
             },
-          });
-
-          console.log("创建产品历史记录...");
-          // ✅ Create initial history record
-          await tx.productChangeHistory.create({
-            data: {
-              productId: product.id,
-              newItemLocation: product.itemLocation,
-              newNotes: product.notes, // or separate notes field
-            },
-          });
-
-          if (variants?.length > 0) {
-            console.log(`创建${variants.length}个产品变体...`);
-            const productVariantsData = variants.map((v, index) => ({
-              productId: product.id,
-              color: v.color,
-              sizeType: v.sizeType,
-              sizes: v.sizes || null,
-              stockQuantity: v.stockQuantity ?? 0,
-              skuSuffix: v.skuSuffix || null,
-              regularPrice: parseFloat(v.regularPrice),
-              salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
-              images: uploadedVariantUrls[index]
-                ? [uploadedVariantUrls[index]]
-                : [],
-            }));
-
-            await tx.productVariant.createMany({
-              data: productVariantsData,
-            });
-          }
-
-          console.log("产品数据库操作完成");
-          return product;
-        }, { timeout: 30000 }); // 设置30秒超时
-      }, 3, 2000); // 最多重试3次，每次间隔2秒
+            { timeout: 30000 }
+          ); // 30 second timeout
+        },
+        3,
+        2000
+      ); // Max 3 retries with 2 second intervals
     } catch (dbError) {
-      console.error("数据库操作失败:", dbError);
+      console.error("Database operation failed:", dbError);
       if (dbError.code === "P2002" && dbError.meta?.target?.includes("sku")) {
         return res.status(400).json({
           success: false,
@@ -626,62 +660,76 @@ const createProduct = async (req, res) => {
     if (status === "Active") {
       // Get eBay category ID from mapping file
       let ebayCategoryId = "53159"; // Default category ID if mapping not found
-      
+
       try {
-        const categoryMapping = require('../categoryMaping.json');
-        
+        const categoryMapping = require("../categoryMaping.json");
+
         // Find the category in the mapping
         const findCategoryInMapping = () => {
           // Check in women's categories
-          for (const [section, categories] of Object.entries(categoryMapping.womens_categories || {})) {
+          for (const [section, categories] of Object.entries(
+            categoryMapping.womens_categories || {}
+          )) {
             for (const category of categories) {
-              if (category.website_category_id === categoryId || 
-                  category.website_category_id === subCategoryId || 
-                  category.website_category_id === parentCategoryId) {
+              if (
+                category.website_category_id === categoryId ||
+                category.website_category_id === subCategoryId ||
+                category.website_category_id === parentCategoryId
+              ) {
                 return category.ebay_category.id || "53159";
               }
             }
           }
-          
+
           // Check in men's categories
-          for (const [section, categories] of Object.entries(categoryMapping.mens_categories || {})) {
+          for (const [section, categories] of Object.entries(
+            categoryMapping.mens_categories || {}
+          )) {
             for (const category of categories) {
-              if (category.website_category_id === categoryId || 
-                  category.website_category_id === subCategoryId || 
-                  category.website_category_id === parentCategoryId) {
+              if (
+                category.website_category_id === categoryId ||
+                category.website_category_id === subCategoryId ||
+                category.website_category_id === parentCategoryId
+              ) {
                 return category.ebay_category.id || "53159";
               }
             }
           }
-          
+
           // Check in kids' categories
-          for (const [section, categories] of Object.entries(categoryMapping.kids_categories || {})) {
+          for (const [section, categories] of Object.entries(
+            categoryMapping.kids_categories || {}
+          )) {
             for (const category of categories) {
-              if (category.website_category_id === categoryId || 
-                  category.website_category_id === subCategoryId || 
-                  category.website_category_id === parentCategoryId) {
+              if (
+                category.website_category_id === categoryId ||
+                category.website_category_id === subCategoryId ||
+                category.website_category_id === parentCategoryId
+              ) {
                 return category.ebay_category.id || "53159";
               }
             }
           }
-          
+
           // Check in general categories
           for (const category of categoryMapping.general_categories || []) {
-            if (category.website_category_id === categoryId || 
-                category.website_category_id === subCategoryId || 
-                category.website_category_id === parentCategoryId) {
+            if (
+              category.website_category_id === categoryId ||
+              category.website_category_id === subCategoryId ||
+              category.website_category_id === parentCategoryId
+            ) {
               return category.ebay_category.id || "53159";
             }
           }
-          
+
           return "53159"; // Default if not found
         };
-        
+
         ebayCategoryId = findCategoryInMapping();
       } catch (error) {
         console.error("Error finding eBay category ID:", error);
       }
-      
+
       const eBayProductForService = {
         title: newProduct.title,
         brandName: newProduct.brandName,
@@ -691,13 +739,23 @@ const createProduct = async (req, res) => {
         stockQuantity: newProduct.stockQuantity,
         description: newProduct.description,
         categoryId: ebayCategoryId, // Use the mapped eBay category ID
+        // Send category name as department
+        department: categoryId
+          ? "Men's"
+          : subCategoryId
+          ? "Women's"
+          : parentCategoryId
+          ? "Kids"
+          : "Other",
         size: newProduct.sizeId || "N/A",
         sizeType: newProduct.sizeType || "Regular",
         color: newProduct.color || "N/A",
       };
 
       const ebayPromises = [];
-      console.log("Starting eBay product creation process with timeout set to 30s");
+      console.log(
+        "Starting eBay product creation process with timeout set to 30s"
+      );
 
       if (ebayOne) {
         console.log("Attempting to create product on eBay1 platform");
@@ -708,7 +766,10 @@ const createProduct = async (req, res) => {
               return { platform: "eBayOne", value: res };
             })
             .catch((err) => {
-              console.error("Failed to create product on eBay1 platform:", err.message);
+              console.error(
+                "Failed to create product on eBay1 platform:",
+                err.message
+              );
               return { platform: "eBayOne", error: err.message };
             })
         );
@@ -722,7 +783,10 @@ const createProduct = async (req, res) => {
               return { platform: "eBayTwo", value: res };
             })
             .catch((err) => {
-              console.error("Failed to create product on eBay2 platform:", err.message);
+              console.error(
+                "Failed to create product on eBay2 platform:",
+                err.message
+              );
               return { platform: "eBayTwo", error: err.message };
             })
         );
@@ -736,23 +800,31 @@ const createProduct = async (req, res) => {
               return { platform: "eBayThree", value: res };
             })
             .catch((err) => {
-              console.error("Failed to create product on eBay3 platform:", err.message);
+              console.error(
+                "Failed to create product on eBay3 platform:",
+                err.message
+              );
               return { platform: "eBayThree", error: err.message };
             })
         );
       }
 
       try {
-        console.log("等待所有eBay平台创建操作完成...");
+        console.log(
+          "Waiting for all eBay platform creation operations to complete..."
+        );
         const results = await Promise.all(ebayPromises);
-        console.log("所有eBay平台创建操作已完成");
+        console.log("All eBay platform creation operations completed");
 
         results.forEach((r) => {
           eBayResponses[r.platform] = r.error ? { error: r.error } : r.value;
         });
       } catch (ebayError) {
-        console.error("eBay创建产品过程中发生错误:", ebayError);
-        // 即使eBay操作失败，我们仍然返回成功创建的产品
+        console.error(
+          "Error occurred during eBay product creation:",
+          ebayError
+        );
+        // Even if eBay operations fail, we still return the successfully created product
       }
     }
 
@@ -769,7 +841,7 @@ const createProduct = async (req, res) => {
       success: false,
       message: "Failed to create product or list on eBay",
       error: error?.message || "Unknown error",
-      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      stack: process.env.NODE_ENV === "development" ? error?.stack : undefined,
     });
   }
 };
@@ -940,9 +1012,12 @@ const updateProduct = async (req, res) => {
         data: {
           ...updateProductInput,
           // Explicitly set ebay flags to ensure they can be toggled off
-          ebayOne: ebayOne === false ? false : (ebayOne || currentProduct.ebayOne),
-          ebayTwo: ebayTwo === false ? false : (ebayTwo || currentProduct.ebayTwo),
-          ebayThree: ebayThree === false ? false : (ebayThree || currentProduct.ebayThree),
+          ebayOne:
+            ebayOne === false ? false : ebayOne || currentProduct.ebayOne,
+          ebayTwo:
+            ebayTwo === false ? false : ebayTwo || currentProduct.ebayTwo,
+          ebayThree:
+            ebayThree === false ? false : ebayThree || currentProduct.ebayThree,
           ...(categoryId
             ? { category: { connect: { id: categoryId } } }
             : { category: { disconnect: true } }),
@@ -963,62 +1038,76 @@ const updateProduct = async (req, res) => {
     if (status === "Active" && (ebayOne || ebayTwo || ebayThree)) {
       // Get eBay category ID from mapping file
       let ebayCategoryId = "53159"; // Default category ID if mapping not found
-      
+
       try {
-        const categoryMapping = require('../categoryMaping.json');
-        
+        const categoryMapping = require("../categoryMaping.json");
+
         // Find the category in the mapping
         const findCategoryInMapping = () => {
           // Check in women's categories
-          for (const [section, categories] of Object.entries(categoryMapping.womens_categories || {})) {
+          for (const [section, categories] of Object.entries(
+            categoryMapping.womens_categories || {}
+          )) {
             for (const category of categories) {
-              if (category.website_category_id === categoryId || 
-                  category.website_category_id === subCategoryId || 
-                  category.website_category_id === parentCategoryId) {
+              if (
+                category.website_category_id === categoryId ||
+                category.website_category_id === subCategoryId ||
+                category.website_category_id === parentCategoryId
+              ) {
                 return category.ebay_category.id || "53159";
               }
             }
           }
-          
+
           // Check in men's categories
-          for (const [section, categories] of Object.entries(categoryMapping.mens_categories || {})) {
+          for (const [section, categories] of Object.entries(
+            categoryMapping.mens_categories || {}
+          )) {
             for (const category of categories) {
-              if (category.website_category_id === categoryId || 
-                  category.website_category_id === subCategoryId || 
-                  category.website_category_id === parentCategoryId) {
+              if (
+                category.website_category_id === categoryId ||
+                category.website_category_id === subCategoryId ||
+                category.website_category_id === parentCategoryId
+              ) {
                 return category.ebay_category.id || "53159";
               }
             }
           }
-          
+
           // Check in kids' categories
-          for (const [section, categories] of Object.entries(categoryMapping.kids_categories || {})) {
+          for (const [section, categories] of Object.entries(
+            categoryMapping.kids_categories || {}
+          )) {
             for (const category of categories) {
-              if (category.website_category_id === categoryId || 
-                  category.website_category_id === subCategoryId || 
-                  category.website_category_id === parentCategoryId) {
+              if (
+                category.website_category_id === categoryId ||
+                category.website_category_id === subCategoryId ||
+                category.website_category_id === parentCategoryId
+              ) {
                 return category.ebay_category.id || "53159";
               }
             }
           }
-          
+
           // Check in general categories
           for (const category of categoryMapping.general_categories || []) {
-            if (category.website_category_id === categoryId || 
-                category.website_category_id === subCategoryId || 
-                category.website_category_id === parentCategoryId) {
+            if (
+              category.website_category_id === categoryId ||
+              category.website_category_id === subCategoryId ||
+              category.website_category_id === parentCategoryId
+            ) {
               return category.ebay_category.id || "53159";
             }
           }
-          
+
           return "53159"; // Default if not found
         };
-        
+
         ebayCategoryId = findCategoryInMapping();
       } catch (error) {
         console.error("Error finding eBay category ID:", error);
       }
-      
+
       const eBayProductForService = {
         title: updatedProduct.title,
         brandName: updatedProduct.brandName,
@@ -1066,9 +1155,11 @@ const updateProduct = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Product updated successfully and eBay listing attempts completed.",
+      message:
+        "Product updated successfully and eBay listing attempts completed.",
       product: updatedProduct,
-      ebayListingResults: Object.keys(eBayResponses).length > 0 ? eBayResponses : undefined,
+      ebayListingResults:
+        Object.keys(eBayResponses).length > 0 ? eBayResponses : undefined,
     });
   } catch (error) {
     console.error("Error updating product:", error);
@@ -1357,7 +1448,9 @@ const updateProductQuantities = async (req, res) => {
           id: true,
           sku: true,
           stockQuantity: true,
-          variants: { select: { id: true, stockQuantity: true, skuSuffix: true } },
+          variants: {
+            select: { id: true, stockQuantity: true, skuSuffix: true },
+          },
         },
       });
 

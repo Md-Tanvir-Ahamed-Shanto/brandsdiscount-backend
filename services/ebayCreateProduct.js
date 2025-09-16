@@ -24,7 +24,7 @@ async function createEbayProduct(product) {
     };
 
     const title = product.title || "Untitled Product";
-    const brandName = product.brandName || "Generic Brand";
+    const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
     const regularPrice = product.regularPrice || 0;
@@ -123,7 +123,7 @@ async function createEbayProduct2(product) {
     };
 
     const title = product.title || "Untitled Product";
-    const brandName = product.brandName || "Generic Brand";
+    const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
     const regularPrice = product.regularPrice || 0;
@@ -222,7 +222,7 @@ async function createEbayProduct3(product) {
     };
 
     const title = product.title || "Untitled Product";
-    const brandName = product.brandName || "Generic Brand";
+    const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
     const regularPrice = product.regularPrice || 0;
