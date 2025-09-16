@@ -3,8 +3,7 @@
 /**
  * Module dependencies.
  */
-
-const prisma = require("../db/connection");
+ const { prisma, executeWithRetry } = require('./db/connection');
 
 let app = require("../app");
 let debug = require("debug")("men-stack:server");
