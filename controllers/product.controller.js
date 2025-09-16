@@ -490,9 +490,6 @@ const getAvailableProducts = async (req, res) => {
 
 
 
-
-const { prisma, executeWithRetry } = require('../db/connection');
-
 const createProduct = async (req, res) => {
   try {
     const productData = JSON.parse(req.body.productData);

@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-const prisma = require("./db/connection");
+  const { prisma, executeWithRetry } = require('./db/connection');
 
 let app = require("./app");
 let debug = require("debug")("men-stack:server");
@@ -84,14 +84,28 @@ async function onError(error) {
 
 function onListening() {
   console.log(`Server is running on port http://localhost:${port}`);
-   prisma.$connect()
+  
+  // Use executeWithRetry for more resilient database connection
+
+  
+  executeWithRetry(() => prisma.$connect(), 5, 2000)
     .then(() => {
-      console.log("✅ Prisma is connected to the database");
+      console.log("✅ Prisma is connected to the database with retry mechanism enabled");
     })
     .catch((err) => {
-      console.error("❌ Failed to connect to the database:", err);
-      process.exit(1); // optional: stop the server
+      console.error("❌ Failed to connect to the database after multiple retries:", err);
+      console.error("Server will continue running, but database operations may fail");
+      // Not exiting process to allow for potential recovery when DB comes back online
     });
+    
+  // Add graceful shutdown handler for database
+  process.on('SIGINT', async () => {
+    console.log('Received SIGINT signal. Closing database connections...');
+    await prisma.$disconnect();
+    console.log('Database connections closed. Exiting process.');
+    process.exit(0);
+  });
+  
   let addr = server.address();
   let bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
   debug("Listening on " + bind);
