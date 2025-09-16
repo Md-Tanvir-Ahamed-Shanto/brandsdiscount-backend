@@ -152,6 +152,7 @@ async function createEbayProduct2(product) {
           description: description,
           aspects: {
             Brand: [brandName],
+            MPN: ["Does not apply"], 
             Size: [size],
             SizeType: [sizeType],
             Type: [type],
@@ -182,11 +183,20 @@ async function createEbayProduct2(product) {
         listingPolicies: {
           fulfillmentPolicyId: process.env.EBAY2_FULFILLMENT_POLICY_ID,
           paymentPolicyId: process.env.EBAY2_PAYMENT_POLICY_ID,
-          returnPolicyId: process.env.EBAY2_RETURN_POLICY_ID,
+          // returnPolicyId: process.env.EBAY2_RETURN_POLICY_ID,
         },
         categoryId: categoryId,
         merchantLocationKey: "warehouse1",
         listingDescription: description,
+        returnPolicy: {
+          returnsAccepted: true,
+          returnPeriod: {
+            "value": 30,
+            "unit": "DAY"
+          },
+          refundMethod: "MONEY_BACK",
+          returnShippingCostPayer: "BUYER"
+        }
       },
       { headers }
     );
@@ -251,6 +261,7 @@ async function createEbayProduct3(product) {
           description: description,
           aspects: {
             Brand: [brandName],
+             MPN: ["Does not apply"],
             Size: [size],
             SizeType: [sizeType],
             Type: [type],
@@ -286,6 +297,7 @@ async function createEbayProduct3(product) {
         categoryId: categoryId,
         merchantLocationKey: "warehouse1",
         listingDescription: description,
+        
       },
       { headers }
     );
