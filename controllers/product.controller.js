@@ -493,6 +493,8 @@ const getAvailableProducts = async (req, res) => {
 
 
 
+const { prisma, executeWithRetry } = require('../db/connection');
+
 const createProduct = async (req, res) => {
   try {
     const productData = JSON.parse(req.body.productData);
@@ -559,53 +561,61 @@ const createProduct = async (req, res) => {
 
     let newProduct;
     try {
-      // ✅ Transaction only for DB operations
-      newProduct = await prisma.$transaction(async (tx) => {
-        const product = await tx.product.create({
-          data: {
-            ...createProductInput,
-            ...(categoryId && { category: { connect: { id: categoryId } } }),
-            ...(subCategoryId && {
-              subCategory: { connect: { id: subCategoryId } },
-            }),
-            ...(parentCategoryId && {
-              parentCategory: { connect: { id: parentCategoryId } },
-            }),
-          },
-        });
-
-        // ✅ Create initial history record
-        await tx.productChangeHistory.create({
-          data: {
-            productId: product.id,
-            newItemLocation: product.itemLocation,
-            newNotes: product.notes, // or separate notes field
-          },
-        });
-
-        if (variants?.length > 0) {
-          const productVariantsData = variants.map((v, index) => ({
-            productId: product.id,
-            color: v.color,
-            sizeType: v.sizeType,
-            sizes: v.sizes || null,
-            stockQuantity: v.stockQuantity ?? 0,
-            skuSuffix: v.skuSuffix || null,
-            regularPrice: parseFloat(v.regularPrice),
-            salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
-            images: uploadedVariantUrls[index]
-              ? [uploadedVariantUrls[index]]
-              : [],
-          }));
-
-          await tx.productVariant.createMany({
-            data: productVariantsData,
+      console.log("开始创建产品，使用带重试机制的数据库事务...");
+      // ✅ Transaction with retry mechanism for DB operations
+      newProduct = await executeWithRetry(async () => {
+        return await prisma.$transaction(async (tx) => {
+          console.log("创建产品记录...");
+          const product = await tx.product.create({
+            data: {
+              ...createProductInput,
+              ...(categoryId && { category: { connect: { id: categoryId } } }),
+              ...(subCategoryId && {
+                subCategory: { connect: { id: subCategoryId } },
+              }),
+              ...(parentCategoryId && {
+                parentCategory: { connect: { id: parentCategoryId } },
+              }),
+            },
           });
-        }
 
-        return product;
-      });
+          console.log("创建产品历史记录...");
+          // ✅ Create initial history record
+          await tx.productChangeHistory.create({
+            data: {
+              productId: product.id,
+              newItemLocation: product.itemLocation,
+              newNotes: product.notes, // or separate notes field
+            },
+          });
+
+          if (variants?.length > 0) {
+            console.log(`创建${variants.length}个产品变体...`);
+            const productVariantsData = variants.map((v, index) => ({
+              productId: product.id,
+              color: v.color,
+              sizeType: v.sizeType,
+              sizes: v.sizes || null,
+              stockQuantity: v.stockQuantity ?? 0,
+              skuSuffix: v.skuSuffix || null,
+              regularPrice: parseFloat(v.regularPrice),
+              salePrice: v.salePrice ? parseFloat(v.salePrice) : null,
+              images: uploadedVariantUrls[index]
+                ? [uploadedVariantUrls[index]]
+                : [],
+            }));
+
+            await tx.productVariant.createMany({
+              data: productVariantsData,
+            });
+          }
+
+          console.log("产品数据库操作完成");
+          return product;
+        }, { timeout: 30000 }); // 设置30秒超时
+      }, 3, 2000); // 最多重试3次，每次间隔2秒
     } catch (dbError) {
+      console.error("数据库操作失败:", dbError);
       if (dbError.code === "P2002" && dbError.meta?.target?.includes("sku")) {
         return res.status(400).json({
           success: false,
@@ -692,34 +702,63 @@ const createProduct = async (req, res) => {
       };
 
       const ebayPromises = [];
+      console.log("Starting eBay product creation process with timeout set to 30s");
 
       if (ebayOne) {
+        console.log("Attempting to create product on eBay1 platform");
         ebayPromises.push(
           createEbayProduct(eBayProductForService)
-            .then((res) => ({ platform: "eBayOne", value: res }))
-            .catch((err) => ({ platform: "eBayOne", error: err.message }))
+            .then((res) => {
+              console.log("Successfully created product on eBay1 platform");
+              return { platform: "eBayOne", value: res };
+            })
+            .catch((err) => {
+              console.error("Failed to create product on eBay1 platform:", err.message);
+              return { platform: "eBayOne", error: err.message };
+            })
         );
       }
       if (ebayTwo) {
+        console.log("Attempting to create product on eBay2 platform");
         ebayPromises.push(
           createEbayProduct2(eBayProductForService)
-            .then((res) => ({ platform: "eBayTwo", value: res }))
-            .catch((err) => ({ platform: "eBayTwo", error: err.message }))
+            .then((res) => {
+              console.log("Successfully created product on eBay2 platform");
+              return { platform: "eBayTwo", value: res };
+            })
+            .catch((err) => {
+              console.error("Failed to create product on eBay2 platform:", err.message);
+              return { platform: "eBayTwo", error: err.message };
+            })
         );
       }
       if (ebayThree) {
+        console.log("Attempting to create product on eBay3 platform");
         ebayPromises.push(
           createEbayProduct3(eBayProductForService)
-            .then((res) => ({ platform: "eBayThree", value: res }))
-            .catch((err) => ({ platform: "eBayThree", error: err.message }))
+            .then((res) => {
+              console.log("Successfully created product on eBay3 platform");
+              return { platform: "eBayThree", value: res };
+            })
+            .catch((err) => {
+              console.error("Failed to create product on eBay3 platform:", err.message);
+              return { platform: "eBayThree", error: err.message };
+            })
         );
       }
 
-      const results = await Promise.all(ebayPromises);
+      try {
+        console.log("等待所有eBay平台创建操作完成...");
+        const results = await Promise.all(ebayPromises);
+        console.log("所有eBay平台创建操作已完成");
 
-      results.forEach((r) => {
-        eBayResponses[r.platform] = r.error ? { error: r.error } : r.value;
-      });
+        results.forEach((r) => {
+          eBayResponses[r.platform] = r.error ? { error: r.error } : r.value;
+        });
+      } catch (ebayError) {
+        console.error("eBay创建产品过程中发生错误:", ebayError);
+        // 即使eBay操作失败，我们仍然返回成功创建的产品
+      }
     }
 
     return res.status(201).json({
@@ -735,6 +774,7 @@ const createProduct = async (req, res) => {
       success: false,
       message: "Failed to create product or list on eBay",
       error: error?.message || "Unknown error",
+      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined
     });
   }
 };
