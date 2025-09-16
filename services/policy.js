@@ -1,8 +1,9 @@
 const axios = require("axios");
 const { getValidAccessToken2 } = require("../tools/ebayAuth2");
+const { getValidAccessToken3 } = require("../tools/ebayAuth3");
 
-async function listPaymentPolicies() {
-  const token = await getValidAccessToken2(); // your OAuth token
+async function getReturnPolicy(policyId) {
+  const token = await getValidAccessToken2(); // your function to get eBay OAuth token
   const headers = {
     Authorization: `Bearer ${token}`,
     "Content-Type": "application/json",
@@ -11,13 +12,13 @@ async function listPaymentPolicies() {
 
   try {
     const response = await axios.get(
-      "https://api.ebay.com/sell/account/v1/payment_policy?marketplace_id=EBAY_US",
+      `https://api.ebay.com/sell/account/v1/return_policy/${policyId}`,
       { headers }
     );
-    console.log("Payment policies for EBAY_US:", response.data);
+    console.log("Return Policy Details:", response.data);
   } catch (error) {
-    console.error("Error fetching payment policies:", error.response?.data || error.message);
+    console.error("Error fetching return policy:", error.response?.data || error.message);
   }
 }
 
-listPaymentPolicies();
+getReturnPolicy("253004185012");

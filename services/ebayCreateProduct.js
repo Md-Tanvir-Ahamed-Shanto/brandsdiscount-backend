@@ -187,9 +187,9 @@ async function createEbayProduct2(product) {
           },
         },
         listingPolicies: {
-          fulfillmentPolicyId: "260772569018",
-          paymentPolicyId: "260772557018",
-          returnPolicyId:"260772563018",
+          fulfillmentPolicyId: process.env.EBAY2_FULFILLMENT_POLICY_ID,
+          paymentPolicyId: process.env.EBAY2_PAYMENT_POLICY_ID,
+          returnPolicyId: process.env.EBAY2_RETURN_POLICY_ID,
         },
         categoryId: categoryId,
         merchantLocationKey: "warehouse1",
