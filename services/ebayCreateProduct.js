@@ -188,7 +188,7 @@ async function createEbayProduct2(product) {
         },
         listingPolicies: {
           fulfillmentPolicyId: "260772569018",
-          paymentPolicyId: process.env.EBAY2_PAYMENT_POLICY_ID,
+          paymentPolicyId: "260772557018",
           returnPolicyId:"260772563018",
         },
         categoryId: categoryId,
