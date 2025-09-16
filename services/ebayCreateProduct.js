@@ -189,17 +189,11 @@ async function createEbayProduct2(product) {
         listingPolicies: {
           fulfillmentPolicyId: process.env.EBAY2_FULFILLMENT_POLICY_ID,
           paymentPolicyId: process.env.EBAY2_PAYMENT_POLICY_ID,
-          // returnPolicyId: process.env.EBAY2_RETURN_POLICY_ID,
+          returnPolicyId:"253004185012",
         },
         categoryId: categoryId,
         merchantLocationKey: "warehouse1",
         listingDescription: description,
-        returnPolicy: {
-          returnsAccepted: true,
-          returnPeriod: { value: 30, unit: "DAY" },
-          refundMethod: "MONEY_BACK",
-          returnShippingCostPayer: "BUYER",
-        },
       },
       { headers }
     );
