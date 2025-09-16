@@ -189,7 +189,7 @@ async function createEbayProduct2(product) {
         listingPolicies: {
           fulfillmentPolicyId: process.env.EBAY2_FULFILLMENT_POLICY_ID,
           paymentPolicyId: process.env.EBAY2_PAYMENT_POLICY_ID,
-          returnPolicyId:"NEW_POLICY_ID_FOR_EBAY_US",
+          returnPolicyId:"260772563018",
         },
         categoryId: categoryId,
         merchantLocationKey: "warehouse1",
