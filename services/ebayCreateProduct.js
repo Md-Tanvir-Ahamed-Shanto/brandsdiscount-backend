@@ -7,14 +7,16 @@ const prisma = new PrismaClient();
 
 // Create a custom axios instance with increased timeout
 const ebayAxios = axios.create({
-  timeout: 30000 // 30 seconds timeout instead of default 10 seconds
+  timeout: 30000, // 30 seconds timeout instead of default 10 seconds
 });
 
 const EBAY_API_BASE_URL = "https://api.ebay.com";
 
 async function createEbayProduct(product) {
   try {
-    console.log(`Starting eBay product creation for SKU: ${product.sku || 'unknown'}`);
+    console.log(
+      `Starting eBay product creation for SKU: ${product.sku || "unknown"}`
+    );
     const token = await getValidAccessToken();
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -105,15 +107,19 @@ async function createEbayProduct(product) {
     console.log(`✅ Created and published eBay product: ${sku}`);
     return { success: true, sku, offerId };
   } catch (error) {
-    console.error(`❌ Error creating eBay product:`, error.response?.data || error.message);
+    console.error(
+      `❌ Error creating eBay product:`,
+      error.response?.data || error.message
+    );
     throw error;
   }
 }
 
-
 async function createEbayProduct2(product) {
   try {
-    console.log(`Starting eBay2 product creation for SKU: ${product.sku || 'unknown'}`);
+    console.log(
+      `Starting eBay2 product creation for SKU: ${product.sku || "unknown"}`
+    );
     const token = await getValidAccessToken2();
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -152,7 +158,7 @@ async function createEbayProduct2(product) {
           description: description,
           aspects: {
             Brand: [brandName],
-            MPN: ["Does not apply"], 
+            MPN: ["Does not apply"],
             Size: [size],
             SizeType: [sizeType],
             Type: [type],
@@ -190,13 +196,10 @@ async function createEbayProduct2(product) {
         listingDescription: description,
         returnPolicy: {
           returnsAccepted: true,
-          returnPeriod: {
-            "value": 30,
-            "unit": "DAY"
-          },
+          returnPeriod: { value: 30, unit: "DAY" },
           refundMethod: "MONEY_BACK",
-          returnShippingCostPayer: "BUYER"
-        }
+          returnShippingCostPayer: "BUYER",
+        },
       },
       { headers }
     );
@@ -214,15 +217,19 @@ async function createEbayProduct2(product) {
     console.log(`✅ Created and published eBay2 product: ${sku}`);
     return { success: true, sku, offerId };
   } catch (error) {
-    console.error(`❌ Error creating eBay2 product:`, error.response?.data || error.message);
+    console.error(
+      `❌ Error creating eBay2 product:`,
+      error.response?.data || error.message
+    );
     throw error;
   }
 }
 
-
 async function createEbayProduct3(product) {
   try {
-    console.log(`Starting eBay3 product creation for SKU: ${product.sku || 'unknown'}`);
+    console.log(
+      `Starting eBay3 product creation for SKU: ${product.sku || "unknown"}`
+    );
     const token = await getValidAccessToken3();
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -261,7 +268,7 @@ async function createEbayProduct3(product) {
           description: description,
           aspects: {
             Brand: [brandName],
-             MPN: ["Does not apply"],
+            MPN: ["Does not apply"],
             Size: [size],
             SizeType: [sizeType],
             Type: [type],
@@ -297,7 +304,6 @@ async function createEbayProduct3(product) {
         categoryId: categoryId,
         merchantLocationKey: "warehouse1",
         listingDescription: description,
-        
       },
       { headers }
     );
@@ -315,7 +321,10 @@ async function createEbayProduct3(product) {
     console.log(`✅ Created and published eBay3 product: ${sku}`);
     return { success: true, sku, offerId };
   } catch (error) {
-    console.error(`❌ Error creating eBay3 product:`, error.response?.data || error.message);
+    console.error(
+      `❌ Error creating eBay3 product:`,
+      error.response?.data || error.message
+    );
     throw error;
   }
 }
