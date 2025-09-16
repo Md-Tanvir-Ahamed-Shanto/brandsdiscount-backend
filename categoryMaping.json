@@ -1,0 +1,623 @@
+{
+  "womens_categories": {
+    "dresses": [
+      {
+        "website_category_name": "Cocktail and Party Dresses",
+        "website_category_id": "334a60c6-1ab6-497f-9f2f-e227d03b4f96",
+        "ebay_category": {
+          "id": "63861",
+          "name": "Dresses",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Casual and Day Dresses",
+        "website_category_id": "4a6b94ea-9ff1-444c-b072-231e1798cb40",
+        "ebay_category": {
+          "id": "63861",
+          "name": "Dresses",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Maxi and Midi Dresses",
+        "website_category_id": "fc961686-ba71-4143-b5d6-ca4ff61b7e55",
+        "ebay_category": {
+          "id": "63861",
+          "name": "Dresses",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Evening and Formal Dresses",
+        "website_category_id": "9c1be2bc-2c45-4393-9ebd-b406a400ebda",
+        "ebay_category": {
+          "id": "63861",
+          "name": "Dresses",
+          "department": "Women"
+        }
+      }
+    ],
+    "tops": [
+      {
+        "website_category_name": "Blouses and Shirts",
+        "website_category_id": "8989c733-d203-472f-8ab5-feb1675fe30f",
+        "ebay_category": {
+          "id": "53159",
+          "name": "Tops",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Tees and Tank Tops",
+        "website_category_id": "887116be-e7fd-4f1b-b6d8-a4211b57f5d0",
+        "ebay_category": {
+          "id": "53159",
+          "name": "Tops",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Sweaters and Cardigans",
+        "website_category_id": "a5d6ad16-2b71-40b7-98d6-e2ad39315e1e",
+        "ebay_category": {
+          "id": "63866",
+          "name": "Sweaters",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Hoodies and Sweatshirts",
+        "website_category_id": "2e4d25a7-895e-4377-9393-ede7d8278450",
+        "ebay_category": {
+          "id": "155226",
+          "name": "Hoodies & Sweatshirts",
+          "department": "Women"
+        }
+      }
+    ],
+    "bottoms": [
+      {
+        "website_category_name": "Pants and Trousers",
+        "website_category_id": "34fc4531-41a9-42f1-b302-5e757deb6415",
+        "ebay_category": {
+          "id": "63863",
+          "name": "Pants",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Skirts and Mini Skirts",
+        "website_category_id": "b92e8655-c4c0-46e9-9ac9-af442d4a0aef",
+        "ebay_category": {
+          "id": "63864",
+          "name": "Skirts",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Jeans and Denim",
+        "website_category_id": "9386ef58-9940-4c46-8c17-8e0e8ddbdb2a",
+        "ebay_category": {
+          "id": "11554",
+          "name": "Jeans",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Leggings and Shorts",
+        "website_category_id": "3e6b2127-5fbd-4b97-bc0a-08af23489fd1",
+        "ebay_category": [
+          {
+            "id": "169001",
+            "name": "Leggings",
+            "department": "Women"
+          },
+          {
+            "id": "11555",
+            "name": "Shorts",
+            "department": "Women"
+          }
+        ]
+      }
+    ],
+    "outerwear": [
+      {
+        "website_category_name": "Jackets and Coats",
+        "website_category_id": "cf1aa1d5-b47f-4554-a2b2-98ac215f4084",
+        "ebay_category": {
+          "id": "63862",
+          "name": "Coats, Jackets & Vests",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Blazers and Vests",
+        "website_category_id": "5d09c335-b05d-4e5d-a253-76e0ab541a8a",
+        "ebay_category": {
+          "id": "63862",
+          "name": "Coats, Jackets & Vests",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Leather and Denim Jackets",
+        "website_category_id": "11fcd79e-cafd-4295-afde-c4d3f729ecac",
+        "ebay_category": {
+          "id": "63862",
+          "name": "Coats, Jackets & Vests",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Trench and Rain Coats",
+        "website_category_id": "fa82afef-c889-408a-b63b-66e0f1103bfa",
+        "ebay_category": {
+          "id": "63862",
+          "name": "Coats, Jackets & Vests",
+          "department": "Women"
+        }
+      }
+    ],
+    "shoes": [
+      {
+        "website_category_name": "Heels and Pumps",
+        "website_category_id": "c88bf84a-0185-4486-b17b-fbfd344a57c3",
+        "ebay_category": {
+          "id": "55793",
+          "name": "Heels",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Boots and Booties",
+        "website_category_id": "bcd6a486-88b9-4426-827a-e351925770a4",
+        "ebay_category": {
+          "id": "53557",
+          "name": "Boots",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Sneakers and Trainers",
+        "website_category_id": "002a7c26-b335-4d98-b702-e52cfa2a0496",
+        "ebay_category": {
+          "id": "95672",
+          "name": "Athletic Shoes",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Sandals and Flats",
+        "website_category_id": "6f88e3b2-32b0-452b-a207-a1dc1304f228",
+        "ebay_category": [
+          {
+            "id": "45333",
+            "name": "Flats",
+            "department": "Women"
+          },
+          {
+            "id": "62107",
+            "name": "Sandals",
+            "department": "Women"
+          }
+        ]
+      }
+    ],
+    "lingerie_and_sleepwear": [
+      {
+        "website_category_name": "Bras and Bralettes",
+        "website_category_id": "b89d7f2b-e368-4179-a5ff-a4f840a5b329",
+        "ebay_category": {
+          "id": "63853",
+          "name": "Bras & Bra Sets",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Panties and Thongs",
+        "website_category_id": "c4482192-c40a-4889-ba30-a442c5e68edd",
+        "ebay_category": {
+          "id": "63854",
+          "name": "Panties",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Pajamas and Nightgowns",
+        "website_category_id": "b70fb4bb-e00e-496e-8cbc-9a1a71a835c3",
+        "ebay_category": {
+          "id": "63855",
+          "name": "Sleepwear & Robes",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Lingerie Sets",
+        "website_category_id": "c54447a4-1e73-4b7c-a211-02f11a8695aa",
+        "ebay_category": {
+          "id": "63853",
+          "name": "Bras & Bra Sets",
+          "department": "Women"
+        }
+      }
+    ],
+    "accessories": [
+      {
+        "website_category_name": "Fashion Scarves",
+        "website_category_id": "4a212755-d073-4de6-ba41-f3d21945ffb0",
+        "ebay_category": {
+          "id": "45238",
+          "name": "Scarves & Wraps",
+          "department": "Women"
+        }
+      }
+    ],
+    "swimwear": [
+      {
+        "website_category_name": "Bikinis",
+        "website_category_id": "7a85a281-3470-41fe-99fa-917b90e17c9d",
+        "ebay_category": {
+          "id": "63867",
+          "name": "Swimwear",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "One-Piece Swimsuits",
+        "website_category_id": "474dd0ec-8745-4f43-859c-d79301948850",
+        "ebay_category": {
+          "id": "63867",
+          "name": "Swimwear",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Tankinis",
+        "website_category_id": "b3e1d076-35e9-46d9-be85-12ec78783a6c",
+        "ebay_category": {
+          "id": "63867",
+          "name": "Swimwear",
+          "department": "Women"
+        }
+      },
+      {
+        "website_category_name": "Swim Cover-Ups",
+        "website_category_id": "b356a1a7-ad8d-405a-b42f-c846ec11953f",
+        "ebay_category": {
+          "id": "63867",
+          "name": "Swimwear",
+          "department": "Women"
+        }
+      }
+    ]
+  },
+  "mens_categories": {
+    "shirts_and_tops": [
+      {
+        "website_category_name": "Casual Shirts",
+        "website_category_id": "12fa1417-a38f-42a3-ba6d-8c14b61b72cd",
+        "ebay_category": {
+          "id": "57990",
+          "name": "Casual Button-Down Shirts",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Formal Shirts",
+        "website_category_id": "949d670a-e609-4f87-9c46-14ddeb9ecf4f",
+        "ebay_category": {
+          "id": "57991",
+          "name": "Dress Shirts",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "T-Shirts and Polos",
+        "website_category_id": "0be99aaa-da4e-4f13-be48-4a29b33c1fb2",
+        "ebay_category": [
+          {
+            "id": "15687",
+            "name": "T-Shirts",
+            "department": "Men"
+          },
+          {
+            "id": "185101",
+            "name": "Polos",
+            "department": "Men"
+          }
+        ]
+      },
+      {
+        "website_category_name": "Sweatshirts and Hoodies",
+        "website_category_id": "8b728699-1568-4e02-9a86-0dba6fdccead",
+        "ebay_category": {
+          "id": "59392",
+          "name": "Hoodies & Sweatshirts",
+          "department": "Men"
+        }
+      }
+    ],
+    "pants_and_bottoms": [
+      {
+        "website_category_name": "Jeans",
+        "website_category_id": "10652ab7-6d7e-4106-a930-d5766c8dbf71",
+        "ebay_category": {
+          "id": "11483",
+          "name": "Jeans",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Chinos and Trousers",
+        "website_category_id": "10df2e89-7541-424a-a565-65af0063408b",
+        "ebay_category": {
+          "id": "59347",
+          "name": "Pants",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Shorts",
+        "website_category_id": "ac43a772-cd46-4f75-ad43-37e52666d25b",
+        "ebay_category": {
+          "id": "59375",
+          "name": "Shorts",
+          "department": "Men"
+        }
+      }
+    ],
+    "outerwear": [
+      {
+        "website_category_name": "Casual Jackets",
+        "website_category_id": "e6fe24f1-9bcb-4514-98ac-9ee405cb8cbb",
+        "ebay_category": {
+          "id": "59353",
+          "name": "Jackets & Vests",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Tailored Blazers",
+        "website_category_id": "38e3e349-6653-4c64-82de-f35cc72517ba",
+        "ebay_category": {
+          "id": "3001",
+          "name": "Suits & Suit Separates",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Rain Protection",
+        "website_category_id": "b4b32a1d-67ad-4ed8-bbb2-364ecd2a76b4",
+        "ebay_category": {
+          "id": "59353",
+          "name": "Jackets & Vests",
+          "department": "Men"
+        }
+      }
+    ],
+    "shoes": [
+      {
+        "website_category_name": "Casual Shoes",
+        "website_category_id": "99d58506-db55-4f70-b473-b2dd03288703",
+        "ebay_category": {
+          "id": "24087",
+          "name": "Casual Shoes",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Formal Shoes",
+        "website_category_id": "e1e491b0-fc20-4a54-94cc-ab27bf47a6e0",
+        "ebay_category": {
+          "id": "53120",
+          "name": "Dress Shoes",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Sneakers",
+        "website_category_id": "497bcb53-a7c3-4b57-be96-b70507d7b3d3",
+        "ebay_category": {
+          "id": "15709",
+          "name": "Athletic Shoes",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Boots",
+        "website_category_id": "9c6c0967-db26-4f02-9586-fffcddb8b4b4",
+        "ebay_category": {
+          "id": "11498",
+          "name": "Boots",
+          "department": "Men"
+        }
+      }
+    ],
+    "accessories": [
+      {
+        "website_category_name": "Hats",
+        "website_category_id": "f55ba917-fc6e-48ed-8e64-8ea190b51288",
+        "ebay_category": {
+          "id": "52365",
+          "name": "Hats",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Mens Scarves",
+        "website_category_id": "1df01308-9d14-42bd-943f-d4f3094add88",
+        "ebay_category": {
+          "id": "52382",
+          "name": "Scarves",
+          "department": "Men"
+        }
+      }
+    ],
+    "underwear_and_loungewear": [
+      {
+        "website_category_name": "Boxers and Briefs",
+        "website_category_id": "3b447d4e-98ac-43f9-96aa-2ad17569e972",
+        "ebay_category": {
+          "id": "11507",
+          "name": "Underwear",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Loungewear and Pajamas",
+        "website_category_id": "be8a8da1-af51-492b-9089-cf1daf8d171a",
+        "ebay_category": {
+          "id": "11510",
+          "name": "Sleepwear & Robes",
+          "department": "Men"
+        }
+      }
+    ],
+    "suits_and_formalwear": [
+      {
+        "website_category_name": "Business Suits",
+        "website_category_id": "7f191d2d-b29d-42a9-96c1-490742bf0d79",
+        "ebay_category": {
+          "id": "3001",
+          "name": "Suits & Suit Separates",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Tuxedos",
+        "website_category_id": "fc4d032e-53e7-460b-809f-ed5ed502073f",
+        "ebay_category": {
+          "id": "105515",
+          "name": "Tuxedos & Formal Suits",
+          "department": "Men"
+        }
+      }
+    ],
+    "activewear": [
+      {
+        "website_category_name": "Gym and Sportswear",
+        "website_category_id": "3c1a6a9b-bb62-4e62-bf11-65a12ca03a27",
+        "ebay_category": [
+          {
+            "id": "185076",
+            "name": "Activewear Tops",
+            "department": "Men"
+          },
+          {
+            "id": "260956",
+            "name": "Activewear Pants",
+            "department": "Men"
+          }
+        ]
+      },
+      {
+        "website_category_name": "Running and Track Wear",
+        "website_category_id": "f3dde62f-276b-4537-ac8c-ae30e52c724c",
+        "ebay_category": {
+          "id": "185708",
+          "name": "Tracksuits & Sets",
+          "department": "Men"
+        }
+      }
+    ],
+    "swimwear": [
+      {
+        "website_category_name": "Board Shorts",
+        "website_category_id": "f52d3546-73fe-4c41-b3e3-72f3a25960a4",
+        "ebay_category": {
+          "id": "15690",
+          "name": "Swimwear",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Swim Trunks",
+        "website_category_id": "fb697ef2-9cec-4120-8547-7f525c37154b",
+        "ebay_category": {
+          "id": "15690",
+          "name": "Swimwear",
+          "department": "Men"
+        }
+      },
+      {
+        "website_category_name": "Rash Guards",
+        "website_category_id": "39c0f2eb-2b4a-43b9-9911-66419a47b84b",
+        "ebay_category": {
+          "id": "15690",
+          "name": "Swimwear",
+          "department": "Men"
+        }
+      }
+    ]
+  },
+  "kids_categories": {
+    "apparel": [
+      {
+        "website_category_name": "Tops",
+        "website_category_id": "800c2876-f58b-46e0-9cd4-08b4ff3d0c8b",
+        "ebay_category": {
+          "id": "155199",
+          "name": "Tops & T-Shirts",
+          "department": "Teens"
+        }
+      },
+      {
+        "website_category_name": "Bottoms",
+        "website_category_id": "a6d26bc6-d263-4f66-a208-ceec2b0fe038",
+        "ebay_category": {
+          "id": "175654",
+          "name": "Pants",
+          "department": "Teens"
+        }
+      },
+      {
+        "website_category_name": "Outerwear",
+        "website_category_id": "3c1855a4-3715-4719-97f3-5d9eaa3cb3f4",
+        "ebay_category": {
+          "id": "155201",
+          "name": "Outerwear",
+          "department": "Teens"
+        }
+      }
+    ],
+    "shoes": [
+      {
+        "website_category_name": "Kids Shoes",
+        "website_category_id": "b8e01650-7259-4869-bd75-16883a4b5d24",
+        "ebay_category": {
+          "id": "158954",
+          "name": "Youth Shoes",
+          "department": "Teens"
+        }
+      }
+    ],
+    "accessories": [
+      {
+        "website_category_name": "Kids Accessories",
+        "website_category_id": "5a84ddbb-e15e-4836-8de4-c08ffc6e257b",
+        "ebay_category": {
+          "id": "260014",
+          "name": "Accessory Sets",
+          "department": "Teens"
+        }
+      }
+    ]
+  },
+  "general_categories": [
+    {
+      "website_category_name": "General Apparel",
+      "website_category_id": "b4e9bb27-5793-4fe7-93fb-38d006c4facb",
+      "ebay_category": {
+        "department": null
+      }
+    },
+    {
+      "website_category_name": "Others",
+      "website_category_id": "24d6ee10-129d-4134-83b1-3893c5806236",
+      "ebay_category": {
+        "department": null
+      }
+    }
+  ]
+}

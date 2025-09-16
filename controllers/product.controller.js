@@ -619,6 +619,64 @@ const createProduct = async (req, res) => {
     // ✅ eBay API calls AFTER DB transaction is committed
     const eBayResponses = {};
     if (status === "Active") {
+      // Get eBay category ID from mapping file
+      let ebayCategoryId = "53159"; // Default category ID if mapping not found
+      
+      try {
+        const categoryMapping = require('../categoryMaping.json');
+        
+        // Find the category in the mapping
+        const findCategoryInMapping = () => {
+          // Check in women's categories
+          for (const [section, categories] of Object.entries(categoryMapping.womens_categories || {})) {
+            for (const category of categories) {
+              if (category.website_category_id === categoryId || 
+                  category.website_category_id === subCategoryId || 
+                  category.website_category_id === parentCategoryId) {
+                return category.ebay_category.id || "53159";
+              }
+            }
+          }
+          
+          // Check in men's categories
+          for (const [section, categories] of Object.entries(categoryMapping.mens_categories || {})) {
+            for (const category of categories) {
+              if (category.website_category_id === categoryId || 
+                  category.website_category_id === subCategoryId || 
+                  category.website_category_id === parentCategoryId) {
+                return category.ebay_category.id || "53159";
+              }
+            }
+          }
+          
+          // Check in kids' categories
+          for (const [section, categories] of Object.entries(categoryMapping.kids_categories || {})) {
+            for (const category of categories) {
+              if (category.website_category_id === categoryId || 
+                  category.website_category_id === subCategoryId || 
+                  category.website_category_id === parentCategoryId) {
+                return category.ebay_category.id || "53159";
+              }
+            }
+          }
+          
+          // Check in general categories
+          for (const category of categoryMapping.general_categories || []) {
+            if (category.website_category_id === categoryId || 
+                category.website_category_id === subCategoryId || 
+                category.website_category_id === parentCategoryId) {
+              return category.ebay_category.id || "53159";
+            }
+          }
+          
+          return "53159"; // Default if not found
+        };
+        
+        ebayCategoryId = findCategoryInMapping();
+      } catch (error) {
+        console.error("Error finding eBay category ID:", error);
+      }
+      
       const eBayProductForService = {
         title: newProduct.title,
         brandName: newProduct.brandName,
@@ -627,7 +685,7 @@ const createProduct = async (req, res) => {
         regularPrice: newProduct.regularPrice,
         stockQuantity: newProduct.stockQuantity,
         description: newProduct.description,
-        categoryId: categoryId,
+        categoryId: ebayCategoryId, // Use the mapped eBay category ID
         size: newProduct.sizeId || "N/A",
         sizeType: newProduct.sizeType || "Regular",
         color: newProduct.color || "N/A",
@@ -841,10 +899,15 @@ const updateProduct = async (req, res) => {
       }
 
       // ✅ 3. Update main product
+      // Ensure ebay flags can be toggled back to false
       const product = await tx.product.update({
         where: { id: productId },
         data: {
           ...updateProductInput,
+          // Explicitly set ebay flags to ensure they can be toggled off
+          ebayOne: ebayOne === false ? false : (ebayOne || currentProduct.ebayOne),
+          ebayTwo: ebayTwo === false ? false : (ebayTwo || currentProduct.ebayTwo),
+          ebayThree: ebayThree === false ? false : (ebayThree || currentProduct.ebayThree),
           ...(categoryId
             ? { category: { connect: { id: categoryId } } }
             : { category: { disconnect: true } }),
@@ -860,10 +923,117 @@ const updateProduct = async (req, res) => {
       return product;
     });
 
+    // ✅ eBay API calls AFTER DB transaction is committed
+    const eBayResponses = {};
+    if (status === "Active" && (ebayOne || ebayTwo || ebayThree)) {
+      // Get eBay category ID from mapping file
+      let ebayCategoryId = "53159"; // Default category ID if mapping not found
+      
+      try {
+        const categoryMapping = require('../categoryMaping.json');
+        
+        // Find the category in the mapping
+        const findCategoryInMapping = () => {
+          // Check in women's categories
+          for (const [section, categories] of Object.entries(categoryMapping.womens_categories || {})) {
+            for (const category of categories) {
+              if (category.website_category_id === categoryId || 
+                  category.website_category_id === subCategoryId || 
+                  category.website_category_id === parentCategoryId) {
+                return category.ebay_category.id || "53159";
+              }
+            }
+          }
+          
+          // Check in men's categories
+          for (const [section, categories] of Object.entries(categoryMapping.mens_categories || {})) {
+            for (const category of categories) {
+              if (category.website_category_id === categoryId || 
+                  category.website_category_id === subCategoryId || 
+                  category.website_category_id === parentCategoryId) {
+                return category.ebay_category.id || "53159";
+              }
+            }
+          }
+          
+          // Check in kids' categories
+          for (const [section, categories] of Object.entries(categoryMapping.kids_categories || {})) {
+            for (const category of categories) {
+              if (category.website_category_id === categoryId || 
+                  category.website_category_id === subCategoryId || 
+                  category.website_category_id === parentCategoryId) {
+                return category.ebay_category.id || "53159";
+              }
+            }
+          }
+          
+          // Check in general categories
+          for (const category of categoryMapping.general_categories || []) {
+            if (category.website_category_id === categoryId || 
+                category.website_category_id === subCategoryId || 
+                category.website_category_id === parentCategoryId) {
+              return category.ebay_category.id || "53159";
+            }
+          }
+          
+          return "53159"; // Default if not found
+        };
+        
+        ebayCategoryId = findCategoryInMapping();
+      } catch (error) {
+        console.error("Error finding eBay category ID:", error);
+      }
+      
+      const eBayProductForService = {
+        title: updatedProduct.title,
+        brandName: updatedProduct.brandName,
+        images: updatedProduct.images,
+        sku: updatedProduct.sku,
+        regularPrice: updatedProduct.regularPrice,
+        stockQuantity: updatedProduct.stockQuantity,
+        description: updatedProduct.description,
+        categoryId: ebayCategoryId, // Use the mapped eBay category ID
+        size: updatedProduct.sizeId || "N/A",
+        sizeType: updatedProduct.sizeType || "Regular",
+        color: updatedProduct.color || "N/A",
+      };
+
+      const ebayPromises = [];
+
+      if (ebayOne) {
+        ebayPromises.push(
+          createEbayProduct(eBayProductForService)
+            .then((res) => ({ platform: "eBayOne", value: res }))
+            .catch((err) => ({ platform: "eBayOne", error: err.message }))
+        );
+      }
+      if (ebayTwo) {
+        ebayPromises.push(
+          createEbayProduct2(eBayProductForService)
+            .then((res) => ({ platform: "eBayTwo", value: res }))
+            .catch((err) => ({ platform: "eBayTwo", error: err.message }))
+        );
+      }
+      if (ebayThree) {
+        ebayPromises.push(
+          createEbayProduct3(eBayProductForService)
+            .then((res) => ({ platform: "eBayThree", value: res }))
+            .catch((err) => ({ platform: "eBayThree", error: err.message }))
+        );
+      }
+
+      const results = await Promise.all(ebayPromises);
+
+      results.forEach((r) => {
+        eBayResponses[r.platform] = r.error ? { error: r.error } : r.value;
+      });
+    }
+
     res.status(200).json({
       success: true,
-      message: "Product updated successfully with history tracking.",
+      message: "Product updated successfully and eBay listing attempts completed.",
       product: updatedProduct,
+      ebayListingResults: Object.keys(eBayResponses).length > 0 ? eBayResponses : undefined,
     });
   } catch (error) {
     console.error("Error updating product:", error);

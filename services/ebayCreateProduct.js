@@ -94,6 +94,8 @@ async function createEbayProduct(product) {
 
   console.log(`✅ Created and published eBay product: ${sku}`);
 }
+
+
 async function createEbayProduct2(product) {
   const token = await getValidAccessToken2();
   const headers = {
@@ -181,6 +183,8 @@ async function createEbayProduct2(product) {
 
   console.log(`✅ Created and published eBay2 product: ${sku}`);
 }
+
+
 async function createEbayProduct3(product) {
   const token = await getValidAccessToken3();
   const headers = {
