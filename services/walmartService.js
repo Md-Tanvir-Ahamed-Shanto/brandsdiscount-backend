@@ -166,6 +166,8 @@ async function walmartItemUpdate(sku, quantity) {
     };
 
     const response = await axios.put(url, updateData, { headers });
+    console.log("✅ Walmart Inventory Update Response:", response.data);
+    return response.data;
   } catch (error) {
     console.error(
       "Walmart Inventory Update Error:",
