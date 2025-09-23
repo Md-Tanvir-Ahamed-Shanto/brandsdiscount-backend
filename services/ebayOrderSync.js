@@ -10,7 +10,7 @@ const { getValidAccessToken3 } = require("../tools/ebayAuth3");
 const { getValidAccessToken } = require("../tools/ebayAuth");
 const { updateStockBySku } = require("./wooComService");
 const { walmartItemUpdate } = require("./walmartService");
-const { createNotificationService } = require("./notificationService");
+const { createNotification } = require("../utils/notification");
 
 async function ebayOrderSync() {
   try {
@@ -73,12 +73,12 @@ async function ebayOrderSync() {
             data: { stockQuantity: newStock },
           });
           
-          createNotificationService({
+          createNotification({
             title: "Product Sold on eBay1",
             message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
             location: "eBay1",
-            selledBy: EBAY1,
-          })
+            selledBy: "EBAY1",
+          });
 
           // Try each platform update independently
           try {
@@ -184,11 +184,11 @@ async function ebayOrderSync2() {
             data: { stockQuantity: newStock },
           });
 
-           createNotificationService({
+           createNotification({
             title: "Product Sold on eBay2",
             message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
             location: "eBay2",
-            selledBy: EBAY2,
+            selledBy: "EBAY2",
           })
 
           // Try each platform update independently
@@ -288,11 +288,11 @@ async function ebayOrderSync3() {
             data: { stockQuantity: newStock },
           });
 
-           createNotificationService({
+           createNotification({
             title: "Product Sold on eBay3",
             message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
             location: "eBay3",
-            selledBy: EBAY3,
+            selledBy: "EBAY3",
           })
 
           // Try each platform update independently

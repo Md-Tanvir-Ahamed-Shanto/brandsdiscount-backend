@@ -244,7 +244,7 @@ cron.schedule("*/5 * * * *", async () => {
   try {
     // ========== Order Sync Section ==========
 
-    const [ebayOrders, ebayOrders2, ebayOrders3, wooOrders] = await Promise.all(
+    const [ebayOrders, ebayOrders2, ebayOrders3, wooOrders, walmartOrders] = await Promise.all(
       [ebayOrderSync(), ebayOrderSync2(), ebayOrderSync3(), wooComOrderSync(), walmartOrderSync()]
     );
 
@@ -252,7 +252,7 @@ cron.schedule("*/5 * * * *", async () => {
     console.log("✅ eBay Orders 2 Synced:", ebayOrders2.length);
     console.log("✅ eBay Orders 3 Synced:", ebayOrders3.length);
     console.log("✅ WooCommerce Orders Synced:", wooOrders.length);
-    console.log("✅ Walmart Orders Synced:", ebayOrders.length);
+    console.log("✅ Walmart Orders Synced:", walmartOrders.length);
   } catch (error) {
     console.error(
       `[${new Date().toISOString()}] ❌ Job execution error:`,

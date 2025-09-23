@@ -8,6 +8,7 @@ const prisma = require("../db/connection");
 const { v4: uuidv4 } = require("uuid");
 const { ebayUpdateStock, ebayUpdateStock2, ebayUpdateStock3 } = require("./ebayUpdateStock");
 const { updateStockBySku } = require("./wooComService");
+const { createNotification } = require("../utils/notification");
 
 /**
  * 🔍 Check if item exists by SKU
@@ -252,31 +253,37 @@ async function walmartOrderSync() {
           });
           console.log(`Updated local stock for SKU ${sku} to ${newStock} from Walmart order ${order.purchaseOrderId}.`);
 
-         
-          // try {
-          //   await Promise.allSettled([
-          //     ebayUpdateStock(sku, newStock),
-          //     ebayUpdateStock2(sku, newStock), 
-          //     ebayUpdateStock3(sku, newStock), 
-          //     updateStockBySku(sku, newStock),
-          //     walmartItemUpdate(sku, newStock),
-          //   ]).then(results => {
-          //     results.forEach((result, index) => {
-          //       if (result.status === 'rejected') {
-          //         const platformMap = {
-          //           0: 'eBay (Account 2)',
-          //           1: 'eBay (Account 3)',
-          //           2: 'WooCommerce',
-          //           3: 'Walmart (API Update)'
-          //         };
-          //         const platformName = platformMap[index] || 'Unknown Platform';
-          //         console.warn(`${platformName} inventory update failed for SKU ${sku}:`, result.reason?.message || result.reason);
-          //       }
-          //     });
-          //   });
-          // } catch (platformError) {
-          //   console.warn(`Error during concurrent platform updates for SKU ${sku}:`, platformError.message);
-          // }
+          createNotification({
+            title: "Product Sold on Walmart",
+            message: `Product ${sku} sold on Walmart. Quantity: ${qty}`,
+            location: "Walmart",
+            selledBy: "WALMART",
+          });
+
+          try {
+            await Promise.allSettled([
+              ebayUpdateStock(sku, newStock),
+              ebayUpdateStock2(sku, newStock), 
+              ebayUpdateStock3(sku, newStock), 
+              updateStockBySku(sku, newStock),
+              walmartItemUpdate(sku, newStock),
+            ]).then(results => {
+              results.forEach((result, index) => {
+                if (result.status === 'rejected') {
+                  const platformMap = {
+                    0: 'eBay (Account 2)',
+                    1: 'eBay (Account 3)',
+                    2: 'WooCommerce',
+                    3: 'Walmart (API Update)'
+                  };
+                  const platformName = platformMap[index] || 'Unknown Platform';
+                  console.warn(`${platformName} inventory update failed for SKU ${sku}:`, result.reason?.message || result.reason);
+                }
+              });
+            });
+          } catch (platformError) {
+            console.warn(`Error during concurrent platform updates for SKU ${sku}:`, platformError.message);
+          }
 
         } else {
           console.warn(`Product with SKU ${sku} not found or stockQuantity is null in local database for Walmart order ${order.purchaseOrderId}.`);

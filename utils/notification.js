@@ -1,8 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-
-export const createNotification = async ({ title, message, location, selledBy }) => {
+const createNotification = async ({ title, message, location, selledBy }) => {
   if (!title || !message || !location || !selledBy) {
     throw new Error("All fields (title, message, location, selledBy) are required.");
   }
@@ -12,4 +11,8 @@ export const createNotification = async ({ title, message, location, selledBy })
   });
 
   return notification;
+};
+
+module.exports = {
+  createNotification
 };
