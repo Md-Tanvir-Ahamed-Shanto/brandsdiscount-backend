@@ -72,12 +72,14 @@ async function ebayOrderSync() {
             where: { sku },
             data: { stockQuantity: newStock },
           });
-          
+
           createNotification({
             title: "Product Sold on eBay1",
             message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
             location: "eBay1",
             selledBy: "EBAY1",
+          }).catch((err) => {
+            console.error("Notification creation failed:", err);
           });
 
           // Try each platform update independently
@@ -184,12 +186,14 @@ async function ebayOrderSync2() {
             data: { stockQuantity: newStock },
           });
 
-           createNotification({
+          createNotification({
             title: "Product Sold on eBay2",
             message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
             location: "eBay2",
             selledBy: "EBAY2",
-          })
+          }).catch((err) => {
+            console.error("Notification creation failed:", err);
+          });
 
           // Try each platform update independently
           try {
@@ -208,7 +212,7 @@ async function ebayOrderSync2() {
           } catch (error) {
             console.warn("WooCommerce inventory update failed:", error.message);
           }
-           try {
+          try {
             walmartItemUpdate(sku, newStock);
           } catch (err) {
             console.warn("Walmart inventory update failed:", err.message);
@@ -288,12 +292,14 @@ async function ebayOrderSync3() {
             data: { stockQuantity: newStock },
           });
 
-           createNotification({
+          createNotification({
             title: "Product Sold on eBay3",
             message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
             location: "eBay3",
             selledBy: "EBAY3",
-          })
+          }).catch((err) => {
+            console.error("Notification creation failed:", err);
+          });
 
           // Try each platform update independently
           try {
@@ -312,11 +318,11 @@ async function ebayOrderSync3() {
           } catch (error) {
             console.warn("WooCommerce inventory update failed:", error.message);
           }
-            try {
-              walmartItemUpdate(sku, newStock);
-            } catch (err) {
-              console.warn("Walmart inventory update failed:", err.message);
-            }
+          try {
+            walmartItemUpdate(sku, newStock);
+          } catch (err) {
+            console.warn("Walmart inventory update failed:", err.message);
+          }
 
           //   try {
           //     woocommerceItemUpdate(sku, newStock);
