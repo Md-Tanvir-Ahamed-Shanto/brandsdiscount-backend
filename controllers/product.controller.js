@@ -193,6 +193,7 @@ const getAvailableProducts = async (req, res) => {
       pageSize = 20,
       sortBy = "createdAt",
       sortOrder = "desc",
+      filtering, // Added filtering parameter for categoryId
     } = req.query;
 
     const skip = (parseInt(page) - 1) * parseInt(pageSize);
@@ -214,6 +215,17 @@ const getAvailableProducts = async (req, res) => {
       ],
     };
 
+    // Handle filtering by categoryId (new implementation)
+    if (filtering && filtering.startsWith('categoryId_')) {
+      const categoryId = filtering.split('categoryId_')[1];
+      console.log("Filtering by category ID:", categoryId);
+      
+      // Add categoryId filter to where clause
+      where.AND = where.AND
+        ? [...where.AND, { categoryId }]
+        : [{ categoryId }];
+    }
+
     if (searchTerm) {
       const lowerSearchTerm = searchTerm.toLowerCase().trim();
 
@@ -221,8 +233,7 @@ const getAvailableProducts = async (req, res) => {
       const isWomenSearch =
         lowerSearchTerm === "women" || lowerSearchTerm === "woman";
       const isMenSearch =
-        (lowerSearchTerm === "men" || lowerSearchTerm === "man") &&
-        !isWomenSearch;
+        lowerSearchTerm === "men" || lowerSearchTerm === "man";
       const isKidsSearch =
         lowerSearchTerm === "kids" || lowerSearchTerm === "kid";
 
@@ -285,6 +296,7 @@ const getAvailableProducts = async (req, res) => {
                   { name: { equals: "men" } },
                   { name: { equals: "Men" } },
                   { name: { equals: "MEN" } },
+                  { name: { contains: "men", mode: "insensitive" } },
                 ],
               },
             ],
@@ -293,6 +305,7 @@ const getAvailableProducts = async (req, res) => {
 
         if (mensCategory) {
           console.log("Found mens category:", mensCategory);
+          // Include all products where parentCategory matches the men's category
           where.AND = where.AND
             ? [
                 ...where.AND,
@@ -328,6 +341,8 @@ const getAvailableProducts = async (req, res) => {
                   { name: { equals: "children" } },
                   { name: { equals: "Children" } },
                   { name: { equals: "CHILDREN" } },
+                  { name: { contains: "kid", mode: "insensitive" } },
+                  { name: { contains: "child", mode: "insensitive" } },
                 ],
               },
             ],
@@ -336,6 +351,7 @@ const getAvailableProducts = async (req, res) => {
 
         if (kidsCategory) {
           console.log("Found kids category:", kidsCategory);
+          // Include all products where parentCategory matches the kids category
           where.AND = where.AND
             ? [
                 ...where.AND,
