@@ -231,11 +231,11 @@ const getAvailableProducts = async (req, res) => {
 
       // Determine search type - be very specific
       const isWomenSearch =
-        lowerSearchTerm === "women" || lowerSearchTerm === "woman";
+        lowerSearchTerm === "women" || lowerSearchTerm === "woman" || lowerSearchTerm.includes("womens");
       const isMenSearch =
-        lowerSearchTerm === "men" || lowerSearchTerm === "man";
+        lowerSearchTerm === "men" || lowerSearchTerm === "man" || lowerSearchTerm.includes("men");
       const isKidsSearch =
-        lowerSearchTerm === "kids" || lowerSearchTerm === "kid";
+        lowerSearchTerm === "kids" || lowerSearchTerm === "kid" || lowerSearchTerm.includes("kid") || lowerSearchTerm.includes("child");
 
       if (isWomenSearch) {
         console.log("Searching for WOMEN products only");
@@ -253,6 +253,7 @@ const getAvailableProducts = async (req, res) => {
                   { name: { equals: "women" } },
                   { name: { equals: "Women" } },
                   { name: { equals: "WOMEN" } },
+                  { name: { contains: "womens", mode: "insensitive" } },
                 ],
               },
             ],
