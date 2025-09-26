@@ -273,6 +273,7 @@ enum SellBy {
   EBAY3
   WEBSITE
   WALMART
+  WALMART2
   SHEIN
   WOOCOM
   PHYSICAL
@@ -283,6 +284,7 @@ enum Platform {
   EBAY2
   EBAY3
   WALMART
+  WALMART2
   SHEIN
 }
 

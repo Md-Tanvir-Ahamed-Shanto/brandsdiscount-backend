@@ -3,7 +3,10 @@ const axios = require("axios");
 const fs = require("fs");
 const path = require("path");
 const FormData = require("form-data");
-const { getValidAccessToken } = require("../tools/wallmartAuth");
+const {
+  getValidAccessToken,
+  getValidAccessToken2,
+} = require("../tools/wallmartAuth");
 const prisma = require("../db/connection");
 const { v4: uuidv4 } = require("uuid");
 const {
@@ -261,22 +264,33 @@ async function walmartOrderSync() {
             `Updated local stock for SKU ${sku} to ${newStock} from Walmart order ${order.purchaseOrderId}.`
           );
 
-          createNotification({
-            title: "Product Sold on Walmart",
-            message: `Product ${sku} sold on Walmart. Quantity: ${qty}`,
-            location: "Walmart",
-            selledBy: "WALMART",
-          }).catch((err) => {
-            console.error("Notification creation failed:", err);
-          });
+          try {
+            const notification = await createNotification({
+              title: "Product Sold on Walmart",
+              message: `Product ${sku} sold on Walmart. Quantity: ${qty}`,
+              location: "Walmart",
+              selledBy: "WALMART",
+            });
+            console.log(
+              "Notification created successfully for Walmart sale:",
+              notification.id
+            );
+          } catch (err) {
+            console.error(
+              "Notification creation failed for Walmart sale:",
+              err.message
+            );
+            // Continue with stock updates despite notification failure
+          }
 
           try {
             await Promise.allSettled([
               ebayUpdateStock(sku, newStock),
               ebayUpdateStock2(sku, newStock),
               ebayUpdateStock3(sku, newStock),
-              updateStockBySku(sku, newStock),
+              // updateStockBySku(sku, newStock),
               walmartItemUpdate(sku, newStock),
+              walmartItemUpdate2(sku, newStock),
             ]).then((results) => {
               results.forEach((result, index) => {
                 if (result.status === "rejected") {
@@ -285,6 +299,7 @@ async function walmartOrderSync() {
                     1: "eBay (Account 3)",
                     2: "WooCommerce",
                     3: "Walmart (API Update)",
+                    4: "Walmart2 (API Update)",
                   };
                   const platformName = platformMap[index] || "Unknown Platform";
                   console.warn(
@@ -398,7 +413,193 @@ async function checkFeedStatus(feedId, token) {
   }
 }
 
+// for wallmart 2
+
+async function walmartItemUpdate2(sku, quantity) {
+  const updateData = {
+    quantity: {
+      unit: "EACH",
+      amount: quantity,
+    },
+  };
+  const token = await getValidAccessToken2();
+  try {
+    const url = `https://marketplace.walmartapis.com/v3/inventory?sku=${sku}`;
+    const headers = {
+      "WM_QOS.CORRELATION_ID": "790554c7-caaa-4f2d-ada6-572b3b7fca88",
+      "WM_SEC.ACCESS_TOKEN": token,
+      "WM_SVC.NAME": "Walmart Marketplace",
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+
+    const response = await axios.put(url, updateData, { headers });
+    console.log("✅ Walmart2 Inventory Update Response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Walmart2 Inventory Update Error:",
+      error.response?.data || error.message
+    );
+  }
+}
+
+async function walmartOrderSync2() {
+  console.log("Attempting Walmart2 order sync...");
+  try {
+    const token = await getValidAccessToken2();
+    const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+
+    const url = `https://marketplace.walmartapis.com/v3/orders?createdStartDate=${encodeURIComponent(
+      fiveMinAgoISO
+    )}&status=Created&productInfo=true&limit=100&shipNodeType=SellerFulfilled&replacementInfo=false`;
+
+    const headers = {
+      "WM_QOS.CORRELATION_ID": "790554c7-caaa-4f2d-ada6-572b3b7fca88",
+      "WM_SEC.ACCESS_TOKEN": token,
+      "WM_SVC.NAME": "Walmart Marketplace",
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    };
+
+    const response = await axios.get(url, { headers });
+    const ordersData = response.data?.list?.elements?.order || [];
+
+    if (!ordersData.length) {
+      console.log("No new Walmart2 orders found.");
+      return [];
+    }
+
+    const existingOrders = await prisma.walmartOrder.findMany({
+      select: { orderId: true },
+    });
+    const existingOrderIds = new Set(existingOrders.map((o) => o.orderId));
+
+    const newOrders = ordersData.filter(
+      (order) => !existingOrderIds.has(order.purchaseOrderId)
+    );
+
+    if (!newOrders.length) {
+      console.log("All fetched Walmart2 orders already exist in the database.");
+      return [];
+    }
+
+    const ordersToCreate = newOrders.map((order) => ({
+      orderId: order.purchaseOrderId,
+      orderCreationDate: new Date(order.orderDate),
+      status: order.orderStatus,
+    }));
+
+    await prisma.walmartOrder.createMany({
+      data: ordersToCreate,
+      skipDuplicates: true,
+    });
+    console.log(
+      `Successfully recorded ${ordersToCreate.length} new Walmart orders locally.`
+    );
+
+    // Process each new order to update product stock
+    for (const order of newOrders) {
+      const lineItems = order.orderLines?.orderLine || [];
+
+      for (const item of lineItems) {
+        const sku = item.item?.sku;
+        const qty = item.orderLineQuantity?.amount;
+
+        if (!sku || qty == null) {
+          console.warn(
+            `Skipping item due to missing SKU or Quantity in Walmart2 order ${order.purchaseOrderId}. Item:`,
+            item
+          );
+          continue;
+        }
+
+        const product = await prisma.product.findUnique({
+          where: { sku },
+        });
+
+        if (product && product.stockQuantity != null) {
+          const newStock = Math.max(product.stockQuantity - qty, 0);
+          await prisma.product.update({
+            where: { sku },
+            data: { stockQuantity: newStock },
+          });
+          console.log(
+            `Updated local stock for SKU ${sku} to ${newStock} from Walmart2 order ${order.purchaseOrderId}.`
+          );
+
+          try {
+            const notification = await createNotification({
+              title: "Product Sold on Walmart2",
+              message: `Product ${sku} sold on Walmart2. Quantity: ${qty}`,
+              location: "Walmart2",
+              selledBy: "WALMART2",
+            });
+            console.log(
+              "Notification created successfully for Walmart2 sale:",
+              notification.id
+            );
+          } catch (err) {
+            console.error(
+              "Notification creation failed for Walmart2 sale:",
+              err.message
+            );
+            // Continue with stock updates despite notification failure
+          }
+
+          try {
+            await Promise.allSettled([
+              ebayUpdateStock(sku, newStock),
+              ebayUpdateStock2(sku, newStock),
+              ebayUpdateStock3(sku, newStock),
+              // updateStockBySku(sku, newStock),
+              walmartItemUpdate(sku, newStock),
+              walmartItemUpdate2(sku, newStock),
+            ]).then((results) => {
+              results.forEach((result, index) => {
+                if (result.status === "rejected") {
+                  const platformMap = {
+                    0: "eBay (Account 2)",
+                    1: "eBay (Account 3)",
+                    2: "WooCommerce",
+                    3: "Walmart (API Update)",
+                    4: "Walmart2 (API Update)",
+                  };
+                  const platformName = platformMap[index] || "Unknown Platform";
+                  console.warn(
+                    `${platformName} inventory update failed for SKU ${sku}:`,
+                    result.reason?.message || result.reason
+                  );
+                }
+              });
+            });
+          } catch (platformError) {
+            console.warn(
+              `Error during concurrent platform updates for SKU ${sku}:`,
+              platformError.message
+            );
+          }
+        } else {
+          console.warn(
+            `Product with SKU ${sku} not found or stockQuantity is null in local database for Walmart2 order ${order.purchaseOrderId}.`
+          );
+        }
+      }
+    }
+
+    return newOrders;
+  } catch (error) {
+    console.error(
+      "❌ Error syncing Walmart orders:",
+      error.response?.data || error.message || error
+    );
+    throw new Error("Walmart order sync failed.");
+  }
+}
+
 module.exports = {
   walmartItemUpdate,
   walmartOrderSync,
+  walmartItemUpdate2,
+  walmartOrderSync2,
 };

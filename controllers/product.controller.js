@@ -5,12 +5,12 @@ const {
   createEbayProduct3,
 } = require("../services/ebayCreateProduct");
 
-const { updateStockBySku } = require("../services/wooComService");
 const {
   ebayUpdateStock,
   ebayUpdateStock2,
   ebayUpdateStock3,
 } = require("../services/ebayUpdateStock");
+const { walmartItemUpdate, walmartOrderSync2 } = require("../services/walmartService");
 
 // Helper function to build category relations for Prisma includes
 const getCategoryInclude = (type) => ({
@@ -1464,18 +1464,9 @@ const updateProductQuantities = async (req, res) => {
         continue;
       }
 
-      // Determine if the update applies to a main product quantity or a variant quantity
-      // If the product has variants, assume quantity updates should apply to variants
-      // You'll need more logic here if you want to specify WHICH variant is updated
-      // For now, if variants exist, this logic updates the main product's stockQuantity only if no variants exist.
-      // If variants exist, you'd need `item.variantId` or `item.variantSkuSuffix` to find the specific variant.
-
       let updatedRecord;
       if (product.variants && product.variants.length > 0) {
-        // If the product has variants, you should typically update a specific variant's quantity.
-        // This current `updateProductQuantities` function doesn't receive `variantId` or `variantSkuSuffix`.
-        // For a robust solution, you'd modify the request body for this endpoint to specify the variant.
-        // For now, I'll log a warning and skip if a specific variant isn't identified.
+
         console.warn(
           `Product ${currentSku} has variants. Skipping main product stock update as no specific variant was provided.`
         );
@@ -1487,18 +1478,6 @@ const updateProductQuantities = async (req, res) => {
             "Product has variants; specific variant ID or SKU suffix required for quantity update.",
         });
         continue;
-
-        // Example if you *were* to receive variantSkuSuffix in `item`:
-        // const targetVariant = product.variants.find(v => v.skuSuffix === item.variantSkuSuffix);
-        // if (targetVariant) {
-        //    await prisma.productVariant.update({
-        //       where: { id: targetVariant.id },
-        //       data: { quantity: parseInt(targetVariant.quantity - newQuantity) },
-        //    });
-        //    updatedRecord = targetVariant; // Or fetch updated variant
-        // } else {
-        //    // Handle variant not found
-        // }
       } else {
         // No variants, update main product stock quantity
         const oldQuantity = product.stockQuantity;
@@ -1539,10 +1518,16 @@ const updateProductQuantities = async (req, res) => {
             ebayUpdateStock3(currentSku, stock_quantity_for_external)
           );
         }
-        // Always try to update WooCommerce if applicable
-        syncPromises.push(
-          updateStockBySku(currentSku, stock_quantity_for_external)
-        );
+ 
+          syncPromises.push(
+            walmartItemUpdate(currentSku, stock_quantity_for_external)
+          );
+        
+
+          syncPromises.push(
+            walmartOrderSync2(currentSku, stock_quantity_for_external)
+          );
+        
 
         try {
           await Promise.allSettled(syncPromises);
