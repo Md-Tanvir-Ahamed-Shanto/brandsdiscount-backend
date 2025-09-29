@@ -60,7 +60,7 @@ exports.checkOrderSync = async (req, res) => {
       operation: 'orderSync',
       startDate,
       endDate,
-      limit: 1
+      limit: 10
     });
     
     const hasOrderSync = logs.logs.length > 0;
