@@ -60,14 +60,14 @@ exports.checkOrderSync = async (req, res) => {
       operation: 'orderSync',
       startDate,
       endDate,
-      limit: 10
+      limit: 5
     });
     
     const hasOrderSync = logs.logs.length > 0;
     
     res.json({
       hasOrderSync,
-      lastSync: hasOrderSync ? logs.logs[0] : null
+      lastSync: hasOrderSync ? logs.logs : []
     });
   } catch (error) {
     console.error('Error checking order sync:', error);
