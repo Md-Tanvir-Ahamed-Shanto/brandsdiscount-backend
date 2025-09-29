@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+const { prisma, executeWithRetry } = require('../db/connection');
 
 // Create logs directory if it doesn't exist
 const logsDir = path.join(__dirname, '../logs');
@@ -38,7 +37,7 @@ class SyncLogger {
   async log(platform, operation, status, message, details = {}) {
     const timestamp = new Date();
     const logEntry = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
       timestamp,
       platform,
       operation,
@@ -47,15 +46,26 @@ class SyncLogger {
       details
     };
 
-    // Save to database
+    // Save to database with enhanced retry mechanism
     try {
-      await prisma.syncLog.create({
-        data: logEntry
-      });
+      await executeWithRetry(async () => {
+        // First check if we can connect to the database
+        try {
+          await prisma.$queryRaw`SELECT 1`;
+        } catch (connectionError) {
+          // If connection fails, try to reconnect
+          await prisma.$connect();
+        }
+        
+        // Then create the log entry
+        return prisma.syncLog.create({
+          data: logEntry
+        });
+      }, 5, 1000); // 5 retries, 1 second initial delay with exponential backoff
     } catch (error) {
-      console.error('Failed to save log to database:', error);
+      console.error('Failed to save log to database after multiple retries:', error);
       
-      // Fallback to file-based logging if database fails
+      // Always save to file as backup, even if database succeeds
       try {
         const logs = this.readLogs();
         logs.push(logEntry);
@@ -112,16 +122,29 @@ class SyncLogger {
     }
 
     try {
-      const logs = await prisma.syncLog.findMany({
-        where,
-        orderBy: {
-          timestamp: 'desc'
-        },
-        skip: (page - 1) * limit,
-        take: limit
-      });
+      // First check database connection
+      try {
+        await executeWithRetry(() => prisma.$queryRaw`SELECT 1`, 3, 500);
+      } catch (connectionError) {
+        console.warn('Database connection check failed, attempting reconnect:', connectionError.message);
+        await executeWithRetry(() => prisma.$connect(), 3, 1000);
+      }
+      
+      // Use executeWithRetry for database operations with more retries
+      const logs = await executeWithRetry(() => 
+        prisma.syncLog.findMany({
+          where,
+          orderBy: {
+            timestamp: 'desc'
+          },
+          skip: (page - 1) * limit,
+          take: limit
+        })
+      , 5, 1000);
 
-      const total = await prisma.syncLog.count({ where });
+      const total = await executeWithRetry(() => 
+        prisma.syncLog.count({ where })
+      , 5, 1000);
 
       return {
         logs,
@@ -133,7 +156,7 @@ class SyncLogger {
         }
       };
     } catch (error) {
-      console.error('Error fetching logs from database:', error);
+      console.error('Error fetching logs from database after multiple retries:', error);
       
       // Fallback to file-based logs if database query fails
       const fileLogs = this.readLogs();
