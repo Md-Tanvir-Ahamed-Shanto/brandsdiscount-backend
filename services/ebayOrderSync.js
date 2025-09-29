@@ -11,16 +11,20 @@ const { getValidAccessToken } = require("../tools/ebayAuth");
 const { updateStockBySku } = require("./wooComService");
 const { walmartItemUpdate, walmartOrderSync2 } = require("./walmartService");
 const { createNotification } = require("../utils/notification");
+const syncLogger = require("../utils/syncLogger");
 
 async function ebayOrderSync() {
   try {
-    console.log("Try eBay1 sync");
+    syncLogger.log('eBay1', 'orderSync', 'info', 'Try eBay1 sync');
     let token;
     try {
       token = await getValidAccessToken();
-      console.log("eBay1 token retrieved successfully");
+      syncLogger.log('eBay1', 'tokenRetrieval', 'success', 'eBay1 token retrieved successfully');
     } catch (tokenError) {
-      console.error("❌ eBay1 token retrieval failed:", tokenError.message);
+      syncLogger.log('eBay1', 'tokenRetrieval', 'error', 'eBay1 token retrieval failed', {
+        error: tokenError.message,
+        stack: tokenError.stack
+      });
       console.error("Please re-authenticate eBay1 account through the authorization flow");
       return [];
     }
@@ -100,15 +104,17 @@ async function ebayOrderSync() {
               location: "eBay1",
               selledBy: "EBAY1",
             });
-            console.log(
-              "Notification created successfully for eBay1 sale:",
-              notification.id
-            );
+            syncLogger.log('eBay1', 'notification', 'success', `Notification created for eBay1 sale: ${notification.id}`, {
+              sku,
+              quantity: qty,
+              notificationId: notification.id
+            });
           } catch (err) {
-            console.error(
-              "Notification creation failed for eBay1 sale:",
-              err.message
-            );
+            syncLogger.log('eBay1', 'notification', 'error', `Notification creation failed for eBay1 sale: ${err.message}`, {
+              sku,
+              quantity: qty,
+              error: err.message
+            });
             // Continue with stock updates despite notification failure
           }
 
@@ -150,14 +156,17 @@ async function ebayOrderSync() {
 }
 
 async function ebayOrderSync2() {
+  syncLogger.log('eBay2', 'orderSync', 'info', 'Try eBay2 sync');
   try {
-    console.log("Try eBay2 sync");
     let token;
     try {
       token = await getValidAccessToken2();
-      console.log("eBay2 token retrieved successfully");
+      syncLogger.log('eBay2', 'tokenRetrieval', 'success', 'eBay2 token retrieved successfully');
     } catch (tokenError) {
-      console.error("❌ eBay2 token retrieval failed:", tokenError.message);
+      syncLogger.log('eBay2', 'tokenRetrieval', 'error', 'eBay2 token retrieval failed', {
+        error: tokenError.message,
+        stack: tokenError.stack
+      });
       console.error("Please re-authenticate eBay2 account through the authorization flow");
       return [];
     }
@@ -237,15 +246,17 @@ async function ebayOrderSync2() {
               location: "eBay2",
               selledBy: "EBAY2",
             });
-            console.log(
-              "Notification created successfully for eBay2 sale:",
-              notification.id
-            );
+            syncLogger.log('eBay2', 'notification', 'success', `Notification created for eBay2 sale: ${notification.id}`, {
+              sku,
+              quantity: qty,
+              notificationId: notification.id
+            });
           } catch (err) {
-            console.error(
-              "Notification creation failed for eBay2 sale:",
-              err.message
-            );
+            syncLogger.log('eBay2', 'notification', 'error', `Notification creation failed for eBay2 sale: ${err.message}`, {
+              sku,
+              quantity: qty,
+              error: err.message
+            });
             // Continue with stock updates despite notification failure
           }
 
@@ -373,15 +384,17 @@ async function ebayOrderSync3() {
               location: "eBay3",
               selledBy: "EBAY3",
             });
-            console.log(
-              "Notification created successfully for eBay3 sale:",
-              notification.id
-            );
+            syncLogger.log('eBay3', 'notification', 'success', `Notification created for eBay3 sale: ${notification.id}`, {
+              sku,
+              quantity: qty,
+              notificationId: notification.id
+            });
           } catch (err) {
-            console.error(
-              "Notification creation failed for eBay3 sale:",
-              err.message
-            );
+            syncLogger.log('eBay3', 'notification', 'error', `Notification creation failed for eBay3 sale: ${err.message}`, {
+              sku,
+              quantity: qty,
+              error: err.message
+            });
             // Continue with stock updates despite notification failure
           }
 

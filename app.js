@@ -4,6 +4,7 @@ var cors = require("cors");
 let path = require("path");
 let cookieParser = require("cookie-parser");
 let logger = require("morgan");
+let favicon = require("serve-favicon");
 const bodyParser = require("body-parser");
 let cron = require("node-cron");
 const createError = require("http-errors");
@@ -20,6 +21,7 @@ let webhookRouter = require("./webhook/ebayWebhook");
 let sheinRouter = require("./routes/shein");
 const { wooComOrderSync } = require("./services/wooComService");
 const productSyncRoutes = require("./routes/productSync.route");
+const syncLogRouter = require('./routes/syncLog.route');
 
 const { productRoutes } = require("./routes/product.route");
 const orderRoutes = require("./routes/order.route");
@@ -47,8 +49,10 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "uploads")));
 // Use body-parser to handle raw XML payloads
 app.use(bodyParser.text({ type: "text/xml" }));
 app.use(bodyParser.text({ type: "application/xml" }));
@@ -73,6 +77,7 @@ app.use("/api/ebay", ebayRoutes);
 app.use("/api/woo-com", wooComRoutes);
 app.use("/api/walmart", walmartRoutes)
 app.use("/api/shein", sheinRoutes)
+app.use("/api/sync-logs", syncLogRouter)
 
 
 app.get("/ebay/auth/callback", async (req, res) => {

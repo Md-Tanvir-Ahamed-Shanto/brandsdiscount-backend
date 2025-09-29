@@ -7,6 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model SyncLog {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  platform  String
+  operation String
+  status    String
+  message   String
+  details   Json?
+  createdAt DateTime @default(now())
+
+  @@index([platform, operation, status])
+  @@index([timestamp])
+}
+
 model User {
   id             String   @id @default(uuid())
   username       String
