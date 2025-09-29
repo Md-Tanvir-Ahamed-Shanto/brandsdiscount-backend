@@ -85,14 +85,17 @@ async function refreshAccessToken() {
     where: { platform: Platform.EBAY },
   });
 
-  if (!refreshTokenData?.refreshToken)
+  if (!refreshTokenData?.refreshToken) {
+    console.error("❌ CRITICAL: Missing eBay refresh token. Please re-authenticate.");
     throw new Error("Missing refresh token.");
+  }
 
   const authHeader = `Basic ${Buffer.from(
     `${EBAY_CLIENT_ID}:${EBAY_CLIENT_SECRET}`
   ).toString("base64")}`;
 
   try {
+    console.log("Attempting to refresh eBay token...");
     const response = await axios.post(
       EBAY_TOKEN_URL,
       querystring.stringify({
@@ -107,7 +110,7 @@ async function refreshAccessToken() {
       }
     );
 
-    console.log("Try to get refreshAccessToekn response: ",response.data)
+    console.log("✅ eBay token refresh successful");
 
     const expiresAt = new Date(Date.now() + response.data.expires_in * 1000);
     await prisma.apiToken.update({
@@ -122,11 +125,19 @@ async function refreshAccessToken() {
 
     return response.data.access_token;
   } catch (error) {
-    console.log("Error in refreshAccessToken: ", error.response?.data || error.message);
+    console.error("❌ eBay token refresh failed:", error.response?.data || error.message);
+    
     if (error.response?.data?.error === "invalid_grant") {
-      // await prisma.apiToken
-      //   .delete({ where: { platform: Platform.EBAY } })
-      //   .catch(() => {});
+      console.error("❌ CRITICAL: eBay refresh token has expired. User must re-authenticate through the authorization flow.");
+      // Flag the token as invalid in the database
+      await prisma.apiToken.update({
+        where: { platform: Platform.EBAY },
+        data: { 
+          isValid: false,
+          lastError: "Refresh token expired"
+        },
+      }).catch(err => console.error("Failed to update token status:", err.message));
+      
       throw new Error(
         "REFRESH_TOKEN_EXPIRED: User needs to re-authenticate with eBay."
       );

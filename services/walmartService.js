@@ -7,6 +7,9 @@ const {
   getValidAccessToken,
   getValidAccessToken2,
 } = require("../tools/wallmartAuth");
+
+// Define BASE_URL for Walmart API
+const BASE_URL = "https://marketplace.walmartapis.com/v3";
 const prisma = require("../db/connection");
 const { v4: uuidv4 } = require("uuid");
 const {
@@ -183,8 +186,18 @@ async function walmartItemUpdate(sku, quantity) {
 async function walmartOrderSync() {
   console.log("Attempting Walmart order sync...");
   try {
-    const token = await getValidAccessToken();
+    let token;
+    try {
+      token = await getValidAccessToken();
+      console.log("Walmart token retrieved successfully");
+    } catch (tokenError) {
+      console.error("❌ Walmart token retrieval failed:", tokenError.message);
+      console.error("Please check Walmart API credentials and re-authenticate if needed");
+      return [];
+    }
+    
     const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    console.log(`Fetching Walmart orders since ${fiveMinAgoISO}`);
 
     const url = `https://marketplace.walmartapis.com/v3/orders?createdStartDate=${encodeURIComponent(
       fiveMinAgoISO
@@ -447,7 +460,15 @@ async function walmartItemUpdate2(sku, quantity) {
 async function walmartOrderSync2() {
   console.log("Attempting Walmart2 order sync...");
   try {
-    const token = await getValidAccessToken2();
+    let token;
+    try {
+      token = await getValidAccessToken2();
+      console.log("Walmart2 token retrieved successfully");
+    } catch (tokenError) {
+      console.error("❌ Walmart2 token retrieval failed:", tokenError.message);
+      console.error("Please check Walmart2 API credentials and re-authenticate if needed");
+      return [];
+    }
     const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     const url = `https://marketplace.walmartapis.com/v3/orders?createdStartDate=${encodeURIComponent(

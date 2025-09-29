@@ -76,15 +76,25 @@ async function getNewAccessToken() {
  */
 // Get a Valid Access Token (Refresh if Needed)
 async function getValidAccessToken() {
-  const token = await prisma.apiToken.findUnique({
-    where: {
-      platform: "WALMART",
-    },
-  });
-  if (token?.accessToken && Date.now() < token?.expiresAt) {
-    return token.accessToken;
+  try {
+    const token = await prisma.apiToken.findUnique({
+      where: {
+        platform: "WALMART",
+      },
+    });
+    
+    // Check if token exists and is still valid
+    if (token?.accessToken && new Date(token.expiresAt) > new Date(Date.now() + 5 * 60 * 1000)) {
+      console.log("✅ Using existing Walmart token");
+      return token.accessToken;
+    }
+    
+    console.log("Walmart token expired or not found, getting new token...");
+    return await getNewAccessToken();
+  } catch (error) {
+    console.error("❌ Error getting valid Walmart token:", error.message);
+    throw new Error("Failed to get valid Walmart token: " + error.message);
   }
-  return await getNewAccessToken();
 }
 
 /**
@@ -182,15 +192,26 @@ async function getNewAccessToken2() {
  */
 // Get a Valid Access Token (Refresh if Needed)
 async function getValidAccessToken2() {
-  const token = await prisma.apiToken.findUnique({
-    where: {
-      platform: "WALMART2",
-    },
-  });
-  if (token?.accessToken && Date.now() < token?.expiresAt) {
-    return token.accessToken;
+  try {
+    const token = await prisma.apiToken.findUnique({
+      where: {
+        platform: "WALMART2",
+      },
+    });
+    
+    // Check if token exists and is still valid
+    // Convert expiresAt to timestamp for proper comparison
+    if (token?.accessToken && new Date(token.expiresAt) > new Date(Date.now() + 5 * 60 * 1000)) {
+      console.log("✅ Using existing Walmart2 token");
+      return token.accessToken;
+    }
+    
+    console.log("Walmart2 token expired or not found, getting new token...");
+    return await getNewAccessToken2();
+  } catch (error) {
+    console.error("❌ Error getting valid Walmart2 token:", error.message);
+    throw new Error("Failed to get valid Walmart2 token: " + error.message);
   }
-  return await getNewAccessToken2();
 }
 
 /**

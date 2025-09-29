@@ -15,7 +15,16 @@ const { createNotification } = require("../utils/notification");
 async function ebayOrderSync() {
   try {
     console.log("Try eBay1 sync");
-    const token = await getValidAccessToken();
+    let token;
+    try {
+      token = await getValidAccessToken();
+      console.log("eBay1 token retrieved successfully");
+    } catch (tokenError) {
+      console.error("❌ eBay1 token retrieval failed:", tokenError.message);
+      console.error("Please re-authenticate eBay1 account through the authorization flow");
+      return [];
+    }
+    
     const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${fiveMinAgoISO}..]&limit=180`;
@@ -25,7 +34,18 @@ async function ebayOrderSync() {
       "Content-Type": "application/json",
     };
 
-    const response = await axios.get(url, { headers });
+    console.log(`Fetching eBay1 orders since ${fiveMinAgoISO}`);
+    let response;
+    try {
+      response = await axios.get(url, { headers });
+      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay1 orders`);
+    } catch (apiError) {
+      console.error(`❌ eBay1 API error: ${apiError.message}`);
+      if (apiError.response?.status === 401) {
+        console.error("Authentication error - token may be invalid. Please re-authenticate eBay1 account.");
+      }
+      return [];
+    }
     const orders = response.data?.orders || [];
 
     // console.log("Order Sync Response: ", response)
@@ -132,7 +152,16 @@ async function ebayOrderSync() {
 async function ebayOrderSync2() {
   try {
     console.log("Try eBay2 sync");
-    const token = await getValidAccessToken2();
+    let token;
+    try {
+      token = await getValidAccessToken2();
+      console.log("eBay2 token retrieved successfully");
+    } catch (tokenError) {
+      console.error("❌ eBay2 token retrieval failed:", tokenError.message);
+      console.error("Please re-authenticate eBay2 account through the authorization flow");
+      return [];
+    }
+    
     const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${fiveMinAgoISO}..]&limit=180`;
@@ -142,7 +171,18 @@ async function ebayOrderSync2() {
       "Content-Type": "application/json",
     };
 
-    const response = await axios.get(url, { headers });
+    console.log(`Fetching eBay2 orders since ${fiveMinAgoISO}`);
+    let response;
+    try {
+      response = await axios.get(url, { headers });
+      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
+    } catch (apiError) {
+      console.error(`❌ eBay2 API error: ${apiError.message}`);
+      if (apiError.response?.status === 401) {
+        console.error("Authentication error - token may be invalid. Please re-authenticate eBay2 account.");
+      }
+      return [];
+    }
     const orders = response.data?.orders || [];
 
     // console.log("Order Sync Response: ", response)
@@ -248,7 +288,16 @@ async function ebayOrderSync2() {
 async function ebayOrderSync3() {
   try {
     console.log("Try eBay3 sync");
-    const token = await getValidAccessToken3();
+    let token;
+    try {
+      token = await getValidAccessToken3();
+      console.log("eBay3 token retrieved successfully");
+    } catch (tokenError) {
+      console.error("❌ eBay3 token retrieval failed:", tokenError.message);
+      console.error("Please re-authenticate eBay3 account through the authorization flow");
+      return [];
+    }
+    
     const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${fiveMinAgoISO}..]&limit=180`;
@@ -258,7 +307,18 @@ async function ebayOrderSync3() {
       "Content-Type": "application/json",
     };
 
-    const response = await axios.get(url, { headers });
+    console.log(`Fetching eBay3 orders since ${fiveMinAgoISO}`);
+    let response;
+    try {
+      response = await axios.get(url, { headers });
+      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
+    } catch (apiError) {
+      console.error(`❌ eBay3 API error: ${apiError.message}`);
+      if (apiError.response?.status === 401) {
+        console.error("Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
+      }
+      return [];
+    }
     const orders = response.data?.orders || [];
 
     // console.log("Order Sync Response: ", response)
