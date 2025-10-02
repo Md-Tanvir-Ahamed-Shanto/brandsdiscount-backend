@@ -29,24 +29,24 @@ async function ebayOrderSync() {
       return [];
     }
     
-    const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${fiveMinAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay1 orders since ${fiveMinAgoISO}`);
+    syncLogger.log('eBay1', 'orderSync', 'info', `Fetching eBay1 orders since ${tenMinAgoISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay1 orders`);
+      syncLogger.log('eBay1', 'orderSync', 'success', `✅ Successfully fetched ${response.data?.orders?.length || 0} eBay1 orders`);
     } catch (apiError) {
-      console.error(`❌ eBay1 API error: ${apiError.message}`);
+      syncLogger.log('eBay1', 'orderSync', 'error', `❌ eBay1 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay1 account.");
+        syncLogger.log('eBay1', 'orderSync', 'error', "Authentication error - token may be invalid. Please re-authenticate eBay1 account.");
       }
       return [];
     }
@@ -55,7 +55,7 @@ async function ebayOrderSync() {
     // console.log("Order Sync Response: ", response)
 
     if (!orders.length) {
-      console.log("No new eBay orders found.");
+      syncLogger.log('eBay1', 'orderSync', 'info', "No new eBay orders found.");
       return [];
     }
 
@@ -173,24 +173,24 @@ async function ebayOrderSync2() {
       return [];
     }
     
-    const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${fiveMinAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay2 orders since ${fiveMinAgoISO}`);
+    syncLogger.log('eBay2', 'orderSync', 'info', `Fetching eBay2 orders since ${tenMinAgoISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
+      syncLogger.log('eBay2', 'orderSync', 'success', `✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
     } catch (apiError) {
-      console.error(`❌ eBay2 API error: ${apiError.message}`);
+      syncLogger.log('eBay2', 'orderSync', 'error', `❌ eBay2 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay2 account.");
+        syncLogger.log('eBay2', 'orderSync', 'error', "Authentication error - token may be invalid. Please re-authenticate eBay2 account.");
       }
       return [];
     }
@@ -199,7 +199,7 @@ async function ebayOrderSync2() {
     // console.log("Order Sync Response: ", response)
 
     if (!orders.length) {
-      console.log("No new eBay2 orders found.");
+      syncLogger.log('eBay2', 'orderSync', 'info', "No new eBay2 orders found.");
       return [];
     }
 
@@ -306,31 +306,31 @@ async function ebayOrderSync3() {
     let token;
     try {
       token = await getValidAccessToken3();
-      console.log("eBay3 token retrieved successfully");
+      syncLogger.log('eBay3', 'orderSync', 'info', "eBay3 token retrieved successfully");
     } catch (tokenError) {
-      console.error("❌ eBay3 token retrieval failed:", tokenError.message);
-      console.error("Please re-authenticate eBay3 account through the authorization flow");
+      syncLogger.log('eBay3', 'orderSync', 'error', "❌ eBay3 token retrieval failed:", tokenError.message);
+      syncLogger.log('eBay3', 'orderSync', 'error', "Please re-authenticate eBay3 account through the authorization flow");
       return [];
     }
     
-    const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${fiveMinAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay3 orders since ${fiveMinAgoISO}`);
+    syncLogger.log('eBay3', 'orderSync', 'info', `Fetching eBay3 orders since ${tenMinAgoISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
+      syncLogger.log('eBay3', 'orderSync', 'success', `✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
     } catch (apiError) {
-      console.error(`❌ eBay3 API error: ${apiError.message}`);
+      syncLogger.log('eBay3', 'orderSync', 'error', `❌ eBay3 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
+        syncLogger.log('eBay3', 'orderSync', 'error', "Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
       }
       return [];
     }
@@ -339,7 +339,7 @@ async function ebayOrderSync3() {
     // console.log("Order Sync Response: ", response)
 
     if (!orders.length) {
-      console.log("No new eBay3 orders found.");
+      syncLogger.log('eBay3', 'orderSync', 'info', "No new eBay3 orders found.");
       return [];
     }
 

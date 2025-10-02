@@ -35,6 +35,7 @@ class SyncLogger {
    * @param {object} details - Additional details (optional)
    */
   async log(platform, operation, status, message, details = {}) {
+    console.log(`[${platform}][${operation}][${status}] ${message}`);
     const timestamp = new Date();
     const logEntry = {
       id: `${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
@@ -108,7 +109,6 @@ class SyncLogger {
    */
   async getLogs(filters = {}) {
     const { platform, operation, status, startDate, endDate, limit = 100, page = 1 } = filters;
-    
     const where = {};
     
     if (platform) where.platform = platform;

@@ -203,11 +203,11 @@ async function walmartOrderSync() {
       return [];
     }
     
-    const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    console.log(`Fetching Walmart orders since ${fiveMinAgoISO}`);
+    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    console.log(`Fetching Walmart orders since ${tenMinAgoISO}`);
 
     const url = `https://marketplace.walmartapis.com/v3/orders?createdStartDate=${encodeURIComponent(
-      fiveMinAgoISO
+      tenMinAgoISO
     )}&status=Created&productInfo=true&limit=100&shipNodeType=SellerFulfilled&replacementInfo=false`;
 
     const headers = {
@@ -483,10 +483,10 @@ async function walmartOrderSync2() {
       console.error("Please check Walmart2 API credentials and re-authenticate if needed");
       return [];
     }
-    const fiveMinAgoISO = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
     const url = `https://marketplace.walmartapis.com/v3/orders?createdStartDate=${encodeURIComponent(
-      fiveMinAgoISO
+      tenMinAgoISO
     )}&status=Created&productInfo=true&limit=100&shipNodeType=SellerFulfilled&replacementInfo=false`;
 
     const headers = {
