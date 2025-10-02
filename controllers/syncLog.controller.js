@@ -1,4 +1,33 @@
 const syncLogger = require('../utils/syncLogger');
+const { prisma, executeWithRetry } = require('../db/connection');
+
+/**
+ * Auto-delete old log data (older than specified days)
+ */
+exports.cleanupOldLogs = async (req, res) => {
+    try {
+    const { days = 2 } = req.query;
+    const daysAgo = new Date();
+    daysAgo.setDate(daysAgo.getDate() - parseInt(days));
+    
+    const result = await executeWithRetry(() => prisma.syncLog.deleteMany({
+      where: {
+        timestamp: {
+          lt: daysAgo
+        }
+      }
+    }));
+    
+    res.json({
+      success: true,
+      message: `Successfully deleted ${result.count} logs older than ${days} days`,
+      deletedCount: result.count
+    });
+  } catch (error) {
+    console.error('Error cleaning up old logs:', error);
+    res.status(500).json({ error: 'Failed to clean up old logs' });
+  }
+};
 
 /**
  * Get sync logs with filtering options
@@ -143,3 +172,33 @@ exports.downloadLogs = async (req, res) => {
     res.status(500).json({ error: 'Failed to download sync logs' });
   }
 };
+
+/**
+ * Schedule automatic cleanup of old logs
+ * This function will run every 2 days to clean up logs older than 2 days
+ */
+const scheduleLogCleanup = () => {
+  // Run cleanup every 2 days (172800000 ms = 48 hours)
+  setInterval(async () => {
+    try {
+      const daysToKeep = 2; // Keep logs for 2 days by default
+      const daysAgo = new Date();
+      daysAgo.setDate(daysAgo.getDate() - daysToKeep);
+      
+      const result = await executeWithRetry(() => prisma.syncLog.deleteMany({
+        where: {
+          timestamp: {
+            lt: daysAgo
+          }
+        }
+      }));
+      
+      console.log(`[Scheduled Cleanup] Deleted ${result.count} logs older than ${daysToKeep} days`);
+    } catch (error) {
+      console.error('[Scheduled Cleanup] Error cleaning up old logs:', error);
+    }
+  }, 172800000); // Run every 48 hours (2 days)
+};
+
+// Start the scheduled cleanup when the controller is loaded
+scheduleLogCleanup();

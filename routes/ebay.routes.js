@@ -6,6 +6,12 @@ const {
   ebayOrderSync,
   ebayOrderSync2,
   ebayOrderSync3,
+  getEbayThreeLatestOrders,
+  getEbayTwoLatestOrders,
+  getEbayOneLatestOrders,
+  ManualEbayOrderSync,
+  ManualEbayOrderSync3,
+  ManualEbayOrderSync2,
 } = require("../services/ebayOrderSync");
 const {
   getAccessToken,
@@ -20,20 +26,103 @@ const { updateEbayProduct } = require("../services/ebayUpdateProduct");
 ebayRoutes.get("/sync", async (req, res) => {
   try {
     const ebayOrders = await ebayOrderSync();
-    // const ebayOrders2 = await ebayOrderSync2();
-    // const ebayOrders3 = await ebayOrderSync3();
+    const ebayOrders2 = await ebayOrderSync2();
+    const ebayOrders3 = await ebayOrderSync3();
 
     res.status(200).json({
       message: "eBay orders synced successfully",
       ebayOrders,
-      // ebayOrders2,
-      // ebayOrders3
+      ebayOrders2,
+      ebayOrders3
     });
   } catch (error) {
     console.error("Error syncing eBay orders:", error);
     res.status(500).json({ error: "Failed to sync eBay orders" });
   }
 });
+
+
+ebayRoutes.get("/order-ebay1", async (req, res) => {
+  try {
+    const ebayOrders = await getEbayOneLatestOrders();
+    res.status(200).json({
+      message: "eBay1 orders get successfully",
+      ebayOrders,
+    });
+  } catch (error) {
+    console.error("Error syncing eBay orders:", error);
+    res.status(500).json({ error: "Failed to get eBay1 orders" });
+  }
+});
+
+
+
+ebayRoutes.get("/order-ebay2", async (req, res) => {
+  try {
+    const ebayOrders2 = await getEbayTwoLatestOrders();
+    res.status(200).json({
+      message: "eBay2 orders get successfully",
+      ebayOrders2,
+    });
+  } catch (error) {
+    console.error("Error syncing eBay orders:", error);
+    res.status(500).json({ error: "Failed to get eBay2 orders" });
+  }
+});
+
+ebayRoutes.get("/order-ebay3", async (req, res) => {
+  try {
+    const ebayOrders3 = await getEbayThreeLatestOrders();
+    res.status(200).json({
+      message: "eBay3 orders get successfully",
+      ebayOrders3,
+    });
+  } catch (error) {
+    console.error("Error syncing eBay orders:", error);
+    res.status(500).json({ error: "Failed to get eBay3 orders" });
+  }
+});
+
+ebayRoutes.get("/sync-ebay1", async (req, res) => {
+  try {
+    const ebayOrders = await ManualEbayOrderSync();
+    res.status(200).json({
+      message: "eBay1 orders synced successfully",
+      ebayOrders,
+    });
+  } catch (error) {
+    console.error("Error syncing eBay orders:", error);
+    res.status(500).json({ error: "Failed to sync eBay1 orders" });
+  }
+});
+
+ebayRoutes.get("/sync-ebay2", async (req, res) => {
+  try {
+    const ebayOrders2 = await ManualEbayOrderSync2();
+    res.status(200).json({
+      message: "eBay2 orders synced successfully",
+      ebayOrders2,
+    });
+  } catch (error) {
+    console.error("Error syncing eBay orders:", error);
+    res.status(500).json({ error: "Failed to sync eBay2 orders" });
+  }
+});
+
+ebayRoutes.get("/sync-ebay3", async (req, res) => {
+  try {
+    const ebayOrders3 = await ManualEbayOrderSync3();
+    res.status(200).json({
+      message: "eBay3 orders synced successfully",
+      ebayOrders3,
+    });
+  } catch (error) {
+    console.error("Error syncing eBay orders:", error);
+    res.status(500).json({ error: "Failed to sync eBay3 orders" });
+  }
+});
+
+
 
 ebayRoutes.get("/token", async (req, res) => {
   try {

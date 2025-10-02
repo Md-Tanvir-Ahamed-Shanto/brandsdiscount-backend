@@ -17,4 +17,6 @@ router.get('/successful-orders', syncLogController.getSuccessfulOrderSyncs);
 // Download sync logs as JSON file
 router.get('/download', syncLogController.downloadLogs);
 
+router.get('/cleanup', syncLogController.cleanupOldLogs);
+
 module.exports = router;
