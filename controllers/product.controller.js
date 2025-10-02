@@ -10,7 +10,10 @@ const {
   ebayUpdateStock2,
   ebayUpdateStock3,
 } = require("../services/ebayUpdateStock");
-const { walmartItemUpdate, walmartOrderSync2 } = require("../services/walmartService");
+const {
+  walmartItemUpdate,
+  walmartOrderSync2,
+} = require("../services/walmartService");
 
 // Helper function to build category relations for Prisma includes
 const getCategoryInclude = (type) => ({
@@ -199,7 +202,7 @@ const getAvailableProducts = async (req, res) => {
     // Ensure page and pageSize are valid numbers
     const pageNum = Math.max(1, parseInt(page) || 1); // Default to page 1 if invalid
     const pageSizeNum = Math.min(100, Math.max(1, parseInt(pageSize) || 20)); // Limit pageSize between 1-100, default 20
-    
+
     const skip = (pageNum - 1) * pageSizeNum;
     const take = pageSizeNum;
 
@@ -220,14 +223,12 @@ const getAvailableProducts = async (req, res) => {
     };
 
     // Handle filtering by categoryId (new implementation)
-    if (filtering && filtering.startsWith('categoryId_')) {
-      const categoryId = filtering.split('categoryId_')[1];
+    if (filtering && filtering.startsWith("categoryId_")) {
+      const categoryId = filtering.split("categoryId_")[1];
       console.log("Filtering by category ID:", categoryId);
-      
+
       // Add categoryId filter to where clause
-      where.AND = where.AND
-        ? [...where.AND, { categoryId }]
-        : [{ categoryId }];
+      where.AND = where.AND ? [...where.AND, { categoryId }] : [{ categoryId }];
     }
 
     if (searchTerm) {
@@ -235,92 +236,126 @@ const getAvailableProducts = async (req, res) => {
 
       // Determine search type - be very specific
       const isWomenSearch =
-        lowerSearchTerm === "women" || lowerSearchTerm === "woman" || lowerSearchTerm.includes("womens");
+        lowerSearchTerm === "women" ||
+        lowerSearchTerm === "woman" ||
+        lowerSearchTerm.includes("womens");
       const isMenSearch =
-        lowerSearchTerm === "men" || lowerSearchTerm === "man" || lowerSearchTerm.includes("men");
+        lowerSearchTerm === "men" ||
+        lowerSearchTerm === "man" ||
+        lowerSearchTerm.includes("men");
       const isKidsSearch =
-        lowerSearchTerm === "kids" || lowerSearchTerm === "kid" || lowerSearchTerm.includes("kid") || lowerSearchTerm.includes("child");
+        lowerSearchTerm === "kids" ||
+        lowerSearchTerm === "kid" ||
+        lowerSearchTerm.includes("kid") ||
+        lowerSearchTerm.includes("child");
 
       if (isWomenSearch) {
         console.log("Searching for WOMEN products only");
 
-        // Find womens parent category by exact name match
-        const womensCategory = await prisma.category.findFirst({
-          where: {
-            AND: [
-              { parentCategoryId: null },
-              {
-                OR: [
-                  { name: { equals: "womens" } },
-                  { name: { equals: "Womens" } },
-                  { name: { equals: "WOMENS" } },
-                  { name: { equals: "women" } },
-                  { name: { equals: "Women" } },
-                  { name: { equals: "WOMEN" } },
-                  { name: { contains: "womens", mode: "insensitive" } },
-                ],
-              },
-            ],
-          },
-        });
+        // Use category IDs from categoryMapping.json for women's categories
+        const fs = require("fs");
+        const path = require("path");
+        const categoryMappingPath = path.join(
+          __dirname,
+          "../categoryMaping.json"
+        );
+        const categoryMapping = JSON.parse(
+          fs.readFileSync(categoryMappingPath, "utf8")
+        );
 
-        if (womensCategory) {
-          console.log("Found womens category:", womensCategory);
+        // Extract all website_category_ids from women's categories
+        const womenCategoryIds = [];
+
+        // Process women's categories from the mapping file
+        if (categoryMapping.womens_categories) {
+          Object.values(categoryMapping.womens_categories).forEach(
+            (categoryGroup) => {
+              categoryGroup.forEach((category) => {
+                if (category.website_category_id) {
+                  womenCategoryIds.push(category.website_category_id);
+                }
+              });
+            }
+          );
+        }
+
+        if (womenCategoryIds.length > 0) {
+          // Use the category IDs from the mapping file
           where.AND = where.AND
-            ? [
-                ...where.AND,
-                {
-                  parentCategory: { id: womensCategory.id },
-                },
-              ]
-            : [
-                {
-                  parentCategory: { id: womensCategory.id },
-                },
-              ];
+            ? [...where.AND, { categoryId: { in: womenCategoryIds } }]
+            : [{ categoryId: { in: womenCategoryIds } }];
         } else {
-          console.log("No womens category found");
-          // If no category found, return empty results for women search
-          where.AND = where.AND
-            ? [...where.AND, { id: "non-existent-id" }]
-            : [{ id: "non-existent-id" }];
+          // Fallback to the old method if no IDs found in mapping
+          const womensCategory = await prisma.category.findFirst({
+            where: {
+              AND: [
+                { parentCategoryId: null },
+                {
+                  OR: [
+                    { name: { equals: "womens" } },
+                    { name: { equals: "Womens" } },
+                    { name: { equals: "WOMENS" } },
+                    { name: { equals: "women" } },
+                    { name: { equals: "Women" } },
+                    { name: { equals: "WOMEN" } },
+                    { name: { contains: "womens", mode: "insensitive" } },
+                  ],
+                },
+              ],
+            },
+          });
+
+          if (womensCategory) {
+            console.log("Found womens category:", womensCategory);
+            where.AND = where.AND
+              ? [...where.AND, { parentCategory: { id: womensCategory.id } }]
+              : [{ parentCategory: { id: womensCategory.id } }];
+          } else {
+            console.log("No womens category found");
+            where.AND = where.AND
+              ? [...where.AND, { id: "non-existent-id" }]
+              : [{ id: "non-existent-id" }];
+          }
         }
       } else if (isMenSearch) {
         console.log("Searching for MEN products only");
-        
+
         // Use category IDs from categoryMapping.json for men's categories
-        const fs = require('fs');
-        const path = require('path');
-        const categoryMappingPath = path.join(__dirname, '../categoryMaping.json');
-        const categoryMapping = JSON.parse(fs.readFileSync(categoryMappingPath, 'utf8'));
-        
+        const fs = require("fs");
+        const path = require("path");
+        const categoryMappingPath = path.join(
+          __dirname,
+          "../categoryMaping.json"
+        );
+        const categoryMapping = JSON.parse(
+          fs.readFileSync(categoryMappingPath, "utf8")
+        );
+
         // Extract all website_category_ids from men's categories
         const menCategoryIds = [];
-        
+
         // Process men's categories from the mapping file
         const menCategories = categoryMapping.mens_categories || {};
-        Object.values(menCategories).forEach(categoryGroup => {
-          categoryGroup.forEach(category => {
+        Object.values(menCategories).forEach((categoryGroup) => {
+          categoryGroup.forEach((category) => {
             if (category.website_category_id) {
               menCategoryIds.push(category.website_category_id);
             }
           });
         });
-        
-        console.log("Men category IDs from mapping:", menCategoryIds);
-        
+
         if (menCategoryIds.length > 0) {
           // Include all products where categoryId matches any of the men's category IDs
           where.AND = where.AND
             ? [
                 ...where.AND,
                 {
-                  OR: menCategoryIds.map(id => ({ categoryId: id }))
+                  OR: menCategoryIds.map((id) => ({ categoryId: id })),
                 },
               ]
             : [
                 {
-                  OR: menCategoryIds.map(id => ({ categoryId: id }))
+                  OR: menCategoryIds.map((id) => ({ categoryId: id })),
                 },
               ];
         } else {
@@ -344,7 +379,7 @@ const getAvailableProducts = async (req, res) => {
               ],
             },
           });
-          
+
           if (mensCategory) {
             where.AND = where.AND
               ? [...where.AND, { parentCategory: { id: mensCategory.id } }]
@@ -357,41 +392,44 @@ const getAvailableProducts = async (req, res) => {
         }
       } else if (isKidsSearch) {
         console.log("Searching for KIDS products only");
-        
+
         // Use category IDs from categoryMapping.json for kids categories
         // Reuse fs and path from previous section if they exist
-        const fs = require('fs');
-        const path = require('path');
-        const categoryMappingPath = path.join(__dirname, '../categoryMaping.json');
-        const categoryMapping = JSON.parse(fs.readFileSync(categoryMappingPath, 'utf8'));
-        
+        const fs = require("fs");
+        const path = require("path");
+        const categoryMappingPath = path.join(
+          __dirname,
+          "../categoryMaping.json"
+        );
+        const categoryMapping = JSON.parse(
+          fs.readFileSync(categoryMappingPath, "utf8")
+        );
+
         // Extract all website_category_ids from kids categories
         const kidsCategoryIds = [];
-        
+
         // Process kids categories from the mapping file
         const kidsCategories = categoryMapping.kids_categories || {};
-        Object.values(kidsCategories).forEach(categoryGroup => {
-          categoryGroup.forEach(category => {
+        Object.values(kidsCategories).forEach((categoryGroup) => {
+          categoryGroup.forEach((category) => {
             if (category.website_category_id) {
               kidsCategoryIds.push(category.website_category_id);
             }
           });
         });
-        
-        console.log("Kids category IDs from mapping:", kidsCategoryIds);
-        
+
         if (kidsCategoryIds.length > 0) {
           // Include all products where categoryId matches any of the kids category IDs
           where.AND = where.AND
             ? [
                 ...where.AND,
                 {
-                  OR: kidsCategoryIds.map(id => ({ categoryId: id }))
+                  OR: kidsCategoryIds.map((id) => ({ categoryId: id })),
                 },
               ]
             : [
                 {
-                  OR: kidsCategoryIds.map(id => ({ categoryId: id }))
+                  OR: kidsCategoryIds.map((id) => ({ categoryId: id })),
                 },
               ];
         } else {
@@ -416,7 +454,7 @@ const getAvailableProducts = async (req, res) => {
               ],
             },
           });
-          
+
           if (kidsCategory) {
             where.AND = where.AND
               ? [...where.AND, { parentCategory: { id: kidsCategory.id } }]
@@ -526,8 +564,6 @@ const getAvailableProducts = async (req, res) => {
         orderBy = { salePrice: "desc" };
       }
     }
-
-    console.log("Final where condition:", JSON.stringify(where, null, 2));
 
     const products = await prisma.product.findMany({
       where,
@@ -1538,7 +1574,6 @@ const updateProductQuantities = async (req, res) => {
 
       let updatedRecord;
       if (product.variants && product.variants.length > 0) {
-
         console.warn(
           `Product ${currentSku} has variants. Skipping main product stock update as no specific variant was provided.`
         );
@@ -1590,16 +1625,14 @@ const updateProductQuantities = async (req, res) => {
             ebayUpdateStock3(currentSku, stock_quantity_for_external)
           );
         }
- 
-          syncPromises.push(
-            walmartItemUpdate(currentSku, stock_quantity_for_external)
-          );
-        
 
-          syncPromises.push(
-            walmartOrderSync2(currentSku, stock_quantity_for_external)
-          );
-        
+        syncPromises.push(
+          walmartItemUpdate(currentSku, stock_quantity_for_external)
+        );
+
+        syncPromises.push(
+          walmartOrderSync2(currentSku, stock_quantity_for_external)
+        );
 
         try {
           await Promise.allSettled(syncPromises);
