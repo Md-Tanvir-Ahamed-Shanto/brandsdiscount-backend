@@ -196,8 +196,12 @@ const getAvailableProducts = async (req, res) => {
       filtering, // Added filtering parameter for categoryId
     } = req.query;
 
-    const skip = (parseInt(page) - 1) * parseInt(pageSize);
-    const take = parseInt(pageSize);
+    // Ensure page and pageSize are valid numbers
+    const pageNum = Math.max(1, parseInt(page) || 1); // Default to page 1 if invalid
+    const pageSizeNum = Math.min(100, Math.max(1, parseInt(pageSize) || 20)); // Limit pageSize between 1-100, default 20
+    
+    const skip = (pageNum - 1) * pageSizeNum;
+    const take = pageSizeNum;
 
     let where = {
       isPublished: true,
@@ -283,94 +287,145 @@ const getAvailableProducts = async (req, res) => {
         }
       } else if (isMenSearch) {
         console.log("Searching for MEN products only");
-
-        // Find mens parent category by exact name match
-        const mensCategory = await prisma.category.findFirst({
-          where: {
-            AND: [
-              { parentCategoryId: null },
-              {
-                OR: [
-                  { name: { equals: "mens" } },
-                  { name: { equals: "Mens" } },
-                  { name: { equals: "MENS" } },
-                  { name: { equals: "men" } },
-                  { name: { equals: "Men" } },
-                  { name: { equals: "MEN" } },
-                  { name: { contains: "men", mode: "insensitive" } },
-                ],
-              },
-            ],
-          },
+        
+        // Use category IDs from categoryMapping.json for men's categories
+        const fs = require('fs');
+        const path = require('path');
+        const categoryMappingPath = path.join(__dirname, '../categoryMaping.json');
+        const categoryMapping = JSON.parse(fs.readFileSync(categoryMappingPath, 'utf8'));
+        
+        // Extract all website_category_ids from men's categories
+        const menCategoryIds = [];
+        
+        // Process men's categories from the mapping file
+        const menCategories = categoryMapping.mens_categories || {};
+        Object.values(menCategories).forEach(categoryGroup => {
+          categoryGroup.forEach(category => {
+            if (category.website_category_id) {
+              menCategoryIds.push(category.website_category_id);
+            }
+          });
         });
-
-        if (mensCategory) {
-          console.log("Found mens category:", mensCategory);
-          // Include all products where parentCategory matches the men's category
+        
+        console.log("Men category IDs from mapping:", menCategoryIds);
+        
+        if (menCategoryIds.length > 0) {
+          // Include all products where categoryId matches any of the men's category IDs
           where.AND = where.AND
             ? [
                 ...where.AND,
                 {
-                  parentCategory: { id: mensCategory.id },
+                  OR: menCategoryIds.map(id => ({ categoryId: id }))
                 },
               ]
             : [
                 {
-                  parentCategory: { id: mensCategory.id },
+                  OR: menCategoryIds.map(id => ({ categoryId: id }))
                 },
               ];
         } else {
-          console.log("No mens category found");
-          // If no category found, return empty results for men search
-          where.AND = where.AND
-            ? [...where.AND, { id: "non-existent-id" }]
-            : [{ id: "non-existent-id" }];
+          console.log("No men category IDs found in mapping");
+          // If no category IDs found, fall back to the original method
+          const mensCategory = await prisma.category.findFirst({
+            where: {
+              AND: [
+                { parentCategoryId: null },
+                {
+                  OR: [
+                    { name: { equals: "mens" } },
+                    { name: { equals: "Mens" } },
+                    { name: { equals: "MENS" } },
+                    { name: { equals: "men" } },
+                    { name: { equals: "Men" } },
+                    { name: { equals: "MEN" } },
+                    { name: { contains: "men", mode: "insensitive" } },
+                  ],
+                },
+              ],
+            },
+          });
+          
+          if (mensCategory) {
+            where.AND = where.AND
+              ? [...where.AND, { parentCategory: { id: mensCategory.id } }]
+              : [{ parentCategory: { id: mensCategory.id } }];
+          } else {
+            where.AND = where.AND
+              ? [...where.AND, { id: "non-existent-id" }]
+              : [{ id: "non-existent-id" }];
+          }
         }
       } else if (isKidsSearch) {
         console.log("Searching for KIDS products only");
-
-        // Find kids parent category by exact name match
-        const kidsCategory = await prisma.category.findFirst({
-          where: {
-            AND: [
-              { parentCategoryId: null },
-              {
-                OR: [
-                  { name: { equals: "kids" } },
-                  { name: { equals: "Kids" } },
-                  { name: { equals: "KIDS" } },
-                  { name: { equals: "children" } },
-                  { name: { equals: "Children" } },
-                  { name: { equals: "CHILDREN" } },
-                  { name: { contains: "kid", mode: "insensitive" } },
-                  { name: { contains: "child", mode: "insensitive" } },
-                ],
-              },
-            ],
-          },
+        
+        // Use category IDs from categoryMapping.json for kids categories
+        // Reuse fs and path from previous section if they exist
+        const fs = require('fs');
+        const path = require('path');
+        const categoryMappingPath = path.join(__dirname, '../categoryMaping.json');
+        const categoryMapping = JSON.parse(fs.readFileSync(categoryMappingPath, 'utf8'));
+        
+        // Extract all website_category_ids from kids categories
+        const kidsCategoryIds = [];
+        
+        // Process kids categories from the mapping file
+        const kidsCategories = categoryMapping.kids_categories || {};
+        Object.values(kidsCategories).forEach(categoryGroup => {
+          categoryGroup.forEach(category => {
+            if (category.website_category_id) {
+              kidsCategoryIds.push(category.website_category_id);
+            }
+          });
         });
-
-        if (kidsCategory) {
-          console.log("Found kids category:", kidsCategory);
-          // Include all products where parentCategory matches the kids category
+        
+        console.log("Kids category IDs from mapping:", kidsCategoryIds);
+        
+        if (kidsCategoryIds.length > 0) {
+          // Include all products where categoryId matches any of the kids category IDs
           where.AND = where.AND
             ? [
                 ...where.AND,
                 {
-                  parentCategory: { id: kidsCategory.id },
+                  OR: kidsCategoryIds.map(id => ({ categoryId: id }))
                 },
               ]
             : [
                 {
-                  parentCategory: { id: kidsCategory.id },
+                  OR: kidsCategoryIds.map(id => ({ categoryId: id }))
                 },
               ];
         } else {
-          console.log("No kids category found");
-          // If no category found, return empty results for kids search
-          where.AND = where.AND
-            ? [...where.AND, { id: "non-existent-id" }]
-            : [{ id: "non-existent-id" }];
+          console.log("No kids category IDs found in mapping");
+          // If no category IDs found, fall back to the original method
+          const kidsCategory = await prisma.category.findFirst({
+            where: {
+              AND: [
+                { parentCategoryId: null },
+                {
+                  OR: [
+                    { name: { equals: "kids" } },
+                    { name: { equals: "Kids" } },
+                    { name: { equals: "KIDS" } },
+                    { name: { equals: "children" } },
+                    { name: { equals: "Children" } },
+                    { name: { equals: "CHILDREN" } },
+                    { name: { contains: "kid", mode: "insensitive" } },
+                    { name: { contains: "child", mode: "insensitive" } },
+                  ],
+                },
+              ],
+            },
+          });
+          
+          if (kidsCategory) {
+            where.AND = where.AND
+              ? [...where.AND, { parentCategory: { id: kidsCategory.id } }]
+              : [{ parentCategory: { id: kidsCategory.id } }];
+          } else {
+            where.AND = where.AND
+              ? [...where.AND, { id: "non-existent-id" }]
+              : [{ id: "non-existent-id" }];
+          }
         }
       } else {
         console.log("General search for term:", searchTerm);
