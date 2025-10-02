@@ -67,6 +67,10 @@ app.set("views", path.join(__dirname, "templates"));
 
 app.use(cors(corsOptions));
 
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/categories", categoryRoutes);
