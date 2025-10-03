@@ -11,20 +11,14 @@ const { getValidAccessToken } = require("../tools/ebayAuth");
 const { updateStockBySku } = require("./wooComService");
 const { walmartItemUpdate, walmartOrderSync2 } = require("./walmartService");
 const { createNotification } = require("../utils/notification");
-const syncLogger = require("../utils/syncLogger");
 
 async function ebayOrderSync() {
   try {
-    syncLogger.log('eBay1', 'orderSync', 'info', 'Try eBay1 sync');
+    console.log('Try eBay1 sync');
     let token;
     try {
       token = await getValidAccessToken();
-      syncLogger.log('eBay1', 'tokenRetrieval', 'success', 'eBay1 token retrieved successfully');
     } catch (tokenError) {
-      syncLogger.log('eBay1', 'tokenRetrieval', 'error', 'eBay1 token retrieval failed', {
-        error: tokenError.message,
-        stack: tokenError.stack
-      });
       console.error("Please re-authenticate eBay1 account through the authorization flow");
       return [];
     }
@@ -38,24 +32,20 @@ async function ebayOrderSync() {
       "Content-Type": "application/json",
     };
 
-    syncLogger.log('eBay1', 'orderSync', 'info', `Fetching eBay1 orders since ${tenMinAgoISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
-      syncLogger.log('eBay1', 'orderSync', 'success', `✅ Successfully fetched ${response.data?.orders?.length || 0} eBay1 orders`);
+      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay1 orders`);
     } catch (apiError) {
-      syncLogger.log('eBay1', 'orderSync', 'error', `❌ eBay1 API error: ${apiError.message}`);
+      console.error(`❌ eBay1 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        syncLogger.log('eBay1', 'orderSync', 'error', "Authentication error - token may be invalid. Please re-authenticate eBay1 account.");
+        console.error("Authentication error - token may be invalid. Please re-authenticate eBay1 account.");
       }
       return [];
     }
     const orders = response.data?.orders || [];
 
-    // console.log("Order Sync Response: ", response)
-
     if (!orders.length) {
-      syncLogger.log('eBay1', 'orderSync', 'info', "No new eBay orders found.");
       return [];
     }
 
@@ -76,7 +66,6 @@ async function ebayOrderSync() {
           status: order.orderFulfillmentStatus,
         },
       }));
-      syncLogger.log('eBay1', 'orderSync', 'info', `Created new eBay1 order record: ${order.orderId}`);
 
       const lineItems = order.lineItems || [];
 
@@ -92,7 +81,6 @@ async function ebayOrderSync() {
 
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
-          syncLogger.log('eBay1', 'orderSync', 'info', `Updated stock for ${sku} to ${newStock}`);
 
           await executeWithRetry(() => prisma.product.update({
             where: { sku },
@@ -100,48 +88,43 @@ async function ebayOrderSync() {
           }));
 
           try {
-            const notification = await createNotification({
+            await createNotification({
               title: "Product Sold on eBay1",
               message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
               location: "eBay1",
               selledBy: "EBAY1",
             });
-            syncLogger.log('eBay1', 'notification', 'success', `Notification created for eBay1 sale: ${notification.id}`, {
-              sku,
-              quantity: qty,
-              notificationId: notification.id
-            });
           } catch (err) {
-            syncLogger.log('eBay1', 'notification', 'error', `Notification creation failed for eBay1 sale: ${err.message}`, {
-              sku,
-              quantity: qty,
-              error: err.message
-            });
             // Continue with stock updates despite notification failure
           }
 
-          // Try each platform update independently
+          // Try each platform update independently with proper async handling
           try {
-            ebayUpdateStock2(sku, newStock);
+            await ebayUpdateStock2(sku, newStock);
+            console.log(`✅ [eBay1 Order] Successfully updated eBay2 stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("eBay2 inventory update failed:", err.message);
+            console.warn(`❌ [eBay1 Order] eBay2 inventory update failed for ${sku}: ${err.message}`);
           }
 
           try {
-            ebayUpdateStock3(sku, newStock);
+            await ebayUpdateStock3(sku, newStock);
+            console.log(`✅ [eBay1 Order] Successfully updated eBay3 stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("eBay3 inventory update failed:", err.message);
+            console.warn(`❌ [eBay1 Order] eBay3 inventory update failed for ${sku}: ${err.message}`);
           }
 
           try {
-            walmartItemUpdate(sku, newStock);
+            await walmartItemUpdate(sku, newStock);
+            console.log(`✅ [eBay1 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("Walmart inventory update failed:", err.message);
+            console.warn(`❌ [eBay1 Order] Walmart inventory update failed for ${sku}: ${err.message}`);
           }
+          
           try {
-            walmartOrderSync2(sku, newStock);
+            await walmartOrderSync2(sku, newStock);
+            console.log(`✅ [eBay1 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`);
           } catch (error) {
-            console.warn("Walmart2 inventory update failed:", error.message);
+            console.warn(`❌ [eBay1 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`);
           }
         }
       }
@@ -158,17 +141,12 @@ async function ebayOrderSync() {
 }
 
 async function ebayOrderSync2() {
-  syncLogger.log('eBay2', 'orderSync', 'info', 'Try eBay2 sync');
+  console.log('Try eBay2 sync');
   try {
     let token;
     try {
       token = await getValidAccessToken2();
-      syncLogger.log('eBay2', 'tokenRetrieval', 'success', 'eBay2 token retrieved successfully');
     } catch (tokenError) {
-      syncLogger.log('eBay2', 'tokenRetrieval', 'error', 'eBay2 token retrieval failed', {
-        error: tokenError.message,
-        stack: tokenError.stack
-      });
       console.error("Please re-authenticate eBay2 account through the authorization flow");
       return [];
     }
@@ -182,24 +160,20 @@ async function ebayOrderSync2() {
       "Content-Type": "application/json",
     };
 
-    syncLogger.log('eBay2', 'orderSync', 'info', `Fetching eBay2 orders since ${tenMinAgoISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
-      syncLogger.log('eBay2', 'orderSync', 'success', `✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
+      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
     } catch (apiError) {
-      syncLogger.log('eBay2', 'orderSync', 'error', `❌ eBay2 API error: ${apiError.message}`);
+      console.error(`❌ eBay2 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        syncLogger.log('eBay2', 'orderSync', 'error', "Authentication error - token may be invalid. Please re-authenticate eBay2 account.");
+        console.error("Authentication error - token may be invalid. Please re-authenticate eBay2 account.");
       }
       return [];
     }
     const orders = response.data?.orders || [];
 
-    // console.log("Order Sync Response: ", response)
-
     if (!orders.length) {
-      syncLogger.log('eBay2', 'orderSync', 'info', "No new eBay2 orders found.");
       return [];
     }
 
@@ -220,7 +194,6 @@ async function ebayOrderSync2() {
           status: order.orderFulfillmentStatus,
         },
       }));
-      syncLogger.log('eBay2', 'orderSync', 'info', `Created new eBay2 order record: ${order.orderId}`);
 
       const lineItems = order.lineItems || [];
 
@@ -236,7 +209,6 @@ async function ebayOrderSync2() {
 
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
-          syncLogger.log('eBay2', 'orderSync', 'info', `Updated stock for ${sku} to ${newStock}`);
 
           await executeWithRetry(() => prisma.product.update({
             where: { sku },
@@ -244,47 +216,43 @@ async function ebayOrderSync2() {
           }));
 
           try {
-            const notification = await createNotification({
+            await createNotification({
               title: "Product Sold on eBay2",
               message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
               location: "eBay2",
               selledBy: "EBAY2",
             });
-            syncLogger.log('eBay2', 'notification', 'success', `Notification created for eBay2 sale: ${notification.id}`, {
-              sku,
-              quantity: qty,
-              notificationId: notification.id
-            });
           } catch (err) {
-            syncLogger.log('eBay2', 'notification', 'error', `Notification creation failed for eBay2 sale: ${err.message}`, {
-              sku,
-              quantity: qty,
-              error: err.message
-            });
             // Continue with stock updates despite notification failure
           }
 
-          // Try each platform update independently
+          // Try each platform update independently with proper async handling
           try {
-            ebayUpdateStock(sku, newStock);
+            await ebayUpdateStock(sku, newStock);
+            console.log(`✅ [eBay2 Order] Successfully updated eBay1 stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("eBay2 inventory update failed:", err.message);
+            console.warn(`❌ [eBay2 Order] eBay1 inventory update failed for ${sku}: ${err.message}`);
           }
 
           try {
-            ebayUpdateStock3(sku, newStock);
+            await ebayUpdateStock3(sku, newStock);
+            console.log(`✅ [eBay2 Order] Successfully updated eBay3 stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("eBay3 inventory update failed:", err.message);
+            console.warn(`❌ [eBay2 Order] eBay3 inventory update failed for ${sku}: ${err.message}`);
           }
+          
           try {
-            walmartItemUpdate(sku, newStock);
+            await walmartItemUpdate(sku, newStock);
+            console.log(`✅ [eBay2 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("Walmart inventory update failed:", err.message);
+            console.warn(`❌ [eBay2 Order] Walmart inventory update failed for ${sku}: ${err.message}`);
           }
+          
           try {
-            walmartOrderSync2(sku, newStock);
+            await walmartOrderSync2(sku, newStock);
+            console.log(`✅ [eBay2 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`);
           } catch (error) {
-            console.warn("Walmart2 inventory update failed:", error.message);
+            console.warn(`❌ [eBay2 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`);
           }
         }
       }
@@ -306,10 +274,8 @@ async function ebayOrderSync3() {
     let token;
     try {
       token = await getValidAccessToken3();
-      syncLogger.log('eBay3', 'orderSync', 'info', "eBay3 token retrieved successfully");
     } catch (tokenError) {
-      syncLogger.log('eBay3', 'orderSync', 'error', "❌ eBay3 token retrieval failed:", tokenError.message);
-      syncLogger.log('eBay3', 'orderSync', 'error', "Please re-authenticate eBay3 account through the authorization flow");
+      console.error("Please re-authenticate eBay3 account through the authorization flow");
       return [];
     }
     
@@ -322,24 +288,20 @@ async function ebayOrderSync3() {
       "Content-Type": "application/json",
     };
 
-    syncLogger.log('eBay3', 'orderSync', 'info', `Fetching eBay3 orders since ${tenMinAgoISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
-      syncLogger.log('eBay3', 'orderSync', 'success', `✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
+      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
     } catch (apiError) {
-      syncLogger.log('eBay3', 'orderSync', 'error', `❌ eBay3 API error: ${apiError.message}`);
+      console.error(`❌ eBay3 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        syncLogger.log('eBay3', 'orderSync', 'error', "Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
+        console.error("Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
       }
       return [];
     }
     const orders = response.data?.orders || [];
 
-    // console.log("Order Sync Response: ", response)
-
     if (!orders.length) {
-      syncLogger.log('eBay3', 'orderSync', 'info', "No new eBay3 orders found.");
       return [];
     }
 
@@ -360,7 +322,6 @@ async function ebayOrderSync3() {
           status: order.orderFulfillmentStatus,
         },
       }));
-      syncLogger.log('eBay3', 'orderSync', 'info', `Created new eBay3 order record: ${order.orderId}`);
 
       const lineItems = order.lineItems || [];
 
@@ -381,50 +342,45 @@ async function ebayOrderSync3() {
             where: { sku },
             data: { stockQuantity: newStock },
           }));
-          syncLogger.log('eBay3', 'orderSync', 'info', `Updated stock for ${sku} to ${newStock}`);
 
           try {
-            const notification = await createNotification({
+            await createNotification({
               title: "Product Sold on eBay3",
               message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
               location: "eBay3",
               selledBy: "EBAY3",
             });
-            syncLogger.log('eBay3', 'notification', 'success', `Notification created for eBay3 sale: ${notification.id}`, {
-              sku,
-              quantity: qty,
-              notificationId: notification.id
-            });
           } catch (err) {
-            syncLogger.log('eBay3', 'notification', 'error', `Notification creation failed for eBay3 sale: ${err.message}`, {
-              sku,
-              quantity: qty,
-              error: err.message
-            });
             // Continue with stock updates despite notification failure
           }
 
-          // Try each platform update independently
+          // Try each platform update independently with proper async handling
           try {
-            ebayUpdateStock(sku, newStock);
+            await ebayUpdateStock(sku, newStock);
+            console.log(`✅ [eBay3 Order] Successfully updated eBay1 stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("eBay2 inventory update failed:", err.message);
+            console.warn(`❌ [eBay3 Order] eBay1 inventory update failed for ${sku}: ${err.message}`);
           }
 
           try {
-            ebayUpdateStock2(sku, newStock);
+            await ebayUpdateStock2(sku, newStock);
+            console.log(`✅ [eBay3 Order] Successfully updated eBay2 stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("eBay3 inventory update failed:", err.message);
+            console.warn(`❌ [eBay3 Order] eBay2 inventory update failed for ${sku}: ${err.message}`);
           }
+          
           try {
-            walmartItemUpdate(sku, newStock);
+            await walmartItemUpdate(sku, newStock);
+            console.log(`✅ [eBay3 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`);
           } catch (err) {
-            console.warn("Walmart inventory update failed:", err.message);
+            console.warn(`❌ [eBay3 Order] Walmart inventory update failed for ${sku}: ${err.message}`);
           }
+          
           try {
-            walmartOrderSync2(sku, newStock);
+            await walmartOrderSync2(sku, newStock);
+            console.log(`✅ [eBay3 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`);
           } catch (error) {
-            console.warn("Walmart2 inventory update failed:", error.message);
+            console.warn(`❌ [eBay3 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`);
           }
         }
       }
@@ -445,12 +401,7 @@ async function getEbayOneLatestOrders() {
     let token;
     try {
       token = await getValidAccessToken();
-      syncLogger.log('eBay1', 'tokenRetrieval', 'success', 'eBay1 token retrieved successfully');
     } catch (tokenError) {
-      syncLogger.log('eBay1', 'tokenRetrieval', 'error', 'eBay1 token retrieval failed', {
-        error: tokenError.message,
-        stack: tokenError.stack
-      });
       console.error("Please re-authenticate eBay1 account through the authorization flow");
       return [];
     }
@@ -489,12 +440,7 @@ async function getEbayTwoLatestOrders() {
     let token;
     try {
       token = await getValidAccessToken2();
-      syncLogger.log('eBay2', 'tokenRetrieval', 'success', 'eBay2 token retrieved successfully');
     } catch (tokenError) {
-      syncLogger.log('eBay2', 'tokenRetrieval', 'error', 'eBay2 token retrieval failed', {
-        error: tokenError.message,
-        stack: tokenError.stack
-      });
       console.error("Please re-authenticate eBay2 account through the authorization flow");
       return [];
     }
@@ -532,12 +478,7 @@ async function getEbayThreeLatestOrders() {
     let token;
     try {
       token = await getValidAccessToken3();
-      syncLogger.log('eBay3', 'tokenRetrieval', 'success', 'eBay3 token retrieved successfully');
     } catch (tokenError) {
-      syncLogger.log('eBay3', 'tokenRetrieval', 'error', 'eBay3 token retrieval failed', {
-        error: tokenError.message,
-        stack: tokenError.stack
-      });
       console.error("Please re-authenticate eBay3 account through the authorization flow");
       return [];
     }
@@ -577,16 +518,11 @@ async function getEbayThreeLatestOrders() {
 
 async function ManualEbayOrderSync() {
   try {
-    syncLogger.log('eBay1', 'orderSync', 'info', 'Try eBay1 sync');
+    console.log('Try eBay1 sync');
     let token;
     try {
       token = await getValidAccessToken();
-      syncLogger.log('eBay1', 'tokenRetrieval', 'success', 'eBay1 token retrieved successfully');
     } catch (tokenError) {
-      syncLogger.log('eBay1', 'tokenRetrieval', 'error', 'eBay1 token retrieval failed', {
-        error: tokenError.message,
-        stack: tokenError.stack
-      });
       console.error("Please re-authenticate eBay1 account through the authorization flow");
       return [];
     }
@@ -661,23 +597,13 @@ async function ManualEbayOrderSync() {
           }));
 
           try {
-            const notification = await createNotification({
+            await createNotification({
               title: "Product Sold on eBay1",
               message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
               location: "eBay1",
               selledBy: "EBAY1",
             });
-            syncLogger.log('eBay1', 'notification', 'success', `Notification created for eBay1 sale: ${notification.id}`, {
-              sku,
-              quantity: qty,
-              notificationId: notification.id
-            });
           } catch (err) {
-            syncLogger.log('eBay1', 'notification', 'error', `Notification creation failed for eBay1 sale: ${err.message}`, {
-              sku,
-              quantity: qty,
-              error: err.message
-            });
             // Continue with stock updates despite notification failure
           }
 
@@ -719,17 +645,12 @@ async function ManualEbayOrderSync() {
 }
 
 async function ManualEbayOrderSync2() {
-  syncLogger.log('eBay2', 'orderSync', 'info', 'Try eBay2 sync');
+  console.log('Try eBay2 sync');
   try {
     let token;
     try {
       token = await getValidAccessToken2();
-      syncLogger.log('eBay2', 'tokenRetrieval', 'success', 'eBay2 token retrieved successfully');
     } catch (tokenError) {
-      syncLogger.log('eBay2', 'tokenRetrieval', 'error', 'eBay2 token retrieval failed', {
-        error: tokenError.message,
-        stack: tokenError.stack
-      });
       console.error("Please re-authenticate eBay2 account through the authorization flow");
       return [];
     }
@@ -743,11 +664,11 @@ async function ManualEbayOrderSync2() {
       "Content-Type": "application/json",
     };
 
-    syncLogger.log('eBay2', 'orderSync', 'info', `Fetching eBay2 orders since ${oneDayAgoISO}`);
+    console.log(`Fetching eBay2 orders since ${oneDayAgoISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
-      syncLogger.log('eBay2', 'orderSync', 'success', `✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
+      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
     } catch (apiError) {
       console.error(`❌ eBay2 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
@@ -796,30 +717,20 @@ async function ManualEbayOrderSync2() {
 
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
-          syncLogger.log('eBay2', 'orderSync', 'info', `Created new eBay2 order record: ${order.orderId}`);
+          console.log(`Created new eBay2 order record: ${order.orderId}`);
           await executeWithRetry(() => prisma.product.update({
             where: { sku },
             data: { stockQuantity: newStock },
           }));
 
           try {
-            const notification = await createNotification({
+            await createNotification({
               title: "Product Sold on eBay2",
               message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
               location: "eBay2",
               selledBy: "EBAY2",
             });
-            syncLogger.log('eBay2', 'notification', 'success', `Notification created for eBay2 sale: ${notification.id}`, {
-              sku,
-              quantity: qty,
-              notificationId: notification.id
-            });
           } catch (err) {
-            syncLogger.log('eBay2', 'notification', 'error', `Notification creation failed for eBay2 sale: ${err.message}`, {
-              sku,
-              quantity: qty,
-              error: err.message
-            });
             // Continue with stock updates despite notification failure
           }
 
@@ -865,9 +776,7 @@ async function ManualEbayOrderSync3() {
     let token;
     try {
       token = await getValidAccessToken3();
-      syncLogger.log('eBay3', 'orderSync', 'info', "eBay3 token retrieved successfully");
     } catch (tokenError) {
-      syncLogger.log('eBay3', 'orderSync', 'error', "❌ eBay3 token retrieval failed:", tokenError.message);
       console.error("Please re-authenticate eBay3 account through the authorization flow");
       return [];
     }
@@ -881,15 +790,15 @@ async function ManualEbayOrderSync3() {
       "Content-Type": "application/json",
     };
 
-    syncLogger.log('eBay3', 'orderSync', 'info', `Fetching eBay3 orders since ${oneDayAgoISO}`);
+    console.log(`Fetching eBay3 orders since ${oneDayAgoISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
-      syncLogger.log('eBay3', 'orderSync', 'success', `✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
+      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
     } catch (apiError) {
-      syncLogger.log('eBay3', 'orderSync', 'error', `❌ eBay3 API error: ${apiError.message}`);
+      console.error(`❌ eBay3 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        syncLogger.log('eBay3', 'orderSync', 'error', "Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
+        console.error("Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
       }
       return [];
     }
@@ -898,7 +807,7 @@ async function ManualEbayOrderSync3() {
     // console.log("Order Sync Response: ", response)
 
     if (!orders.length) {
-      syncLogger.log('eBay3', 'orderSync', 'info', "No new eBay3 orders found.");
+      console.log("No new eBay3 orders found.");
       return [];
     }
 
@@ -919,7 +828,7 @@ async function ManualEbayOrderSync3() {
           status: order.orderFulfillmentStatus,
         },
       }));
-      syncLogger.log('eBay3', 'orderSync', 'info', `Created new eBay3 order record: ${order.orderId}`);
+      console.log(`Created new eBay3 order record: ${order.orderId}`);
 
       const lineItems = order.lineItems || [];
 
@@ -942,23 +851,13 @@ async function ManualEbayOrderSync3() {
           }));
 
           try {
-            const notification = await createNotification({
+            await createNotification({
               title: "Product Sold on eBay3",
               message: `Product ${sku} sold on eBay. Quantity: ${qty}`,
               location: "eBay3",
               selledBy: "EBAY3",
             });
-            syncLogger.log('eBay3', 'notification', 'success', `Notification created for eBay3 sale: ${notification.id}`, {
-              sku,
-              quantity: qty,
-              notificationId: notification.id
-            });
           } catch (err) {
-            syncLogger.log('eBay3', 'notification', 'error', `Notification creation failed for eBay3 sale: ${err.message}`, {
-              sku,
-              quantity: qty,
-              error: err.message
-            });
             // Continue with stock updates despite notification failure
           }
 
