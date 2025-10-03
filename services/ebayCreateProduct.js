@@ -25,7 +25,8 @@ async function createEbayProduct(product) {
       "Content-Language": "en-US",
     };
 
-    const title = product.title || "Untitled Product";
+    // Truncate title to 80 characters for eBay requirements
+    const title = (product.title || "Untitled Product").substring(0, 80);
     const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
@@ -128,7 +129,8 @@ async function createEbayProduct2(product) {
       "Content-Language": "en-US",
     };
 
-    const title = product.title || "Untitled Product";
+    // Truncate title to 80 characters for eBay requirements
+    const title = (product.title || "Untitled Product").substring(0, 80);
     const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
@@ -232,7 +234,8 @@ async function createEbayProduct3(product) {
       "Content-Language": "en-US",
     };
 
-    const title = product.title || "Untitled Product";
+    // Truncate title to 80 characters for eBay requirements
+    const title = (product.title || "Untitled Product").substring(0, 80);
     const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
