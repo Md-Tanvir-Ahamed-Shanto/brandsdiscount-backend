@@ -161,12 +161,17 @@ async function walmartItemUpdate(sku, quantity) {
     return { error: "sku cannot be null or invalid" };
   }
   
+  // Ensure quantity is a valid number
+  const validQuantity = Number.isInteger(quantity) ? quantity : 0;
+  
   const updateData = {
+    sku: sku.trim(), // Include SKU in the request body
     quantity: {
       unit: "EACH",
-      amount: quantity,
+      amount: validQuantity,
     },
   };
+  
   const token = await getValidAccessToken();
   try {
     const url = `https://marketplace.walmartapis.com/v3/inventory?sku=${encodeURIComponent(sku.trim())}`;
@@ -203,7 +208,7 @@ async function walmartOrderSync() {
       return [];
     }
     
-    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
     console.log(`Fetching Walmart orders since ${tenMinAgoISO}`);
 
     const url = `https://marketplace.walmartapis.com/v3/orders?createdStartDate=${encodeURIComponent(
@@ -442,12 +447,17 @@ async function walmartItemUpdate2(sku, quantity) {
     return { error: "sku cannot be null or invalid" };
   }
   
+  // Ensure quantity is a valid number
+  const validQuantity = Number.isInteger(quantity) ? quantity : 0;
+  
   const updateData = {
+    sku: sku.trim(), // Include SKU in the request body
     quantity: {
       unit: "EACH",
-      amount: quantity,
+      amount: validQuantity,
     },
   };
+  
   const token = await getValidAccessToken2();
   try {
     const url = `https://marketplace.walmartapis.com/v3/inventory?sku=${encodeURIComponent(sku.trim())}`;
@@ -483,7 +493,7 @@ async function walmartOrderSync2() {
       console.error("Please check Walmart2 API credentials and re-authenticate if needed");
       return [];
     }
-    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const url = `https://marketplace.walmartapis.com/v3/orders?createdStartDate=${encodeURIComponent(
       tenMinAgoISO
