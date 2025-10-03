@@ -12,7 +12,7 @@ async function ebayOrderSync2() {
   const token = await getValidAccessToken();
 
   try {
-    const now = new Date(Date.now() - 10 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
+    const now = new Date(Date.now() - 60 * 60 * 1000).toISOString(); // Subtract 5 minutes and convert to ISO
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B${now}..%5D&limit=180`;
     // const url = `https://marketplace.walmartapis.com/v3/orders?status=Created&productInfo=false&shipNodeType=SellerFulfilled&replacementInfo=false&createdStartDate=${encodeURIComponent(

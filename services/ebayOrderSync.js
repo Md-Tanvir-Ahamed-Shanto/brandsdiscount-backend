@@ -29,7 +29,7 @@ async function ebayOrderSync() {
       return [];
     }
     
-    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
 
@@ -173,7 +173,7 @@ async function ebayOrderSync2() {
       return [];
     }
     
-    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
 
@@ -313,7 +313,7 @@ async function ebayOrderSync3() {
       return [];
     }
     
-    const tenMinAgoISO = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
 

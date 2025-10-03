@@ -6,7 +6,7 @@ const wooComRoutes = express.Router();
 
 wooComRoutes.get("/sync", async (req, res) => {
   try {
-    const lastSync = new Date(Date.now() - 10 * 60 * 1000); // Sync orders modified in the last 10 minutes
+    const lastSync = new Date(Date.now() - 60 * 60 * 1000); // Sync orders modified in the last 10 minutes
     const syncedOrders = await woocommerceOrderSync(lastSync);
     res
       .status(200)

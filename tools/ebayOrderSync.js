@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
 async function ebayOrderSync() {
   try {
     const token = await getValidAccessToken();
-    const now = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const now = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B${now}..%5D&limit=180`;
 
