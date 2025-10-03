@@ -68,7 +68,10 @@ async function createEbayProduct(product) {
       { headers }
     );
 
-    console.log(`eBay1: Creating offer for SKU: ${sku}`);
+    console.log(`eBay2: Waiting for inventory item to be processed for SKU: ${sku}`);
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
+
+    console.log(`eBay2: Creating offer for SKU: ${sku}`);
     // Step 2: Create offer
     const offerResp = await ebayAxios.post(
       `${EBAY_API_BASE_URL}/sell/inventory/v1/offer`,
@@ -172,9 +175,13 @@ async function createEbayProduct2(product) {
       },
       { headers }
     );
+    
+    // Add a delay to ensure inventory item is fully processed before creating offer
+    console.log(`eBay2: Waiting for inventory item to be processed for SKU: ${sku}`);
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
 
     console.log(`eBay2: Creating offer for SKU: ${sku}`);
-    // Step 2: Create offer
+    // Step 2: Create offer with explicit return policy details
     const offerResp = await ebayAxios.post(
       `${EBAY_API_BASE_URL}/sell/inventory/v1/offer`,
       {
@@ -192,6 +199,16 @@ async function createEbayProduct2(product) {
           fulfillmentPolicyId: process.env.EBAY2_FULFILLMENT_POLICY_ID,
           paymentPolicyId: process.env.EBAY2_PAYMENT_POLICY_ID,
           returnPolicyId: process.env.EBAY2_RETURN_POLICY_ID,
+          // Add explicit return terms if policy ID isn't working correctly
+          returnTerms: {
+            returnsAccepted: true,
+            returnPeriod: {
+              value: 30,
+              unit: "DAY"
+            },
+            returnMethod: "REPLACEMENT_OR_EXCHANGE",
+            returnShippingCostPayer: "SELLER"
+          }
         },
         categoryId: categoryId,
         merchantLocationKey: "warehouse1",
@@ -277,7 +294,11 @@ async function createEbayProduct3(product) {
       },
       { headers }
     );
-
+    
+    // Add a delay to ensure inventory item is fully processed before creating offer
+    console.log(`eBay3: Waiting for inventory item to be processed for SKU: ${sku}`);
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
+    
     console.log(`eBay3: Creating offer for SKU: ${sku}`);
     // Step 2: Create offer
     const offerResp = await ebayAxios.post(
