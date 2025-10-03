@@ -89,8 +89,6 @@ app.get("/ebay/auth/callback", async (req, res) => {
     const rawCode = req.query.code;
     const code = decodeURIComponent(rawCode);
 
-    console.log("Decoded eBay Code:", code);
-
     await getAccessToken(code);
 
     res.send("✅ Access token saved successfully!");
@@ -104,8 +102,6 @@ app.get("/ebay2/auth/callback", async (req, res) => {
   try {
     const rawCode = req.query.code;
     const code = decodeURIComponent(rawCode);
-
-    console.log("Decoded eBay Code:", code);
 
     await getAccessToken2(code);
 
@@ -121,8 +117,6 @@ app.get("/ebay3/auth/callback", async (req, res) => {
   try {
     const rawCode = req.query.code;
     const code = decodeURIComponent(rawCode);
-
-    console.log("Decoded eBay Code:", code);
 
     await getAccessToken3(code);
 
@@ -243,12 +237,10 @@ let isRunning = false;
 
 cron.schedule("*/5 * * * *", async () => {
   if (isRunning) {
-    console.log(`[${new Date().toISOString()}] Job already running, skipping.`);
     return;
   }
 
   isRunning = true;
-  console.log(`[${new Date().toISOString()}] Job started.`);
 
   try {
     // ========== Order Sync Section ==========
@@ -257,19 +249,12 @@ cron.schedule("*/5 * * * *", async () => {
       [ebayOrderSync(), ebayOrderSync2(), ebayOrderSync3(), walmartOrderSync(), walmartOrderSync2()]
     );
 
-    console.log("✅ eBay Orders Synced:", ebayOrders.length);
-    console.log("✅ eBay Orders 2 Synced:", ebayOrders2.length);
-    console.log("✅ eBay Orders 3 Synced:", ebayOrders3.length);
-    console.log("✅ Walmart Orders Synced:", walmartOrders.length);
-    console.log("✅ Walmart2 Orders Synced:", walmartOrders2.length);
+    console.log("✅ Orders Synced - eBay1:", ebayOrders.length, "eBay2:", ebayOrders2.length, 
+      "eBay3:", ebayOrders3.length, "Walmart:", walmartOrders.length, "Walmart2:", walmartOrders2.length);
   } catch (error) {
-    console.error(
-      `[${new Date().toISOString()}] ❌ Job execution error:`,
-      error.message
-    );
+    console.error("❌ Job execution error:", error.message);
   } finally {
     isRunning = false;
-    console.log(`[${new Date().toISOString()}] Job finished.`);
   }
 });
 

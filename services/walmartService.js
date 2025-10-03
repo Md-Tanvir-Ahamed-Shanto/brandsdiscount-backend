@@ -201,15 +201,12 @@ async function walmartOrderSync() {
     let token;
     try {
       token = await getValidAccessToken();
-      console.log("Walmart token retrieved successfully");
     } catch (tokenError) {
       console.error("❌ Walmart token retrieval failed:", tokenError.message);
-      console.error("Please check Walmart API credentials and re-authenticate if needed");
       return [];
     }
     
     const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    console.log(`Fetching Walmart orders since ${tenMinAgoISO}`);
 
     const url = `https://marketplace.walmartapis.com/v3/orders?createdStartDate=${encodeURIComponent(
       tenMinAgoISO
@@ -227,7 +224,6 @@ async function walmartOrderSync() {
     const ordersData = response.data?.list?.elements?.order || [];
 
     if (!ordersData.length) {
-      console.log("No new Walmart orders found.");
       return [];
     }
 
@@ -241,7 +237,6 @@ async function walmartOrderSync() {
     );
 
     if (!newOrders.length) {
-      console.log("All fetched Walmart orders already exist in the database.");
       return [];
     }
 
@@ -269,8 +264,7 @@ async function walmartOrderSync() {
 
         if (!sku || qty == null) {
           console.warn(
-            `Skipping item due to missing SKU or Quantity in Walmart order ${order.purchaseOrderId}. Item:`,
-            item
+            `Skipping item due to missing SKU or Quantity in Walmart order ${order.purchaseOrderId}`
           );
           continue;
         }
@@ -290,22 +284,17 @@ async function walmartOrderSync() {
           );
 
           try {
-            const notification = await createNotification({
+            await createNotification({
               title: "Product Sold on Walmart",
               message: `Product ${sku} sold on Walmart. Quantity: ${qty}`,
               location: "Walmart",
               selledBy: "WALMART",
             });
-            console.log(
-              "Notification created successfully for Walmart sale:",
-              notification.id
-            );
           } catch (err) {
             console.error(
               "Notification creation failed for Walmart sale:",
               err.message
             );
-            // Continue with stock updates despite notification failure
           }
 
           try {
@@ -487,10 +476,8 @@ async function walmartOrderSync2() {
     let token;
     try {
       token = await getValidAccessToken2();
-      console.log("Walmart2 token retrieved successfully");
     } catch (tokenError) {
       console.error("❌ Walmart2 token retrieval failed:", tokenError.message);
-      console.error("Please check Walmart2 API credentials and re-authenticate if needed");
       return [];
     }
     const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
@@ -511,7 +498,6 @@ async function walmartOrderSync2() {
     const ordersData = response.data?.list?.elements?.order || [];
 
     if (!ordersData.length) {
-      console.log("No new Walmart2 orders found.");
       return [];
     }
 
@@ -525,7 +511,6 @@ async function walmartOrderSync2() {
     );
 
     if (!newOrders.length) {
-      console.log("All fetched Walmart2 orders already exist in the database.");
       return [];
     }
 
@@ -553,8 +538,7 @@ async function walmartOrderSync2() {
 
         if (!sku || qty == null) {
           console.warn(
-            `Skipping item due to missing SKU or Quantity in Walmart2 order ${order.purchaseOrderId}. Item:`,
-            item
+            `Skipping item due to missing SKU or Quantity in Walmart2 order ${order.purchaseOrderId}`
           );
           continue;
         }
@@ -574,22 +558,17 @@ async function walmartOrderSync2() {
           );
 
           try {
-            const notification = await createNotification({
+            await createNotification({
               title: "Product Sold on Walmart2",
               message: `Product ${sku} sold on Walmart2. Quantity: ${qty}`,
               location: "Walmart2",
               selledBy: "WALMART2",
             });
-            console.log(
-              "Notification created successfully for Walmart2 sale:",
-              notification.id
-            );
           } catch (err) {
             console.error(
               "Notification creation failed for Walmart2 sale:",
               err.message
             );
-            // Continue with stock updates despite notification failure
           }
 
           try {
