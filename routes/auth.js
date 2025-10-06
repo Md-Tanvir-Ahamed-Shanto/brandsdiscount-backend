@@ -7,6 +7,7 @@ const ExtractJwt = require("passport-jwt").ExtractJwt;
 const LocalStrategy = require("passport-local");
 const { PrismaClient } = require("@prisma/client");
 const { getToken, verifyUser, COOKIE_OPTIONS, getRefreshToken } = require("../tools/authenticate");
+const { sendForgotPasswordEmail, sendPasswordChangeConfirmationEmail } = require("../tools/email.js");
 const prisma = new PrismaClient();
 const util = require("util");
 const pbkdf2Async = util.promisify(crypto.pbkdf2);
@@ -194,6 +195,78 @@ router.post("/login", passport.authenticate("local", { session: false }), (req, 
 router.get("/logout", verifyUser, (req, res) => {
   res.clearCookie("accessToken", COOKIE_OPTIONS);
   res.json({ success: true });
+});
+
+// Password reset routes
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // Don't reveal that the user doesn't exist
+      return res.status(200).json({ message: "If your email exists in our system, you will receive a password reset link" });
+    }
+
+    // Send password reset email
+    await sendForgotPasswordEmail(email, user.username || user.name || 'Valued Customer');
+
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    res.status(500).json({ error: "Failed to process password reset request" });
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Token and new password are required" });
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ error: "Invalid or expired token" });
+    }
+
+    const { email } = decoded;
+    const user = await prisma.user.findUnique({ where: { email } });
+    
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Update password
+    const salt = crypto.randomBytes(16);
+    const hashedPassword = await pbkdf2Async(
+      newPassword,
+      salt,
+      310000,
+      32,
+      "sha256"
+    );
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { hashedPassword, salt }
+    });
+
+    // Send confirmation email
+    await sendPasswordChangeConfirmationEmail(email, user.username || user.name || 'Valued Customer');
+
+    res.status(200).json({ message: "Password has been reset successfully" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ error: "Failed to reset password" });
+  }
 });
 
 module.exports = router;

@@ -21,6 +21,15 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
         h1, h2 {
             color: #333;
         }
@@ -52,7 +61,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>🚚 It's Shipped! Your Brands Discounts Order #<%= orderNumber %> is On Its Way!</h1>
+        <div class="header">
+            <img src="https://brandsdiscounts.com/logo.png" alt="Brands Discounts Logo" class="logo">
+            <h1>🚚 It's Shipped! Your Brands Discounts Order #<%= orderNumber %> is On Its Way!</h1>
+        </div>
         <p>Hi <%= customerName %>,</p>
         <p>Get excited! Your order <strong>#<%= orderNumber %></strong> has shipped and is officially on its way to you.</p>
         <p><strong>Carrier:</strong> <%= carrierName %><br/>

@@ -282,10 +282,69 @@ async function sendAdminInventorySyncFailureAlert(adminEmail, data) {
   );
 }
 
+// Add order confirmation email function
+async function sendOrderConfirmationEmail(toEmail, customerName, orderNumber, orderDetails, totalAmount) {
+  const subject = `🎉 Your Brands Discounts Order #${orderNumber} is Confirmed!`;
+  const htmlContent = await renderEmailTemplate("order_confirmation.ejs", {
+    customerName,
+    orderNumber,
+    orderDetails,
+    totalAmount,
+    orderDate: new Date().toLocaleDateString()
+  });
+  await sendAwsSesEmail(
+    toEmail,
+    "orders@brandsdiscounts.com",
+    subject,
+    htmlContent
+  );
+}
+
+// New email functions for the 14 templates
+async function sendNewsletterOptInEmail(customerEmail) {
+  const subject = "✨ Thanks for Subscribing to the Style Insider List!";
+  const htmlContent = await renderEmailTemplate("newsletter_optin.ejs", {});
+  await sendAwsSesEmail(
+    customerEmail,
+    "welcome@brandsdiscounts.com",
+    subject,
+    htmlContent
+  );
+}
+
+async function sendOrderOfferUsedEmail(customerEmail, customerName, orderNumber) {
+  const subject = "🎉 Welcome to Brands Discounts – Your $10 First Item & Free Shipping Awaits!";
+  const htmlContent = await renderEmailTemplate("order_offer_used.ejs", {
+    customerName,
+    orderNumber
+  });
+  await sendAwsSesEmail(
+    customerEmail,
+    "orders@brandsdiscounts.com",
+    subject,
+    htmlContent
+  );
+}
+
+async function sendOrderOfferNotUsedEmail(customerEmail, customerName, orderNumber) {
+  const subject = "We Noticed You Left the $10 Offer Behind – Let's Make It Happen Next Time!";
+  const htmlContent = await renderEmailTemplate("order_offer_not_used.ejs", {
+    customerName,
+    orderNumber
+  });
+  await sendAwsSesEmail(
+    customerEmail,
+    "orders@brandsdiscounts.com",
+    subject,
+    htmlContent
+  );
+}
+
 module.exports = {
   sendWelcomeEmail,
   sendLoyaltyEmail,
   sendAbandonedOfferEmail,
+  sendOrderConfirmationEmail,
   sendOrderProcessingEmail,
   sendOrderHandlingEmail,
   sendOrderShippedEmail,
@@ -297,4 +356,8 @@ module.exports = {
   sendAdminPlatformSaleAlert,
   sendAdminPhysicalStoreSaleConfirmation,
   sendAdminInventorySyncFailureAlert,
+  // New email functions
+  sendNewsletterOptInEmail,
+  sendOrderOfferUsedEmail,
+  sendOrderOfferNotUsedEmail
 };

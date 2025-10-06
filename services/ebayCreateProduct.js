@@ -61,6 +61,7 @@ async function createEbayProduct(product) {
             Type: [type],
             Department: [department],
             Color: [color], // Include the Color aspect here
+            Style: ["Casual"]
           },
           imageUrls: images,
         },
@@ -169,6 +170,7 @@ async function createEbayProduct2(product) {
             Type: [type],
             Department: [department],
             Color: [color], // Include the Color aspect here
+            Style: ["Casual"], // Add Style aspect to fix eBay3 error
           },
           imageUrls: images,
         },
@@ -198,17 +200,7 @@ async function createEbayProduct2(product) {
         listingPolicies: {
           fulfillmentPolicyId: process.env.EBAY2_FULFILLMENT_POLICY_ID,
           paymentPolicyId: process.env.EBAY2_PAYMENT_POLICY_ID,
-          returnPolicyId: process.env.EBAY2_RETURN_POLICY_ID,
-          // Add explicit return terms if policy ID isn't working correctly
-          returnTerms: {
-            returnsAccepted: true,
-            returnPeriod: {
-              value: 30,
-              unit: "DAY"
-            },
-            returnMethod: "REPLACEMENT_OR_EXCHANGE",
-            returnShippingCostPayer: "SELLER"
-          }
+          returnPolicyId: process.env.EBAY2_RETURN_POLICY_ID
         },
         categoryId: categoryId,
         merchantLocationKey: "warehouse1",
@@ -288,6 +280,7 @@ async function createEbayProduct3(product) {
             Type: [type],
             Department: [department],
             Color: [color], // Include the Color aspect here
+            Style: ["Casual"], // Add Style aspect to fix eBay3 error
           },
           imageUrls: images,
         },

@@ -21,6 +21,15 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
         h1, h2 {
             color: #333;
         }
@@ -52,7 +61,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎉 Delivered! Your Brands Discounts Order #<%= orderNumber %> Has Arrived!</h1>
+        <div class="header">
+            <img src="https://brandsdiscounts.com/logo.png" alt="Brands Discounts Logo" class="logo">
+            <h1>🎉 Delivered! Your Brands Discounts Order #<%= orderNumber %> Has Arrived!</h1>
+        </div>
         <p>Hi <%= customerName %>,</p>
         <p>Great news! Tracking shows your order <strong>#<%= orderNumber %></strong> was successfully delivered.</p>
         <p>We hope you're already enjoying your new items! If you have any questions or concerns, please contact us at <a href="mailto:hello@brandsdiscounts.com">hello@brandsdiscounts.com</a>.</p>

@@ -1,17 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const nodemailer = require("nodemailer");
 const { createNotificationService } = require("../services/notificationService");
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.example.com", // Your SMTP host
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: "your_email@example.com", // Your email account
-    pass: "your_email_password", // Your email password or app-specific password
-  },
-});
+const { 
+  sendOrderConfirmationEmail, 
+  sendOrderProcessingEmail, 
+  sendOrderShippedEmail,
+  sendOrderDeliveredEmail,
+  sendOrderCancelledEmail
+} = require("../tools/email.js");
 
 // Create a new order
 const createOrder = async (req, res) => {
@@ -70,7 +66,24 @@ const createOrder = async (req, res) => {
       message: `Order ${newOrder.orderId} for ${newOrder.orderDetails.length}x ${newOrder.orderDetails[0].productName} sold on Website. Fulfillment from ${newOrder.location}. Please ensure stock is removed from physical store if applicable.`,
       location: newOrder.location,
       selledBy: WEBSITE,
-    })
+    });
+    
+    // Send order confirmation email to customer
+    try {
+      if (newOrder.user && newOrder.user.email) {
+        await sendOrderConfirmationEmail(
+          newOrder.user.email,
+          newOrder.user.name || 'Valued Customer',
+          newOrder.orderId,
+          newOrder.orderDetails,
+          newOrder.totalAmount
+        );
+        console.log(`Order confirmation email sent to ${newOrder.user.email} for order #${newOrder.orderId}`);
+      }
+    } catch (emailError) {
+      console.error('Error sending order confirmation email:', emailError);
+      // Don't fail the order creation if email fails
+    }
 
     res.status(201).json(newOrder);
   } catch (error) {
@@ -191,6 +204,81 @@ const getAllOrders = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching orders with pagination and search:", error);
+    
+// Update order status and send appropriate email notification
+const updateOrderStatus = async (req, res) => {
+  const { orderId } = req.params;
+  const { status, trackingInfo } = req.body;
+  
+  if (!orderId || !status) {
+    return res.status(400).json({ error: "Order ID and status are required." });
+  }
+  
+  try {
+    // Get the order with user details before updating
+    const existingOrder = await prisma.order.findUnique({
+      where: { orderId: parseInt(orderId) },
+      include: { user: true, orderDetails: true }
+    });
+    
+    if (!existingOrder) {
+      return res.status(404).json({ error: "Order not found." });
+    }
+    
+    // Update the order status
+    const updatedOrder = await prisma.order.update({
+      where: { orderId: parseInt(orderId) },
+      data: { 
+        status,
+        ...(trackingInfo && {
+          trackingNumber: trackingInfo.trackingNumber,
+          carrier: trackingInfo.carrier,
+          trackingUrl: trackingInfo.trackingUrl
+        })
+      },
+      include: { user: true, orderDetails: true }
+    });
+    
+    // Send appropriate email based on new status
+    if (existingOrder.user && existingOrder.user.email) {
+      const customerEmail = existingOrder.user.email;
+      const customerName = existingOrder.user.name || 'Valued Customer';
+      
+      try {
+        switch (status) {
+          case 'processing':
+            await sendOrderProcessingEmail(customerEmail, customerName, orderId);
+            break;
+          case 'shipped':
+            await sendOrderShippedEmail(
+              customerEmail, 
+              customerName, 
+              orderId, 
+              trackingInfo?.carrier || 'Shipping Partner',
+              trackingInfo?.trackingNumber || 'N/A',
+              trackingInfo?.trackingUrl || '#'
+            );
+            break;
+          case 'delivered':
+            await sendOrderDeliveredEmail(customerEmail, customerName, orderId);
+            break;
+          case 'cancelled':
+            await sendOrderCancelledEmail(customerEmail, customerName, orderId);
+            break;
+        }
+        console.log(`Order status email sent to ${customerEmail} for order #${orderId} (${status})`);
+      } catch (emailError) {
+        console.error(`Error sending order ${status} email:`, emailError);
+        // Don't fail the status update if email fails
+      }
+    }
+    
+    res.status(200).json(updatedOrder);
+  } catch (error) {
+    console.error("Error updating order status:", error);
+    res.status(500).json({ error: "Could not update order status." });
+  }
+};
     res.status(500).json({ error: "Could not fetch orders." });
   }
 };
@@ -268,44 +356,169 @@ const deleteOrder = async (req, res) => {
   }
 };
 
-const sendOrderEmail = async (req, res) => {
-  const { id: orderId } = req.params;
-  const { from, to, subject, body } = req.body;
+// Update order status
+const updateOrderStatus = async (req, res) => {
+  const { orderId } = req.params;
+  const { status, trackingNumber } = req.body;
 
-  if (!from || !to || !subject || !body) {
-    return res.status(400).json({ error: "Missing required email fields." });
+  if (!orderId || !status) {
+    return res.status(400).json({ error: "Order ID and status are required" });
   }
 
   try {
-    // Fetch the order to ensure it exists and potentially log the email action
     const order = await prisma.order.findUnique({
-      where: { id: orderId },
+      where: { orderId: parseInt(orderId) },
+      include: {
+        user: true,
+      },
     });
 
     if (!order) {
-      return res.status(404).json({ error: "Order not found." });
+      return res.status(404).json({ error: "Order not found" });
     }
 
-    // Compose email options
-    const mailOptions = {
-      from: from, // Use the 'from' email provided by the frontend
-      to: to,
-      subject: subject,
-      html: body.replace(/\n/g, "<br>"), // Basic HTML formatting for line breaks
-    };
+    const updatedOrder = await prisma.order.update({
+      where: { orderId: parseInt(orderId) },
+      data: { 
+        status,
+        ...(trackingNumber && { trackingNumber })
+      },
+      include: {
+        orderDetails: true,
+        user: true,
+      },
+    });
 
-    // Send the email
-    await transporter.sendMail(mailOptions);
+    // Send appropriate email based on the new status
+    if (order.user && order.user.email) {
+      const customerName = order.user.name || 'Valued Customer';
+      
+      try {
+        switch (status) {
+          case 'processing':
+            await sendOrderProcessingEmail(
+              order.user.email,
+              customerName,
+              order.orderId
+            );
+            break;
+          case 'shipped':
+            await sendOrderShippedEmail(
+              order.user.email,
+              customerName,
+              order.orderId,
+              trackingNumber || 'Not available'
+            );
+            break;
+          case 'delivered':
+            await sendOrderDeliveredEmail(
+              order.user.email,
+              customerName,
+              order.orderId
+            );
+            break;
+          case 'cancelled':
+            await sendOrderCancelledEmail(
+              order.user.email,
+              customerName,
+              order.orderId
+            );
+            break;
+        }
+      } catch (emailError) {
+        console.error(`Error sending status update email: ${emailError}`);
+        // Don't fail the status update if email fails
+      }
+    }
 
-    // Optional: Log the email sending activity in your database or logs
-    console.log(`Email sent for order ${orderId} from ${from} to ${to}`);
-
-    res.status(200).json({ message: "Email sent successfully!" });
+    res.status(200).json(updatedOrder);
   } catch (error) {
-    console.error("Error sending email for order:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to send email.", details: error.message });
+    console.error("Error updating order status:", error);
+    res.status(500).json({ error: "Could not update order status." });
+  }
+};
+
+const sendOrderEmail = async (req, res) => {
+  const { orderId, emailType } = req.body;
+
+  if (!orderId || !emailType) {
+    return res.status(400).json({ error: "Order ID and email type are required" });
+  }
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { orderId },
+      include: {
+        orderDetails: true,
+        user: true,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    if (!order.user || !order.user.email) {
+      return res.status(400).json({ error: "User email not found for this order" });
+    }
+
+    let emailSent = false;
+    const customerName = order.user.name || 'Valued Customer';
+
+    switch (emailType) {
+      case 'confirmation':
+        await sendOrderConfirmationEmail(
+          order.user.email,
+          customerName,
+          order.orderId,
+          order.orderDetails,
+          order.totalAmount
+        );
+        emailSent = true;
+        break;
+      case 'processing':
+        await sendOrderProcessingEmail(
+          order.user.email,
+          customerName,
+          order.orderId
+        );
+        emailSent = true;
+        break;
+      case 'shipped':
+        await sendOrderShippedEmail(
+          order.user.email,
+          customerName,
+          order.orderId,
+          order.trackingNumber || 'Not available'
+        );
+        emailSent = true;
+        break;
+      case 'delivered':
+        await sendOrderDeliveredEmail(
+          order.user.email,
+          customerName,
+          order.orderId
+        );
+        emailSent = true;
+        break;
+      case 'cancelled':
+        await sendOrderCancelledEmail(
+          order.user.email,
+          customerName,
+          order.orderId
+        );
+        emailSent = true;
+        break;
+      default:
+        return res.status(400).json({ error: "Invalid email type" });
+    }
+
+    if (emailSent) {
+      return res.status(200).json({ message: `${emailType} email sent successfully` });
+    }
+  } catch (error) {
+    console.error(`Error sending ${emailType} email:`, error);
+    return res.status(500).json({ error: `Failed to send ${emailType} email` });
   }
 };
 
@@ -315,5 +528,6 @@ module.exports = {
   getOrderById,
   updateOrder,
   deleteOrder,
+  updateOrderStatus,
   sendOrderEmail,
 };

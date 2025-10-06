@@ -3,26 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Order is Confirmed! (And a Special Offer For Next Time)</title>
+    <title>We Noticed You Left the $10 Offer Behind – Let's Make It Happen Next Time!</title>
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background-color: #f4f4f4;
             color: #333;
             line-height: 1.6;
         }
         .container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
             background-color: #ffffff;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .logo {
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
         h1, h2 {
             color: #333;
+        }
+        p {
+            margin: 15px 0;
         }
         a {
             color: #007bff;
@@ -43,7 +55,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Your Order is Confirmed!</h1>
+        <div class="header">
+            <img src="https://brandsdiscounts.com/logo.png" alt="Brands Discounts Logo" class="logo">
+            <h1>Your Order is Confirmed!</h1>
+        </div>
         <p>Hi <%= customerName %>,</p>
         <p>Thank you for your recent purchase at Brands Discounts! Your order #<%= orderNumber %> is confirmed.</p>
         <p>We noticed you didn't use our exclusive $10 first item offer this time. We’d love for you to enjoy this deal on your next order! Remember, when you spend $60 or more, you can get <strong>any item for just $10</strong> – and you’ll be automatically enrolled in our loyalty program.</p>
