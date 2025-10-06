@@ -56,6 +56,7 @@ async function createEbayProduct(product) {
           description: description,
           aspects: {
             Brand: [brandName],
+            MPN: ["Does not apply"],
             Size: [size],
             SizeType: [sizeType],
             Type: [type],
@@ -183,7 +184,7 @@ async function createEbayProduct2(product) {
     await new Promise(resolve => setTimeout(resolve, 3000)); // 3 second delay
 
     console.log(`eBay2: Creating offer for SKU: ${sku}`);
-    // Step 2: Create offer with explicit return policy details
+    // Step 2: Create offer using only policy IDs without additional return terms
     const offerResp = await ebayAxios.post(
       `${EBAY_API_BASE_URL}/sell/inventory/v1/offer`,
       {
