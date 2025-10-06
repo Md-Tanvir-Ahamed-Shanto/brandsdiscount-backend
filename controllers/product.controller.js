@@ -621,6 +621,26 @@ const getAvailableProducts = async (req, res) => {
   }
 };
 
+// Helper function to retry operations
+async function executeWithRetry(operation, maxRetries = 3, delay = 2000) {
+  let lastError;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      console.log(`Database attempt ${attempt} failed. Retrying in ${delay/1000} seconds...`);
+      
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
 const createProduct = async (req, res) => {
   try {
     const productData = JSON.parse(req.body.productData);
@@ -745,8 +765,8 @@ const createProduct = async (req, res) => {
               console.log("Product database operations completed");
               return product;
             },
-            { timeout: 30000 }
-          ); // 30 second timeout
+            { timeout: 60000 }
+          ); // 60 second timeout
         },
         3,
         2000
