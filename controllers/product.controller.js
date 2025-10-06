@@ -1,4 +1,4 @@
-const { prisma, executeWithRetry } = require("../db/connection");
+const { prisma } = require("../db/connection");
 const {
   createEbayProduct,
   createEbayProduct2,
