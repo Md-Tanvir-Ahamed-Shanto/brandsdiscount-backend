@@ -2,10 +2,10 @@ const { createEbayProduct, createEbayProduct2, createEbayProduct3 } = require('.
 
 // Demo product with the provided t-shirt image
 const testProduct = {
-  sku: `TSHIRT1-TEST-${Date.now()}`,
-  title: "Demo T-Shirt for Testing",
-  description: "This is a test t-shirt product for eBay listing",
-  regularPrice: 19.99,
+  sku: `TSHIRT1-${Date.now()}`,
+  title: "Men's Casual Cotton T-Shirt Black, Size L",
+  description: "Men's casual cotton t-shirt in black, size L. New item with tags, ready to ship.",
+  regularPrice: 299.99,
   stockQuantity: 10,
   images: ["https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGvejKIt5fqExjDjKhEIEQVuOWC49sS5J4DQ&s"],
   categoryId: "53159", // Men's T-Shirts category

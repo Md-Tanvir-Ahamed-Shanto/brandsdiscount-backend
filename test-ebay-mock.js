@@ -1,18 +1,14 @@
 const axios = require("axios");
+const { PrismaClient } = require("@prisma/client");
+const { getValidAccessToken2 } = require("../tools/ebayAuth2");
+const { getValidAccessToken3 } = require("../tools/ebayAuth3");
+const { getValidAccessToken } = require("../tools/ebayAuth");
+const prisma = new PrismaClient();
 
 // Create a custom axios instance with increased timeout
 const ebayAxios = axios.create({
-  timeout: 60000, // 60 seconds timeout
+  timeout: 60000, // 60 seconds timeout instead of 30 seconds
 });
-
-// Mock the axios methods to simulate successful responses
-ebayAxios.put = async () => ({ data: { success: true } });
-ebayAxios.post = async (url) => {
-  if (url.includes('publish')) {
-    return { data: { success: true } };
-  }
-  return { data: { offerId: `offer-${Date.now()}` } };
-};
 
 // Helper function to add retry logic
 async function retryOperation(operation, maxRetries = 3, delay = 5000) {
@@ -34,198 +30,350 @@ async function retryOperation(operation, maxRetries = 3, delay = 5000) {
   throw lastError;
 }
 
-// Demo product with the provided t-shirt image
-const testProduct = {
-  sku: `TSHIRT-TEST-${Date.now()}`,
-  title: "Demo T-Shirt for Testing",
-  description: "This is a test t-shirt product for eBay listing",
-  regularPrice: 19.99,
-  stockQuantity: 10,
-  images: ["https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRGvejKIt5fqExjDjKhEIEQVuOWC49sS5J4DQ&s"],
-  categoryId: "53159", // Men's T-Shirts category
-  size: "L",
-  sizeType: "Regular",
-  type: "T-Shirt",
-  department: "Men's Clothing",
-  color: "Black"
-};
+const EBAY_API_BASE_URL = "https://api.ebay.com";
 
-// Mock implementation of createEbayProduct with retry logic
+// Helper function to create a return policy if none exists
+async function createReturnPolicy(token, envPrefix) {
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+  
+  try {
+    console.log(`[${envPrefix}] No valid return policy found. Attempting to create one...`);
+    
+    const response = await ebayAxios.post(
+      `${EBAY_API_BASE_URL}/sell/account/v1/return_policy`,
+      {
+        name: `Default Return Policy ${Date.now()}`,
+        marketplaceId: "EBAY_US",
+        categoryTypes: [{ name: "ALL_EXCLUDING_MOTORS_VEHICLES" }],
+        returnsAccepted: true,
+        returnPeriod: { value: 30, unit: "DAY" },
+        returnMethod: "REPLACEMENT_OR_MONEY_BACK",
+        returnShippingCostPayer: "SELLER",
+        description: "30-day returns. Seller pays for return shipping."
+      },
+      { headers }
+    );
+    
+    console.log(`[${envPrefix}] Successfully created return policy: ${response.data.returnPolicyId}`);
+    return response.data.returnPolicyId;
+  } catch (error) {
+    console.error(`[${envPrefix}] Failed to create return policy:`, error.response?.data || error.message);
+    return null;
+  }
+}
+
+// Resolve valid listing policy IDs for the given account
+async function resolveListingPolicies(getTokenFn, envPrefix = "EBAY") {
+  let token;
+  try {
+    token = await getTokenFn();
+  } catch (error) {
+    console.error(`[${envPrefix}] Error getting token: ${error.message}`);
+    // Use environment variables as fallback if database is unavailable
+    if (process.env[`${envPrefix}_ACCESS_TOKEN`]) {
+      console.log(`[${envPrefix}] Using fallback token from environment variables`);
+      token = process.env[`${envPrefix}_ACCESS_TOKEN`];
+    } else {
+      throw error;
+    }
+  }
+  
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  };
+  const marketplaceId = "EBAY_US";
+
+  const [fulfillmentPolicies, paymentPolicies, returnPolicies] = await Promise.all([
+    ebayAxios.get(`${EBAY_API_BASE_URL}/sell/account/v1/fulfillment_policy`, { headers }),
+    ebayAxios.get(`${EBAY_API_BASE_URL}/sell/account/v1/payment_policy`, { headers }),
+    ebayAxios.get(`${EBAY_API_BASE_URL}/sell/account/v1/return_policy`, { headers }),
+  ]);
+
+  const fpList = fulfillmentPolicies.data.fulfillmentPolicies || [];
+  const ppList = paymentPolicies.data.paymentPolicies || [];
+  const rpList = returnPolicies.data.returnPolicies || [];
+
+  const envFp = process.env[`${envPrefix}_FULFILLMENT_POLICY_ID`];
+  const envPp = process.env[`${envPrefix}_PAYMENT_POLICY_ID`];
+  const envRp = process.env[`${envPrefix}_RETURN_POLICY_ID`];
+
+  const pickPolicyId = (list, envId, policyType = '') => {
+    // First try to use the environment-provided policy ID if it exists and is valid
+    if (envId && list.some(p => p.policyId === envId && p.marketplaceId === marketplaceId)) {
+      return envId;
+    }
+    
+    // For return policies, prioritize ones that accept returns
+    if (policyType === 'return') {
+      const validReturnPolicy = list.find(p => 
+        p.marketplaceId === marketplaceId && 
+        p.returnsAccepted === true
+      );
+      if (validReturnPolicy) return validReturnPolicy.policyId;
+    }
+    
+    // Fall back to any policy for the marketplace
+    const match = list.find(p => p.marketplaceId === marketplaceId);
+    return match ? match.policyId : null;
+  };
+
+  const fulfillmentPolicyId = pickPolicyId(fpList, envFp, 'fulfillment');
+  const paymentPolicyId = pickPolicyId(ppList, envPp, 'payment');
+  let returnPolicyId = pickPolicyId(rpList, envRp, 'return');
+
+  // Log the resolved policies for debugging
+  console.log(`[${envPrefix}] Using policies: FP=${fulfillmentPolicyId}, PP=${paymentPolicyId}, RP=${returnPolicyId}`);
+
+  // If return policy is missing, try to create one
+  if (!returnPolicyId && fulfillmentPolicyId && paymentPolicyId) {
+    returnPolicyId = await createReturnPolicy(token, envPrefix);
+  }
+
+  if (!fulfillmentPolicyId || !paymentPolicyId || !returnPolicyId) {
+    throw new Error(
+      `Missing required listing policies for ${envPrefix}. Found - Fulfillment: ${!!fulfillmentPolicyId}, Payment: ${!!paymentPolicyId}, Return: ${!!returnPolicyId}. Please configure policies for ${marketplaceId}.`
+    );
+  }
+
+  // Log the merchant location key that will be used
+  const merchantLocationKey = process.env[`${envPrefix}_LOCATION_KEY`] || "warehouse1";
+  console.log(`[${envPrefix}] Using merchantLocationKey: ${merchantLocationKey}`);
+
+  return { fulfillmentPolicyId, paymentPolicyId, returnPolicyId };
+}
+
 async function createEbayProduct(product) {
   try {
-    console.log(`Starting eBay1 product creation for SKU: ${product.sku}`);
-    
-    console.log(`eBay1: Creating inventory item for SKU: ${product.sku}`);
+    console.log(
+      `Starting eBay product creation for SKU: ${product.sku || "unknown"}`
+    );
+    const token = await getValidAccessToken();
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "Content-Language": "en-US",
+    };
+
+    // Truncate title to 80 characters for eBay requirements
+    const title = (product.title || "Untitled Product").substring(0, 80);
+    const brandName = "Generic Brand";
+    const images = product.images || [];
+    const sku = product.sku || `SKU-${Date.now()}`;
+    const regularPrice = product.regularPrice || 0;
+    const stockQuantity = product.stockQuantity || 0;
+    const description = product.description || "";
+    const categoryId = product.categoryId || "53159";
+    const size = product.size || "M";
+    const sizeType = product.sizeType || "Regular";
+    const type = product.type || "T-Shirt";
+    const department = product.department || "Men's Clothing";
+    const color = product.color || "Red";
+
+    console.log(`eBay1: Creating inventory item for SKU: ${sku}`);
     // Step 1: Create or update inventory item with retry logic
     await retryOperation(async () => {
       await ebayAxios.put(
-        `https://api.ebay.com/sell/inventory/v1/inventory_item/${product.sku}`,
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/inventory_item/${sku}`,
         {
           availability: {
             shipToLocationAvailability: {
-              quantity: product.stockQuantity || 0,
+              quantity: stockQuantity || 0,
             },
           },
           condition: "NEW",
           product: {
-            title: product.title,
-            description: product.description,
+            title: title,
+            description: description,
             aspects: {
-              Brand: ["Generic Brand"],
+              Brand: [brandName],
               MPN: ["Does not apply"],
-              Size: [product.size],
-              SizeType: [product.sizeType],
-              Type: [product.type],
-              Department: [product.department],
-              Color: [product.color],
+              Size: [size],
+              SizeType: [sizeType],
+              Type: [type],
+              Department: [department],
+              Color: [color],
               Style: ["Casual"]
             },
-            imageUrls: product.images,
+            imageUrls: images,
           },
-        }
+        },
+        { headers }
       );
-      console.log("✅ Successfully created inventory item with retry logic");
     });
 
-    console.log(`eBay1: Waiting for inventory item to be processed for SKU: ${product.sku}`);
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    console.log(`eBay1: Waiting for inventory item to be processed for SKU: ${sku}`);
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second delay
 
-    console.log(`eBay1: Creating offer for SKU: ${product.sku}`);
+    console.log(`eBay1: Creating offer for SKU: ${sku}`);
+    const resolvedPolicies1 = await resolveListingPolicies(getValidAccessToken, "EBAY");
     // Step 2: Create offer with retry logic
     const offerResp = await retryOperation(async () => {
       const response = await ebayAxios.post(
-        `https://api.ebay.com/sell/inventory/v1/offer`,
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/offer`,
         {
-          sku: product.sku,
+          sku,
           marketplaceId: "EBAY_US",
           format: "FIXED_PRICE",
-          availableQuantity: product.stockQuantity || 0,
+          availableQuantity: stockQuantity || 0,
           pricingSummary: {
             price: {
               currency: "USD",
-              value: (product.regularPrice || 0).toFixed(2),
+              value: (regularPrice || 0).toFixed(2),
             },
           },
           listingPolicies: {
-            fulfillmentPolicyId: "mock-fulfillment-policy-id",
-            paymentPolicyId: "mock-payment-policy-id",
-            returnPolicyId: "mock-return-policy-id",
+            fulfillmentPolicyId: resolvedPolicies1.fulfillmentPolicyId,
+            paymentPolicyId: resolvedPolicies1.paymentPolicyId,
+            returnPolicyId: resolvedPolicies1.returnPolicyId,
           },
-          categoryId: product.categoryId,
-          merchantLocationKey: "warehouse1",
-          listingDescription: product.description,
-        }
+          categoryId: categoryId,
+          merchantLocationKey: process.env.EBAY_LOCATION_KEY || "warehouse1",
+          listingDescription: description,
+        },
+        { headers }
       );
-      console.log("✅ Successfully created offer with retry logic");
       return response;
     });
 
     const offerId = offerResp.data.offerId;
 
-    console.log(`eBay1: Publishing offer ${offerId} for SKU: ${product.sku}`);
+    console.log(`eBay1: Publishing offer ${offerId} for SKU: ${sku}`);
     // Step 3: Publish offer with retry logic
     await retryOperation(async () => {
       await ebayAxios.post(
-        `https://api.ebay.com/sell/inventory/v1/offer/${offerId}/publish`,
-        {}
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/offer/${offerId}/publish`,
+        {},
+        { headers }
       );
-      console.log("✅ Successfully published offer with retry logic");
     });
 
-    console.log(`✅ Created and published eBay1 product: ${product.sku}`);
-    return { success: true, sku: product.sku, offerId };
+    console.log(`✅ Created and published eBay product: ${sku}`);
+    return { success: true, sku, offerId };
   } catch (error) {
     console.error(
-      `❌ Error creating eBay1 product:`,
+      `❌ Error creating eBay product:`,
       error.response?.data || error.message
     );
     throw error;
   }
 }
 
-// Mock implementation of createEbayProduct2 with retry logic
 async function createEbayProduct2(product) {
   try {
-    console.log(`Starting eBay2 product creation for SKU: ${product.sku}`);
-    
-    console.log(`eBay2: Creating inventory item for SKU: ${product.sku}`);
+    console.log(
+      `Starting eBay2 product creation for SKU: ${product.sku || "unknown"}`
+    );
+    const token = await getValidAccessToken2();
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "Content-Language": "en-US",
+    };
+
+    // Truncate title to 80 characters for eBay requirements
+    const title = (product.title || "Untitled Product").substring(0, 80);
+    const brandName = "Generic Brand";
+    const images = product.images || [];
+    const sku = product.sku || `SKU-${Date.now()}`;
+    const regularPrice = product.regularPrice || 0;
+    const stockQuantity = product.stockQuantity || 0;
+    const description = product.description || "";
+    const categoryId = product.categoryId || "53159";
+    const size = product.size || "M";
+    const sizeType = product.sizeType || "Regular";
+    const type = product.type || "T-Shirt";
+    const department = product.department || "Men's Clothing";
+    const color = product.color || "Red";
+
+    console.log(`eBay2: Creating inventory item for SKU: ${sku}`);
     // Step 1: Create or update inventory item with retry logic
     await retryOperation(async () => {
       await ebayAxios.put(
-        `https://api.ebay.com/sell/inventory/v1/inventory_item/${product.sku}`,
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/inventory_item/${sku}`,
         {
           availability: {
             shipToLocationAvailability: {
-              quantity: product.stockQuantity || 0,
+              quantity: stockQuantity || 0,
             },
           },
           condition: "NEW",
           product: {
-            title: product.title,
-            description: product.description,
+            title: title,
+            description: description,
             aspects: {
-              Brand: ["Generic Brand"],
-              Size: [product.size],
-              SizeType: [product.sizeType],
-              Type: [product.type],
-              Department: [product.department],
-              Color: [product.color],
+              Brand: [brandName],
+              MPN: ["Does not apply"],
+              Size: [size],
+              SizeType: [sizeType],
+              Type: [type],
+              Department: [department],
+              Color: [color],
               Style: ["Casual"]
             },
-            imageUrls: product.images,
+            imageUrls: images,
           },
-        }
+        },
+        { headers }
       );
-      console.log("✅ Successfully created inventory item with retry logic");
     });
+    
+    // Add a delay to ensure inventory item is fully processed before creating offer
+    console.log(`eBay2: Waiting for inventory item to be processed for SKU: ${sku}`);
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second delay
 
-    console.log(`eBay2: Waiting for inventory item to be processed for SKU: ${product.sku}`);
-    await new Promise(resolve => setTimeout(resolve, 5000));
-
-    console.log(`eBay2: Creating offer for SKU: ${product.sku}`);
+    console.log(`eBay2: Creating offer for SKU: ${sku}`);
+    const resolvedPolicies2 = await resolveListingPolicies(getValidAccessToken2, "EBAY2");
     // Step 2: Create offer with retry logic
     const offerResp = await retryOperation(async () => {
       const response = await ebayAxios.post(
-        `https://api.ebay.com/sell/inventory/v1/offer`,
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/offer`,
         {
-          sku: product.sku,
+          sku,
           marketplaceId: "EBAY_US",
           format: "FIXED_PRICE",
-          availableQuantity: product.stockQuantity || 0,
+          availableQuantity: stockQuantity || 0,
           pricingSummary: {
             price: {
               currency: "USD",
-              value: (product.regularPrice || 0).toFixed(2),
+              value: (regularPrice || 0).toFixed(2),
             },
           },
           listingPolicies: {
-            fulfillmentPolicyId: "mock-fulfillment-policy-id",
-            paymentPolicyId: "mock-payment-policy-id",
-            returnPolicyId: "mock-return-policy-id",
+            fulfillmentPolicyId: resolvedPolicies2.fulfillmentPolicyId,
+            paymentPolicyId: resolvedPolicies2.paymentPolicyId,
+            returnPolicyId: resolvedPolicies2.returnPolicyId,
           },
-          categoryId: product.categoryId,
-          merchantLocationKey: "warehouse1",
-          listingDescription: product.description,
-        }
+          categoryId: categoryId,
+          merchantLocationKey: process.env.EBAY2_LOCATION_KEY || "warehouse1",
+          listingDescription: description,
+        },
+        { headers }
       );
-      console.log("✅ Successfully created offer with retry logic");
       return response;
     });
 
     const offerId = offerResp.data.offerId;
 
-    console.log(`eBay2: Publishing offer ${offerId} for SKU: ${product.sku}`);
+    console.log(`eBay2: Publishing offer ${offerId} for SKU: ${sku}`);
     // Step 3: Publish offer with retry logic
     await retryOperation(async () => {
       await ebayAxios.post(
-        `https://api.ebay.com/sell/inventory/v1/offer/${offerId}/publish`,
-        {}
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/offer/${offerId}/publish`,
+        {},
+        { headers }
       );
-      console.log("✅ Successfully published offer with retry logic");
     });
 
-    console.log(`✅ Created and published eBay2 product: ${product.sku}`);
-    return { success: true, sku: product.sku, offerId };
+    console.log(`✅ Created and published eBay2 product: ${sku}`);
+    return { success: true, sku, offerId };
   } catch (error) {
     console.error(
       `❌ Error creating eBay2 product:`,
@@ -235,40 +383,122 @@ async function createEbayProduct2(product) {
   }
 }
 
-// Function to test all eBay platforms
-async function testEbayProductCreation() {
-  console.log(`Starting test with product SKU: ${testProduct.sku}`);
-  
+async function createEbayProduct3(product) {
   try {
-    // Test eBay1
-    console.log("Testing eBay1 product creation...");
-    const ebay1Result = await createEbayProduct(testProduct);
-    console.log("eBay1 Result:", ebay1Result);
-    console.log("✅ eBay1 test passed successfully!");
+    console.log(
+      `Starting eBay3 product creation for SKU: ${product.sku || "unknown"}`
+    );
+    const token = await getValidAccessToken3();
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "Content-Language": "en-US",
+    };
+
+    // Truncate title to 80 characters for eBay requirements
+    const title = (product.title || "Untitled Product").substring(0, 80);
+    const brandName = "Generic Brand";
+    const images = product.images || [];
+    const sku = product.sku || `SKU-${Date.now()}`;
+    const regularPrice = product.regularPrice || 0;
+    const stockQuantity = product.stockQuantity || 0;
+    const description = product.description || "";
+    const categoryId = product.categoryId || "53159";
+    const size = product.size || "M";
+    const sizeType = product.sizeType || "Regular";
+    const type = product.type || "T-Shirt";
+    const department = product.department || "Men's Clothing";
+    const color = product.color || "Red";
+
+    console.log(`eBay3: Creating inventory item for SKU: ${sku}`);
+    // Step 1: Create or update inventory item with retry logic
+    await retryOperation(async () => {
+      await ebayAxios.put(
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/inventory_item/${sku}`,
+        {
+          availability: {
+            shipToLocationAvailability: {
+              quantity: stockQuantity || 0,
+            },
+          },
+          condition: "NEW",
+          product: {
+            title: title,
+            description: description,
+            aspects: {
+              Brand: [brandName],
+              MPN: ["Does not apply"],
+              Size: [size],
+              SizeType: [sizeType],
+              Type: [type],
+              Department: [department],
+              Color: [color],
+              Style: ["Casual"]
+            },
+            imageUrls: images,
+          },
+        },
+        { headers }
+      );
+    });
     
-    // Test eBay2
-    console.log("\nTesting eBay2 product creation...");
-    const ebay2Result = await createEbayProduct2(testProduct);
-    console.log("eBay2 Result:", ebay2Result);
-    console.log("✅ eBay2 test passed successfully!");
+    // Add a delay to ensure inventory item is fully processed before creating offer
+    console.log(`eBay3: Waiting for inventory item to be processed for SKU: ${sku}`);
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second delay
     
+    console.log(`eBay3: Creating offer for SKU: ${sku}`);
+    const resolvedPolicies3 = await resolveListingPolicies(getValidAccessToken3, "EBAY3");
+    // Step 2: Create offer with retry logic
+    const offerResp = await retryOperation(async () => {
+      const response = await ebayAxios.post(
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/offer`,
+        {
+          sku,
+          marketplaceId: "EBAY_US",
+          format: "FIXED_PRICE",
+          availableQuantity: stockQuantity || 0,
+          pricingSummary: {
+            price: {
+              currency: "USD",
+              value: (regularPrice || 0).toFixed(2),
+            },
+          },
+          listingPolicies: {
+            fulfillmentPolicyId: resolvedPolicies3.fulfillmentPolicyId,
+            paymentPolicyId: resolvedPolicies3.paymentPolicyId,
+            returnPolicyId: resolvedPolicies3.returnPolicyId,
+          },
+          categoryId: categoryId,
+          merchantLocationKey: process.env.EBAY3_LOCATION_KEY || "warehouse1",
+          listingDescription: description,
+        },
+        { headers }
+      );
+      return response;
+    });
+
+    const offerId = offerResp.data.offerId;
+
+    console.log(`eBay3: Publishing offer ${offerId} for SKU: ${sku}`);
+    // Step 3: Publish offer with retry logic
+    await retryOperation(async () => {
+      await ebayAxios.post(
+        `${EBAY_API_BASE_URL}/sell/inventory/v1/offer/${offerId}/publish`,
+        {},
+        { headers }
+      );
+    });
+
+    console.log(`✅ Created and published eBay3 product: ${sku}`);
+    return { success: true, sku, offerId };
   } catch (error) {
-    console.error("Test Failed:", error.message);
+    console.error(
+      `❌ Error creating eBay3 product:`,
+      error.response?.data || error.message
+    );
+    throw error;
   }
 }
 
-// Run the test
-console.log("Starting mock test for eBay product creation with retry logic...");
-testEbayProductCreation()
-  .then(() => {
-    console.log("\n=== TEST SUMMARY ===");
-    console.log("✅ The implementation with retry logic should fix the eBay API 500 errors.");
-    console.log("✅ Key improvements:");
-    console.log("  1. Increased timeout to 60 seconds");
-    console.log("  2. Added retry logic with 3 attempts and 5-second delay");
-    console.log("  3. Added proper error handling and logging");
-    console.log("  4. Increased delay between API calls");
-  })
-  .catch(error => {
-    console.error("Test failed:", error);
-  });
+module.exports = { createEbayProduct, createEbayProduct2, createEbayProduct3 };
