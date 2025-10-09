@@ -417,7 +417,7 @@ async function getEbayOneLatestOrders(days = 1) {
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay1 orders since ${oneDayAgoISO}`);
+    console.log(`Fetching eBay1 orders since ${pastDateISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
@@ -458,7 +458,7 @@ async function getEbayTwoLatestOrders(days = 1) {
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay2 orders since ${oneDayAgoISO}`);
+    console.log(`Fetching eBay2 orders since ${pastDateISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
@@ -498,7 +498,7 @@ async function getEbayThreeLatestOrders(days = 1) {
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay3 orders since ${oneDayAgoISO}`);
+    console.log(`Fetching eBay3 orders since ${pastDateISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
@@ -544,7 +544,7 @@ async function ManualEbayOrderSync(days = 1) {
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay1 orders since ${oneDayAgoISO}`);
+    console.log(`Fetching eBay1 orders since ${pastDateISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
@@ -674,7 +674,7 @@ async function ManualEbayOrderSync2(days = 1) {
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay2 orders since ${oneDayAgoISO}`);
+    console.log(`Fetching eBay2 orders since ${pastDateISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
@@ -802,7 +802,7 @@ async function ManualEbayOrderSync3(days = 1) {
       "Content-Type": "application/json",
     };
 
-    console.log(`Fetching eBay3 orders since ${oneDayAgoISO}`);
+    console.log(`Fetching eBay3 orders since ${pastDateISO}`);
     let response;
     try {
       response = await axios.get(url, { headers });
