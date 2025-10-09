@@ -396,7 +396,7 @@ async function ebayOrderSync3() {
   }
 }
 
-async function getEbayOneLatestOrders() {
+async function getEbayOneLatestOrders(days = 1) {
  try {
     let token;
     try {
@@ -406,9 +406,11 @@ async function getEbayOneLatestOrders() {
       return [];
     }
     
-   const oneDayAgoISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+   // Convert days to a number and ensure it's at least 1
+   const daysNum = Math.max(1, parseInt(days) || 1);
+   const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${oneDayAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -435,7 +437,7 @@ async function getEbayOneLatestOrders() {
    throw new Error( "Failed to get eBay1 orders.");
  }
 }
-async function getEbayTwoLatestOrders() {
+async function getEbayTwoLatestOrders(days = 1) {
  try {
     let token;
     try {
@@ -445,9 +447,11 @@ async function getEbayTwoLatestOrders() {
       return [];
     }
     
-       const oneDayAgoISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Convert days to a number and ensure it's at least 1
+    const daysNum = Math.max(1, parseInt(days) || 1);
+    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${oneDayAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -473,7 +477,7 @@ async function getEbayTwoLatestOrders() {
    throw new Error( "Failed to get eBay2 orders.");
  }
 }
-async function getEbayThreeLatestOrders() {
+async function getEbayThreeLatestOrders(days = 1) {
  try {
     let token;
     try {
@@ -483,9 +487,11 @@ async function getEbayThreeLatestOrders() {
       return [];
     }
     
-       const oneDayAgoISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Convert days to a number and ensure it's at least 1
+    const daysNum = Math.max(1, parseInt(days) || 1);
+    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${oneDayAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -516,7 +522,7 @@ async function getEbayThreeLatestOrders() {
 
 
 
-async function ManualEbayOrderSync() {
+async function ManualEbayOrderSync(days = 1) {
   try {
     console.log('Try eBay1 sync');
     let token;
@@ -527,9 +533,11 @@ async function ManualEbayOrderSync() {
       return [];
     }
     
-    const oneDayAgoISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Convert days to a number and ensure it's at least 1
+    const daysNum = Math.max(1, parseInt(days) || 1);
+    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${oneDayAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -644,7 +652,7 @@ async function ManualEbayOrderSync() {
   }
 }
 
-async function ManualEbayOrderSync2() {
+async function ManualEbayOrderSync2(days = 1) {
   console.log('Try eBay2 sync');
   try {
     let token;
@@ -655,9 +663,11 @@ async function ManualEbayOrderSync2() {
       return [];
     }
     
-    const oneDayAgoISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Convert days to a number and ensure it's at least 1
+    const daysNum = Math.max(1, parseInt(days) || 1);
+    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${oneDayAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -770,7 +780,7 @@ async function ManualEbayOrderSync2() {
   }
 }
 
-async function ManualEbayOrderSync3() {
+async function ManualEbayOrderSync3(days = 1) {
   try {
     console.log("Try eBay3 sync");
     let token;
@@ -781,9 +791,11 @@ async function ManualEbayOrderSync3() {
       return [];
     }
     
-    const oneDayAgoISO = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Convert days to a number and ensure it's at least 1
+    const daysNum = Math.max(1, parseInt(days) || 1);
+    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
 
-    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${oneDayAgoISO}..]&limit=180`;
+    const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
     const headers = {
       Authorization: `Bearer ${token}`,

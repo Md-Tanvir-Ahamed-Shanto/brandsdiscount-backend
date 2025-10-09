@@ -44,9 +44,13 @@ ebayRoutes.get("/sync", async (req, res) => {
 
 ebayRoutes.get("/order-ebay1", async (req, res) => {
   try {
-    const ebayOrders = await getEbayOneLatestOrders();
+    // Get days from query parameter, default to 1 if not provided
+    const days = req.query.days || 1;
+    console.log(`Fetching eBay1 orders for the last ${days} day(s)`);
+    
+    const ebayOrders = await getEbayOneLatestOrders(days);
     res.status(200).json({
-      message: "eBay1 orders get successfully",
+      message: `eBay1 orders for the last ${days} day(s) retrieved successfully`,
       ebayOrders,
     });
   } catch (error) {
@@ -59,9 +63,13 @@ ebayRoutes.get("/order-ebay1", async (req, res) => {
 
 ebayRoutes.get("/order-ebay2", async (req, res) => {
   try {
-    const ebayOrders2 = await getEbayTwoLatestOrders();
+    // Get days from query parameter, default to 1 if not provided
+    const days = req.query.days || 1;
+    console.log(`Fetching eBay2 orders for the last ${days} day(s)`);
+    
+    const ebayOrders2 = await getEbayTwoLatestOrders(days);
     res.status(200).json({
-      message: "eBay2 orders get successfully",
+      message: `eBay2 orders for the last ${days} day(s) retrieved successfully`,
       ebayOrders2,
     });
   } catch (error) {
@@ -72,9 +80,13 @@ ebayRoutes.get("/order-ebay2", async (req, res) => {
 
 ebayRoutes.get("/order-ebay3", async (req, res) => {
   try {
-    const ebayOrders3 = await getEbayThreeLatestOrders();
+    // Get days from query parameter, default to 1 if not provided
+    const days = req.query.days || 1;
+    console.log(`Fetching eBay3 orders for the last ${days} day(s)`);
+    
+    const ebayOrders3 = await getEbayThreeLatestOrders(days);
     res.status(200).json({
-      message: "eBay3 orders get successfully",
+      message: `eBay3 orders for the last ${days} day(s) retrieved successfully`,
       ebayOrders3,
     });
   } catch (error) {
@@ -85,9 +97,13 @@ ebayRoutes.get("/order-ebay3", async (req, res) => {
 
 ebayRoutes.get("/sync-ebay1", async (req, res) => {
   try {
-    const ebayOrders = await ManualEbayOrderSync();
+    // Get days from query parameter, default to 1 if not provided
+    const days = req.query.days || 1;
+    console.log(`Syncing eBay1 orders for the last ${days} day(s)`);
+    
+    const ebayOrders = await ManualEbayOrderSync(days);
     res.status(200).json({
-      message: "eBay1 orders synced successfully",
+      message: `eBay1 orders for the last ${days} day(s) synced successfully`,
       ebayOrders,
     });
   } catch (error) {
@@ -98,9 +114,13 @@ ebayRoutes.get("/sync-ebay1", async (req, res) => {
 
 ebayRoutes.get("/sync-ebay2", async (req, res) => {
   try {
-    const ebayOrders2 = await ManualEbayOrderSync2();
+    // Get days from query parameter, default to 1 if not provided
+    const days = req.query.days || 1;
+    console.log(`Syncing eBay2 orders for the last ${days} day(s)`);
+    
+    const ebayOrders2 = await ManualEbayOrderSync2(days);
     res.status(200).json({
-      message: "eBay2 orders synced successfully",
+      message: `eBay2 orders for the last ${days} day(s) synced successfully`,
       ebayOrders2,
     });
   } catch (error) {
@@ -111,9 +131,13 @@ ebayRoutes.get("/sync-ebay2", async (req, res) => {
 
 ebayRoutes.get("/sync-ebay3", async (req, res) => {
   try {
-    const ebayOrders3 = await ManualEbayOrderSync3();
+    // Get days from query parameter, default to 1 if not provided
+    const days = req.query.days || 1;
+    console.log(`Syncing eBay3 orders for the last ${days} day(s)`);
+    
+    const ebayOrders3 = await ManualEbayOrderSync3(days);
     res.status(200).json({
-      message: "eBay3 orders synced successfully",
+      message: `eBay3 orders for the last ${days} day(s) synced successfully`,
       ebayOrders3,
     });
   } catch (error) {
