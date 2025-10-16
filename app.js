@@ -243,7 +243,6 @@ cron.schedule("*/5 * * * *", async () => {
   isRunning = true;
 
   try {
-    // ========== Order Sync Section ==========
 
     const [ebayOrders, ebayOrders2, ebayOrders3, walmartOrders, walmartOrders2] = await Promise.all(
       [ebayOrderSync(), ebayOrderSync2(), ebayOrderSync3(), walmartOrderSync(), walmartOrderSync2()]

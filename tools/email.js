@@ -1,16 +1,11 @@
 require("dotenv").config(); 
-const AWS = require("aws-sdk");
+const { Resend } = require("resend");
 const ejs = require("ejs");
 const path = require("path");
 const jwt = require("jsonwebtoken"); 
 
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION,
-});
-
-const ses = new AWS.SES({ apiVersion: "2010-12-01" });
+// Initialize Resend with API key
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const templatesDir = path.join(__dirname, "..", "emailTemplates");
 
@@ -24,28 +19,15 @@ async function renderEmailTemplate(templateName, data) {
   }
 }
 
-async function sendAwsSesEmail(to, from, subject, htmlContent) {
-  const params = {
-    Destination: {
-      ToAddresses: [to],
-    },
-    Message: {
-      Body: {
-        Html: {
-          Charset: "UTF-8",
-          Data: htmlContent,
-        },
-      },
-      Subject: {
-        Charset: "UTF-8",
-        Data: subject,
-      },
-    },
-    Source: from, // Verified sender email address in AWS SES
-  };
-
+async function sendEmail(to, from, subject, htmlContent) {
   try {
-    const data = await ses.sendEmail(params).promise();
+    const data = await resend.emails.send({
+      from: from,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    });
+    
     console.log(
       `Email sent successfully to ${to} with subject: "${subject}"`,
       data
@@ -60,12 +42,14 @@ async function sendAwsSesEmail(to, from, subject, htmlContent) {
   }
 }
 
+
+
 async function sendWelcomeEmail(customerEmail, customerName) {
   const subject = "Welcome to Brands Discounts! Your Style Journey Begins Now.";
   const htmlContent = await renderEmailTemplate("welcome.ejs", {
     customerName,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     customerEmail,
     "welcome@brandsdiscounts.com",
     subject,
@@ -79,7 +63,7 @@ const sendLoyaltyEmail = async (toEmail, customerName) => {
   const htmlContent = await renderEmailTemplate("loyalty.ejs", {
     customerName,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "orders@brandsdiscounts.com",
     subject,
@@ -94,7 +78,7 @@ const sendAbandonedOfferEmail = async (toEmail, customerName, orderNumber) => {
     customerName,
     orderNumber,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "orders@brandsdiscounts.com",
     subject,
@@ -108,7 +92,7 @@ async function sendOrderProcessingEmail(toEmail, customerName, orderNumber) {
     customerName,
     orderNumber,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "shipping@brandsdiscounts.com",
     subject,
@@ -128,7 +112,7 @@ async function sendOrderHandlingEmail(
     orderNumber,
     productName,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "shipping@brandsdiscounts.com",
     subject,
@@ -152,7 +136,7 @@ async function sendOrderShippedEmail(
     trackingNumber,
     trackingLink,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "shipping@brandsdiscounts.com",
     subject,
@@ -166,7 +150,7 @@ async function sendOrderDeliveredEmail(toEmail, customerName, orderNumber) {
     customerName,
     orderNumber,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "shipping@brandsdiscounts.com",
     subject,
@@ -180,7 +164,7 @@ async function sendOrderCancelledEmail(toEmail, customerName, orderNumber) {
     customerName,
     orderNumber,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "shipping@brandsdiscounts.com",
     subject,
@@ -200,7 +184,7 @@ async function sendForgotPasswordEmail(email, customerName) {
     resetLink,
     customerName,
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     email,
     "accounts@brandsdiscounts.com",
     subject,
@@ -214,7 +198,7 @@ async function sendPasswordChangeConfirmationEmail(toEmail, customerName) {
     "password_change_confirmation.ejs",
     { customerName }
   );
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "accounts@brandsdiscounts.com",
     subject,
@@ -232,7 +216,7 @@ async function sendCustomerInquiryAutoReplyEmail(
     "customer_inquiry_auto_reply.ejs",
     { customerName, originalCustomerMessage }
   );
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "support@brandsdiscounts.com",
     subject,
@@ -246,7 +230,7 @@ async function sendAdminPlatformSaleAlert(adminEmail, data) {
     "admin_platform_sale_stock_removal.ejs",
     data
   );
-  await sendAwsSesEmail(
+  await sendEmail(
     adminEmail,
     "noreply@brandsdiscounts.com",
     subject,
@@ -260,7 +244,7 @@ async function sendAdminPhysicalStoreSaleConfirmation(adminEmail, data) {
     "admin_physical_store_sale_sync_confirmation.ejs",
     data
   );
-  await sendAwsSesEmail(
+  await sendEmail(
     adminEmail,
     "noreply@brandsdiscounts.com",
     subject,
@@ -274,7 +258,7 @@ async function sendAdminInventorySyncFailureAlert(adminEmail, data) {
     "admin_inventory_sync_failure.ejs",
     data
   );
-  await sendAwsSesEmail(
+  await sendEmail(
     adminEmail,
     "noreply@brandsdiscounts.com",
     subject,
@@ -292,7 +276,7 @@ async function sendOrderConfirmationEmail(toEmail, customerName, orderNumber, or
     totalAmount,
     orderDate: new Date().toLocaleDateString()
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     toEmail,
     "orders@brandsdiscounts.com",
     subject,
@@ -304,7 +288,7 @@ async function sendOrderConfirmationEmail(toEmail, customerName, orderNumber, or
 async function sendNewsletterOptInEmail(customerEmail) {
   const subject = "✨ Thanks for Subscribing to the Style Insider List!";
   const htmlContent = await renderEmailTemplate("newsletter_optin.ejs", {});
-  await sendAwsSesEmail(
+  await sendEmail(
     customerEmail,
     "welcome@brandsdiscounts.com",
     subject,
@@ -318,7 +302,7 @@ async function sendOrderOfferUsedEmail(customerEmail, customerName, orderNumber)
     customerName,
     orderNumber
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     customerEmail,
     "orders@brandsdiscounts.com",
     subject,
@@ -332,7 +316,7 @@ async function sendOrderOfferNotUsedEmail(customerEmail, customerName, orderNumb
     customerName,
     orderNumber
   });
-  await sendAwsSesEmail(
+  await sendEmail(
     customerEmail,
     "orders@brandsdiscounts.com",
     subject,
@@ -341,6 +325,7 @@ async function sendOrderOfferNotUsedEmail(customerEmail, customerName, orderNumb
 }
 
 module.exports = {
+  sendEmail,
   sendWelcomeEmail,
   sendLoyaltyEmail,
   sendAbandonedOfferEmail,
