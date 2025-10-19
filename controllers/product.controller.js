@@ -624,27 +624,43 @@ const getAvailableProducts = async (req, res) => {
 // Helper function to retry operations
 async function executeWithRetry(operation, maxRetries = 3, delay = 2000) {
   let lastError;
-  
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error) {
       lastError = error;
-      console.log(`Database attempt ${attempt} failed. Retrying in ${delay/1000} seconds...`);
-      
+      console.log(
+        `Database attempt ${attempt} failed. Retrying in ${
+          delay / 1000
+        } seconds...`
+      );
+
       if (attempt < maxRetries) {
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
-  
+
   throw lastError;
 }
 
 const createProduct = async (req, res) => {
   try {
-    const productData = JSON.parse(req.body.productData);
-    const variants = JSON.parse(req.body.variants || "[]");
+    // Input validation and parsing
+    let productData, variants;
+    try {
+      productData = JSON.parse(req.body.productData);
+      variants = JSON.parse(req.body.variants || "[]");
+    } catch (parseError) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid JSON format in request data.",
+        error: "Please ensure productData and variants are valid JSON.",
+        code: "INVALID_JSON",
+      });
+    }
+
     const uploadedImageUrls = req.uploadedImageUrls || [];
     const uploadedVariantUrls = req.uploadedVariantUrls || [];
 
@@ -674,10 +690,45 @@ const createProduct = async (req, res) => {
       ebayThree,
     } = productData;
 
-    if (!title || !sku) {
+    // Enhanced validation with specific error messages
+    const validationErrors = [];
+
+    if (!title || title.trim() === "") {
+      validationErrors.push("Product title is required and cannot be empty.");
+    }
+
+    if (!sku || sku.trim() === "") {
+      validationErrors.push("SKU is required and cannot be empty.");
+    } else if (sku.length < 3) {
+      validationErrors.push("SKU must be at least 3 characters long.");
+    }
+
+    if (
+      regularPrice &&
+      (isNaN(regularPrice) || parseFloat(regularPrice) <= 0)
+    ) {
+      validationErrors.push("Regular price must be a valid positive number.");
+    }
+
+    if (salePrice && (isNaN(salePrice) || parseFloat(salePrice) <= 0)) {
+      validationErrors.push("Sale price must be a valid positive number.");
+    }
+
+    if (
+      stockQuantity &&
+      (isNaN(stockQuantity) || parseInt(stockQuantity) < 0)
+    ) {
+      validationErrors.push(
+        "Stock quantity must be a valid non-negative number."
+      );
+    }
+
+    if (validationErrors.length > 0) {
       return res.status(400).json({
         success: false,
-        message: "Title and SKU are required fields.",
+        message: "Validation failed. Please check the following errors:",
+        errors: validationErrors,
+        code: "VALIDATION_ERROR",
       });
     }
 
@@ -773,13 +824,58 @@ const createProduct = async (req, res) => {
       ); // Max 3 retries with 2 second intervals
     } catch (dbError) {
       console.error("Database operation failed:", dbError);
-      if (dbError.code === "P2002" && dbError.meta?.target?.includes("sku")) {
-        return res.status(400).json({
+
+      // Handle specific Prisma errors
+      if (dbError.code === "P2002") {
+        const target = dbError.meta?.target;
+        if (target?.includes("sku")) {
+          return res.status(409).json({
+            success: false,
+            message: "A product with this SKU already exists.",
+            error:
+              "Please use a unique SKU. SKUs must be unique across all products.",
+            code: "DUPLICATE_SKU",
+            field: "sku",
+          });
+        }
+        return res.status(409).json({
           success: false,
-          message:
-            "A product with this SKU already exists. Please use a unique SKU.",
+          message: "Duplicate entry detected.",
+          error: "A record with this information already exists.",
+          code: "DUPLICATE_ENTRY",
         });
       }
+
+      if (dbError.code === "P2003") {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid reference provided.",
+          error:
+            "One or more category IDs do not exist. Please verify your category selections.",
+          code: "FOREIGN_KEY_CONSTRAINT",
+        });
+      }
+
+      if (dbError.code === "P2025") {
+        return res.status(404).json({
+          success: false,
+          message: "Referenced record not found.",
+          error:
+            "One or more referenced items (category, size, etc.) could not be found.",
+          code: "RECORD_NOT_FOUND",
+        });
+      }
+
+      // Handle timeout errors
+      if (dbError.message?.includes("timeout") || dbError.code === "P1008") {
+        return res.status(408).json({
+          success: false,
+          message: "Database operation timed out.",
+          error: "The operation took too long to complete. Please try again.",
+          code: "TIMEOUT_ERROR",
+        });
+      }
+
       throw dbError;
     }
 
@@ -876,7 +972,7 @@ const createProduct = async (req, res) => {
           ? "Kids"
           : "Other",
         size: newProduct.sizeId || "N/A",
-        sizeType: newProduct.sizeType || "Regular",
+        sizeType: newProduct.sizeType === "XXL+ (20+)" ? "Plus" : "Regular",
         color: newProduct.color || "N/A",
       };
 
@@ -956,20 +1052,107 @@ const createProduct = async (req, res) => {
       }
     }
 
-    return res.status(201).json({
+    // Analyze eBay results for better messaging
+    const ebaySuccessCount = Object.values(eBayResponses).filter(
+      (result) => !result.error
+    ).length;
+    const ebayErrorCount = Object.values(eBayResponses).filter(
+      (result) => result.error
+    ).length;
+    const totalEbayAttempts = Object.keys(eBayResponses).length;
+
+    let message = `Product "${newProduct.title}" (SKU: ${newProduct.sku}) created successfully.`;
+    let warnings = [];
+
+    if (totalEbayAttempts > 0) {
+      if (ebaySuccessCount === totalEbayAttempts) {
+        message += ` Successfully listed on all ${totalEbayAttempts} eBay platform(s).`;
+      } else if (ebaySuccessCount > 0) {
+        message += ` Listed on ${ebaySuccessCount} of ${totalEbayAttempts} eBay platform(s).`;
+        warnings.push(
+          `${ebayErrorCount} eBay listing(s) failed. Check ebayListingResults for details.`
+        );
+      } else if (ebayErrorCount > 0) {
+        message += " However, all eBay listings failed.";
+        warnings.push(
+          "All eBay listing attempts failed. The product is saved but not listed on eBay platforms."
+        );
+      }
+    }
+
+    const response = {
       success: true,
-      message:
-        "Product created successfully and eBay listing attempts completed.",
-      product: newProduct,
-      ebayListingResults: eBayResponses,
-    });
+      message,
+      data: {
+        product: newProduct,
+        summary: {
+          productId: newProduct.id,
+          sku: newProduct.sku,
+          title: newProduct.title,
+          status: newProduct.status,
+          variantsCount: variants?.length || 0,
+          imagesCount: uploadedImageUrls.length,
+          ebayListings: {
+            attempted: totalEbayAttempts,
+            successful: ebaySuccessCount,
+            failed: ebayErrorCount,
+          },
+        },
+      },
+    };
+
+    if (totalEbayAttempts > 0) {
+      response.data.ebayListingResults = eBayResponses;
+    }
+
+    if (warnings.length > 0) {
+      response.warnings = warnings;
+    }
+
+    return res.status(201).json(response);
   } catch (error) {
     console.error("❌ product creation error:", error);
-    return res.status(500).json({
+
+    // Categorize different types of errors
+    let statusCode = 500;
+    let message = "An unexpected error occurred while creating the product.";
+    let errorCode = "INTERNAL_ERROR";
+
+    if (error.name === "ValidationError") {
+      statusCode = 400;
+      message = "Product data validation failed.";
+      errorCode = "VALIDATION_ERROR";
+    } else if (error.name === "PrismaClientKnownRequestError") {
+      statusCode = 400;
+      message = "Database operation failed due to invalid data.";
+      errorCode = "DATABASE_ERROR";
+    } else if (error.name === "PrismaClientUnknownRequestError") {
+      statusCode = 500;
+      message = "Database connection error occurred.";
+      errorCode = "DATABASE_CONNECTION_ERROR";
+    } else if (error.message?.includes("timeout")) {
+      statusCode = 408;
+      message = "Operation timed out. Please try again.";
+      errorCode = "TIMEOUT_ERROR";
+    } else if (
+      error.message?.includes("network") ||
+      error.message?.includes("ECONNREFUSED")
+    ) {
+      statusCode = 503;
+      message = "Service temporarily unavailable. Please try again later.";
+      errorCode = "SERVICE_UNAVAILABLE";
+    }
+
+    return res.status(statusCode).json({
       success: false,
-      message: "Failed to create product or list on eBay",
-      error: error?.message || "Unknown error",
-      stack: process.env.NODE_ENV === "development" ? error?.stack : undefined,
+      message,
+      error: error?.message || "Unknown error occurred",
+      code: errorCode,
+      timestamp: new Date().toISOString(),
+      ...(process.env.NODE_ENV === "development" && {
+        stack: error?.stack,
+        details: error,
+      }),
     });
   }
 };
@@ -978,9 +1161,54 @@ const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    const productData = JSON.parse(req.body.productData);
-    const variants = JSON.parse(req.body.variants || "[]");
-    const existingImages = JSON.parse(req.body.existingImages || "[]");
+    // Validate product ID format
+    if (!productId || typeof productId !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product ID provided.",
+        code: "INVALID_PRODUCT_ID",
+      });
+    }
+
+    // Parse and validate JSON data with error handling
+    let productData, variants, existingImages;
+
+    try {
+      productData = JSON.parse(req.body.productData);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid product data format. Please ensure all data is properly formatted.",
+        code: "INVALID_JSON_FORMAT",
+        field: "productData",
+      });
+    }
+
+    try {
+      variants = JSON.parse(req.body.variants || "[]");
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid variants data format. Please ensure variants data is properly formatted.",
+        code: "INVALID_JSON_FORMAT",
+        field: "variants",
+      });
+    }
+
+    try {
+      existingImages = JSON.parse(req.body.existingImages || "[]");
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid existing images data format. Please ensure image data is properly formatted.",
+        code: "INVALID_JSON_FORMAT",
+        field: "existingImages",
+      });
+    }
+
     const uploadedImageUrls = req.uploadedImageUrls || [];
     const uploadedVariantUrls = req.uploadedVariantUrls || [];
     const allImagesForProduct = [...existingImages, ...uploadedImageUrls];
@@ -994,7 +1222,8 @@ const updateProduct = async (req, res) => {
     if (!currentProduct) {
       return res.status(404).json({
         success: false,
-        message: "Product not found.",
+        message: `Product with ID "${productId}" not found. Please verify the product ID and try again.`,
+        code: "PRODUCT_NOT_FOUND",
       });
     }
 
@@ -1024,10 +1253,75 @@ const updateProduct = async (req, res) => {
       ebayThree,
     } = productData;
 
-    if (!title || !sku) {
+    // Enhanced validation with specific error messages
+    const validationErrors = [];
+
+    if (!title || typeof title !== "string" || title.trim().length === 0) {
+      validationErrors.push({
+        field: "title",
+        message: "Product title is required and must be a non-empty string.",
+      });
+    } else if (title.length > 200) {
+      validationErrors.push({
+        field: "title",
+        message: "Product title must be 200 characters or less.",
+      });
+    }
+
+    if (!sku || typeof sku !== "string" || sku.trim().length === 0) {
+      validationErrors.push({
+        field: "sku",
+        message: "SKU is required and must be a non-empty string.",
+      });
+    } else if (sku.length > 50) {
+      validationErrors.push({
+        field: "sku",
+        message: "SKU must be 50 characters or less.",
+      });
+    }
+
+    if (regularPrice !== undefined && regularPrice !== null) {
+      const price = parseFloat(regularPrice);
+      if (isNaN(price) || price < 0) {
+        validationErrors.push({
+          field: "regularPrice",
+          message: "Regular price must be a valid positive number.",
+        });
+      }
+    }
+
+    if (salePrice !== undefined && salePrice !== null && salePrice !== "") {
+      const price = parseFloat(salePrice);
+      if (isNaN(price) || price < 0) {
+        validationErrors.push({
+          field: "salePrice",
+          message: "Sale price must be a valid positive number.",
+        });
+      } else if (regularPrice && price >= parseFloat(regularPrice)) {
+        validationErrors.push({
+          field: "salePrice",
+          message: "Sale price must be less than regular price.",
+        });
+      }
+    }
+
+    if (stockQuantity !== undefined && stockQuantity !== null) {
+      const quantity = parseInt(stockQuantity);
+      if (isNaN(quantity) || quantity < 0) {
+        validationErrors.push({
+          field: "stockQuantity",
+          message: "Stock quantity must be a valid non-negative integer.",
+        });
+      }
+    }
+
+    if (validationErrors.length > 0) {
       return res.status(400).json({
         success: false,
-        message: "Title and SKU are required fields.",
+        message:
+          "Product validation failed. Please correct the following errors:",
+        code: "VALIDATION_ERROR",
+        errors: validationErrors,
       });
     }
 
@@ -1040,7 +1334,7 @@ const updateProduct = async (req, res) => {
       itemLocation: itemLocation || null,
       notes: notes || null, // ✅ store notes
       sizeId: sizeId || null,
-      sizeType: sizeType || null,
+      sizeType: newProduct.sizeType === "XXL+ (20+)" ? "Plus" : "Regular",
       sizes: sizes || null,
       regularPrice: parseFloat(regularPrice) || null,
       salePrice: parseFloat(salePrice) || null,
@@ -1281,27 +1575,140 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    res.status(200).json({
-      success: true,
-      message:
-        "Product updated successfully and eBay listing attempts completed.",
-      product: updatedProduct,
-      ebayListingResults:
-        Object.keys(eBayResponses).length > 0 ? eBayResponses : undefined,
-    });
-  } catch (error) {
-    console.error("Error updating product:", error);
-    if (error.code === "P2002" && error.meta?.target?.includes("sku")) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "A product with this SKU already exists. Please use a unique SKU.",
-      });
+    // Analyze eBay results for better messaging
+    const ebaySuccessCount = Object.values(eBayResponses).filter(
+      (result) => !result.error
+    ).length;
+    const ebayErrorCount = Object.values(eBayResponses).filter(
+      (result) => result.error
+    ).length;
+    const totalEbayAttempts = Object.keys(eBayResponses).length;
+
+    let message = `Product "${updatedProduct.title}" (SKU: ${updatedProduct.sku}) updated successfully.`;
+    let warnings = [];
+
+    // Check if status changed
+    if (oldStatus !== updatedProduct.status) {
+      message += ` Status changed from "${oldStatus}" to "${updatedProduct.status}".`;
     }
-    res.status(500).json({
+
+    if (totalEbayAttempts > 0) {
+      if (ebaySuccessCount === totalEbayAttempts) {
+        message += ` Successfully updated/listed on all ${totalEbayAttempts} eBay platform(s).`;
+      } else if (ebaySuccessCount > 0) {
+        message += ` Updated/listed on ${ebaySuccessCount} of ${totalEbayAttempts} eBay platform(s).`;
+        warnings.push(
+          `${ebayErrorCount} eBay listing(s) failed. Check ebayListingResults for details.`
+        );
+      } else if (ebayErrorCount > 0) {
+        message += " However, all eBay listing updates failed.";
+        warnings.push(
+          "All eBay listing attempts failed. The product is updated but not listed on eBay platforms."
+        );
+      }
+    }
+
+    const response = {
+      success: true,
+      message,
+      data: {
+        product: updatedProduct,
+        summary: {
+          productId: updatedProduct.id,
+          sku: updatedProduct.sku,
+          title: updatedProduct.title,
+          status: updatedProduct.status,
+          statusChanged: oldStatus !== updatedProduct.status,
+          previousStatus: oldStatus,
+          variantsCount: variants?.length || 0,
+          imagesCount: allImagesForProduct.length,
+          ebayListings: {
+            attempted: totalEbayAttempts,
+            successful: ebaySuccessCount,
+            failed: ebayErrorCount,
+          },
+        },
+      },
+    };
+
+    if (totalEbayAttempts > 0) {
+      response.data.ebayListingResults = eBayResponses;
+    }
+
+    if (warnings.length > 0) {
+      response.warnings = warnings;
+    }
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("❌ product update error:", error);
+
+    // Categorize different types of errors
+    let statusCode = 500;
+    let message = "An unexpected error occurred while updating the product.";
+    let errorCode = "INTERNAL_ERROR";
+
+    // Handle Prisma-specific errors
+    if (error.code === "P2002") {
+      statusCode = 400;
+      errorCode = "DUPLICATE_ERROR";
+
+      if (error.meta?.target?.includes("sku")) {
+        message = `A product with SKU "${
+          productData?.sku || "this SKU"
+        }" already exists. Please use a unique SKU.`;
+      } else {
+        message =
+          "A product with this information already exists. Please check for duplicate entries.";
+      }
+    } else if (error.code === "P2003") {
+      statusCode = 400;
+      message =
+        "Invalid reference to related data. Please check category, size, or other referenced fields.";
+      errorCode = "FOREIGN_KEY_ERROR";
+    } else if (error.code === "P2025") {
+      statusCode = 404;
+      message = "Product not found or related data does not exist.";
+      errorCode = "RECORD_NOT_FOUND";
+    } else if (error.code === "P1008") {
+      statusCode = 408;
+      message = "Database operation timed out. Please try again.";
+      errorCode = "DATABASE_TIMEOUT";
+    } else if (error.name === "ValidationError") {
+      statusCode = 400;
+      message = "Product data validation failed.";
+      errorCode = "VALIDATION_ERROR";
+    } else if (error.name === "PrismaClientKnownRequestError") {
+      statusCode = 400;
+      message = "Database operation failed due to invalid data.";
+      errorCode = "DATABASE_ERROR";
+    } else if (error.name === "PrismaClientUnknownRequestError") {
+      statusCode = 500;
+      message = "Database connection error occurred.";
+      errorCode = "DATABASE_CONNECTION_ERROR";
+    } else if (error.message?.includes("timeout")) {
+      statusCode = 408;
+      message = "Operation timed out. Please try again.";
+      errorCode = "TIMEOUT_ERROR";
+    } else if (
+      error.message?.includes("network") ||
+      error.message?.includes("ECONNREFUSED")
+    ) {
+      statusCode = 503;
+      message = "Service temporarily unavailable. Please try again later.";
+      errorCode = "SERVICE_UNAVAILABLE";
+    }
+
+    return res.status(statusCode).json({
       success: false,
-      message: "Failed to update product",
-      error: error.message,
+      message,
+      error: error?.message || "Unknown error occurred",
+      code: errorCode,
+      timestamp: new Date().toISOString(),
+      ...(process.env.NODE_ENV === "development" && {
+        stack: error?.stack,
+        details: error,
+      }),
     });
   }
 };
