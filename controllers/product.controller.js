@@ -1936,7 +1936,7 @@ const bulkUpdateProducts = async (req, res) => {
 };
 
 const updateProductQuantities = async (req, res) => {
-  const { data, sku, quantity } = req.body; // 'data' for bulk update, 'sku'/'quantity' for single
+  const { data, sku, quantity } = req.body; // 'data' for bulk update, 'sku'/'quantity' for single (quantity = sold units to deduct)
 
   if (!data && (!sku || typeof quantity === "undefined")) {
     return res.status(400).json({
@@ -1972,7 +1972,7 @@ const updateProductQuantities = async (req, res) => {
       ) {
         return res.status(400).json({
           success: false,
-          message: `Invalid item in bulk update: { sku: "${item.sku}", quantity: ${item.quantity} }. SKU and non-negative quantity are required.`,
+          message: `Invalid item in bulk update: { sku: "${item.sku}", quantity: ${item.quantity} }. SKU and non-negative sold quantity are required.`,
         });
       }
       updatesToPerform.push(item);
@@ -1981,7 +1981,7 @@ const updateProductQuantities = async (req, res) => {
     if (typeof quantity !== "number" || quantity < 0) {
       return res.status(400).json({
         success: false,
-        message: `Invalid quantity for single update: ${quantity}. Must be a non-negative number.`,
+        message: `Invalid sold quantity for single update: ${quantity}. Must be a non-negative number.`,
       });
     }
     updatesToPerform.push({ sku, quantity });
@@ -1991,7 +1991,7 @@ const updateProductQuantities = async (req, res) => {
   let allSuccessful = true;
 
   for (const update of updatesToPerform) {
-    const { sku: currentSku, quantity: newQuantity } = update;
+    const { sku: currentSku, quantity: soldQuantity } = update;
     try {
       const product = await prisma.product.findUnique({
         where: { sku: currentSku },
@@ -2031,14 +2031,28 @@ const updateProductQuantities = async (req, res) => {
       } else {
         // No variants, update main product stock quantity
         const oldQuantity = product.stockQuantity;
+        const newQuantity = Math.max(0, oldQuantity - parseInt(soldQuantity)); // Prevent negative stock
+        
+        // Check if there's enough stock
+        if (oldQuantity < parseInt(soldQuantity)) {
+          allSuccessful = false;
+          results.push({
+            sku: currentSku,
+            status: "failed",
+            message: `Insufficient stock. Available: ${oldQuantity}, Requested: ${soldQuantity}`,
+          });
+          continue;
+        }
+        
         await prisma.product.update({
           where: { sku: currentSku },
-          data: { stockQuantity: parseInt(newQuantity) },
+          data: { stockQuantity: newQuantity },
         });
         updatedRecord = {
           sku: currentSku,
           oldQuantity: oldQuantity,
-          newQuantity: parseInt(newQuantity),
+          newQuantity: newQuantity,
+          soldQuantity: parseInt(soldQuantity),
         };
       }
 
@@ -2089,7 +2103,8 @@ const updateProductQuantities = async (req, res) => {
             status: "partial_success",
             oldQuantity: updatedRecord.oldQuantity,
             newQuantity: updatedRecord.newQuantity,
-            message: `Product updated successfully, but ${failedSyncs.length} external platform sync(s) failed.`,
+            soldQuantity: updatedRecord.soldQuantity,
+            message: `Stock deducted successfully (${updatedRecord.oldQuantity} - ${updatedRecord.soldQuantity} = ${updatedRecord.newQuantity}), but ${failedSyncs.length} external platform sync(s) failed.`,
             syncFailures: failedSyncs.length
           });
         } else {
@@ -2099,6 +2114,8 @@ const updateProductQuantities = async (req, res) => {
             status: "success",
             oldQuantity: updatedRecord.oldQuantity,
             newQuantity: updatedRecord.newQuantity,
+            soldQuantity: updatedRecord.soldQuantity,
+            message: `Stock deducted successfully: ${updatedRecord.oldQuantity} - ${updatedRecord.soldQuantity} = ${updatedRecord.newQuantity}`,
           });
         }
       }
@@ -2116,17 +2133,17 @@ const updateProductQuantities = async (req, res) => {
   if (allSuccessful && results.length > 0) {
     return res.status(200).json({
       success: true,
-      message: `${updatesToPerform.length} product(s) updated successfully.`,
+      message: `${updatesToPerform.length} product(s) stock deducted successfully.`,
       results,
     });
   } else if (results.length === 0) {
     return res
       .status(200)
-      .json({ success: true, message: "No products provided for update." });
+      .json({ success: true, message: "No products provided for stock deduction." });
   } else {
     return res.status(207).json({
       success: false,
-      message: "Some products failed to update. Check results for details.",
+      message: "Some products failed stock deduction. Check results for details.",
       results,
     });
   }
