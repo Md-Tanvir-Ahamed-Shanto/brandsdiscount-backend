@@ -971,15 +971,30 @@ const createProduct = async (req, res) => {
         ebayPromises.push(
           createEbayProduct(eBayProductForService)
             .then((res) => {
-              console.log("Successfully created product on eBay1 platform");
-              return { platform: "eBayOne", value: res };
+              if (res.success) {
+                console.log("Successfully created product on eBay1 platform:", res.data);
+                return { platform: "eBayOne", value: res };
+              } else {
+                console.error("Failed to create product on eBay1 platform:", res.error);
+                return { platform: "eBayOne", error: res };
+              }
             })
             .catch((err) => {
-              console.error(
-                "Failed to create product on eBay1 platform:",
-                err.message
-              );
-              return { platform: "eBayOne", error: err.message };
+              console.error("Unexpected error on eBay1 platform:", err.message);
+              return { 
+                platform: "eBayOne", 
+                error: {
+                  success: false,
+                  platform: "eBay1",
+                  timestamp: new Date().toISOString(),
+                  error: {
+                    category: "UNEXPECTED_ERROR",
+                    code: "EBAY_UNEXPECTED",
+                    message: err.message,
+                    details: { originalError: err.message }
+                  }
+                }
+              };
             })
         );
       }
@@ -988,15 +1003,30 @@ const createProduct = async (req, res) => {
         ebayPromises.push(
           createEbayProduct2(eBayProductForService)
             .then((res) => {
-              console.log("Successfully created product on eBay2 platform");
-              return { platform: "eBayTwo", value: res };
+              if (res.success) {
+                console.log("Successfully created product on eBay2 platform:", res.data);
+                return { platform: "eBayTwo", value: res };
+              } else {
+                console.error("Failed to create product on eBay2 platform:", res.error);
+                return { platform: "eBayTwo", error: res };
+              }
             })
             .catch((err) => {
-              console.error(
-                "Failed to create product on eBay2 platform:",
-                err.message
-              );
-              return { platform: "eBayTwo", error: err.message };
+              console.error("Unexpected error on eBay2 platform:", err.message);
+              return { 
+                platform: "eBayTwo", 
+                error: {
+                  success: false,
+                  platform: "eBay2",
+                  timestamp: new Date().toISOString(),
+                  error: {
+                    category: "UNEXPECTED_ERROR",
+                    code: "EBAY_UNEXPECTED",
+                    message: err.message,
+                    details: { originalError: err.message }
+                  }
+                }
+              };
             })
         );
       }
@@ -1005,15 +1035,30 @@ const createProduct = async (req, res) => {
         ebayPromises.push(
           createEbayProduct3(eBayProductForService)
             .then((res) => {
-              console.log("Successfully created product on eBay3 platform");
-              return { platform: "eBayThree", value: res };
+              if (res.success) {
+                console.log("Successfully created product on eBay3 platform:", res.data);
+                return { platform: "eBayThree", value: res };
+              } else {
+                console.error("Failed to create product on eBay3 platform:", res.error);
+                return { platform: "eBayThree", error: res };
+              }
             })
             .catch((err) => {
-              console.error(
-                "Failed to create product on eBay3 platform:",
-                err.message
-              );
-              return { platform: "eBayThree", error: err.message };
+              console.error("Unexpected error on eBay3 platform:", err.message);
+              return { 
+                platform: "eBayThree", 
+                error: {
+                  success: false,
+                  platform: "eBay3",
+                  timestamp: new Date().toISOString(),
+                  error: {
+                    category: "UNEXPECTED_ERROR",
+                    code: "EBAY_UNEXPECTED",
+                    message: err.message,
+                    details: { originalError: err.message }
+                  }
+                }
+              };
             })
         );
       }
@@ -1026,15 +1071,13 @@ const createProduct = async (req, res) => {
         console.log("All eBay platform creation operations completed");
 
         results.forEach((r) => {
-          eBayResponses[r.platform] = r.error ? { 
-            error: r.error,
-            success: false,
-            timestamp: new Date().toISOString()
-          } : {
-            ...r.value,
-            success: true,
-            timestamp: new Date().toISOString()
-          };
+          if (r.error) {
+            // Handle error response (standardized error object)
+            eBayResponses[r.platform] = r.error;
+          } else {
+            // Handle success response (standardized success object)
+            eBayResponses[r.platform] = r.value;
+          }
         });
       } catch (ebayError) {
         console.error(
@@ -1069,7 +1112,7 @@ const createProduct = async (req, res) => {
         // Add specific platform success details
         const successfulPlatforms = ebayResults
           .filter(([, result]) => result.success)
-          .map(([platform, result]) => `${platform} (Offer ID: ${result.offerId || 'N/A'})`)
+          .map(([platform, result]) => `${platform} (Offer ID: ${result.data?.offerId || 'N/A'})`)
           .join(', ');
         message += ` Platforms: ${successfulPlatforms}.`;
         
@@ -1086,7 +1129,7 @@ const createProduct = async (req, res) => {
         // Add failed platforms to warnings
         const failedPlatforms = ebayResults
           .filter(([, result]) => !result.success)
-          .map(([platform, result]) => `${platform}: ${result.error}`)
+          .map(([platform, result]) => `${platform}: ${result.error?.message || result.error || 'Unknown error'}`)
           .join('; ');
         warnings.push(`eBay listing failures: ${failedPlatforms}`);
         
@@ -1098,7 +1141,7 @@ const createProduct = async (req, res) => {
         ebayResults
           .filter(([, result]) => !result.success)
           .forEach(([platform, result]) => {
-            allErrors.push(`${platform}: ${result.error}`);
+            allErrors.push(`${platform}: ${result.error?.message || result.error || 'Unknown error'}`);
           });
         
         if (hasGeneralError) {
@@ -1580,35 +1623,98 @@ const updateProduct = async (req, res) => {
       if (ebayOne) {
         ebayPromises.push(
           createEbayProduct(eBayProductForService)
-            .then((res) => ({ platform: "eBayOne", value: res }))
-            .catch((err) => ({ platform: "eBayOne", error: err.message }))
+            .then((res) => {
+              if (res.success) {
+                return { platform: "eBayOne", value: res };
+              } else {
+                return { platform: "eBayOne", error: res };
+              }
+            })
+            .catch((err) => ({ 
+              platform: "eBayOne", 
+              error: {
+                success: false,
+                platform: "eBay1",
+                timestamp: new Date().toISOString(),
+                error: {
+                  category: "UNEXPECTED_ERROR",
+                  code: "EBAY_UNEXPECTED",
+                  message: err.message,
+                  details: { originalError: err.message }
+                }
+              }
+            }))
         );
       }
       if (ebayTwo) {
         ebayPromises.push(
           createEbayProduct2(eBayProductForService)
-            .then((res) => ({ platform: "eBayTwo", value: res }))
-            .catch((err) => ({ platform: "eBayTwo", error: err.message }))
+            .then((res) => {
+              if (res.success) {
+                return { platform: "eBayTwo", value: res };
+              } else {
+                return { platform: "eBayTwo", error: res };
+              }
+            })
+            .catch((err) => ({ 
+              platform: "eBayTwo", 
+              error: {
+                success: false,
+                platform: "eBay2",
+                timestamp: new Date().toISOString(),
+                error: {
+                  category: "UNEXPECTED_ERROR",
+                  code: "EBAY_UNEXPECTED",
+                  message: err.message,
+                  details: { originalError: err.message }
+                }
+              }
+            }))
         );
       }
       if (ebayThree) {
         ebayPromises.push(
           createEbayProduct3(eBayProductForService)
-            .then((res) => ({ platform: "eBayThree", value: res }))
-            .catch((err) => ({ platform: "eBayThree", error: err.message }))
+            .then((res) => {
+              if (res.success) {
+                return { platform: "eBayThree", value: res };
+              } else {
+                return { platform: "eBayThree", error: res };
+              }
+            })
+            .catch((err) => ({ 
+              platform: "eBayThree", 
+              error: {
+                success: false,
+                platform: "eBay3",
+                timestamp: new Date().toISOString(),
+                error: {
+                  category: "UNEXPECTED_ERROR",
+                  code: "EBAY_UNEXPECTED",
+                  message: err.message,
+                  details: { originalError: err.message }
+                }
+              }
+            }))
         );
       }
 
       const results = await Promise.all(ebayPromises);
 
       results.forEach((r) => {
-        eBayResponses[r.platform] = r.error ? { error: r.error } : r.value;
+        if (r.error) {
+          // Handle error response (standardized error object)
+          eBayResponses[r.platform] = r.error;
+        } else {
+          // Handle success response (standardized success object)
+          eBayResponses[r.platform] = r.value;
+        }
       });
     }
 
     // Analyze eBay results for better messaging
-    const ebaySuccessCount = Object.values(eBayResponses).filter(result => !result.error).length;
-    const ebayErrorCount = Object.values(eBayResponses).filter(result => result.error).length;
+    const ebaySuccessCount = Object.values(eBayResponses).filter(result => result.success).length;
+    const ebayErrorCount = Object.values(eBayResponses).filter(result => !result.success).length;
     const totalEbayAttempts = Object.keys(eBayResponses).length;
     
     let message = `Product "${updatedProduct.title}" (SKU: ${updatedProduct.sku}) updated successfully.`;
