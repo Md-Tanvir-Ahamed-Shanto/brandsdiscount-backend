@@ -30,16 +30,31 @@ async function ebayUpdateStock(sku, stockQuantity) {
       body,
       { headers }
     );
-     console.log("✅ Update Response:", res.status, res.statusText);
+    
+    console.log("✅ Update Response:", res.status, res.statusText);
     console.log(
       `✅ Inventory updated for SKU: ${sku}, New Quantity: ${stockQuantity}`
     );
+    
+    return {
+      success: true,
+      sku: sku,
+      newQuantity: stockQuantity,
+      platform: "eBay Account 1",
+      message: `Successfully updated inventory for SKU ${sku} to ${stockQuantity} units`
+    };
   } catch (error) {
+    const errorMessage = error.response?.data?.errors?.[0]?.message || 
+                        error.response?.data?.message || 
+                        error.message || 
+                        "Unknown eBay API error";
+    
     console.error(
-      "❌ Error updating inventory:",
+      `❌ Error updating inventory for SKU ${sku} on eBay Account 1:`,
       error.response?.data || error.message
     );
-    throw new Error("Failed to update inventory on eBay.");
+    
+    throw new Error(`Failed to update inventory on eBay Account 1 for SKU ${sku}: ${errorMessage}`);
   }
 }
 
@@ -69,16 +84,31 @@ async function ebayUpdateStock2(sku, stockQuantity) {
       body,
       { headers }
     );
-     console.log("✅ Update Response:", res.status, res.statusText);
+    
+    console.log("✅ Update Response:", res.status, res.statusText);
     console.log(
       `✅ Inventory updated eBay2 for SKU: ${sku}, New Quantity: ${stockQuantity}`
     );
+    
+    return {
+      success: true,
+      sku: sku,
+      newQuantity: stockQuantity,
+      platform: "eBay Account 2",
+      message: `Successfully updated inventory for SKU ${sku} to ${stockQuantity} units`
+    };
   } catch (error) {
+    const errorMessage = error.response?.data?.errors?.[0]?.message || 
+                        error.response?.data?.message || 
+                        error.message || 
+                        "Unknown eBay API error";
+    
     console.error(
-      "❌ Error updating inventory:",
+      `❌ Error updating inventory for SKU ${sku} on eBay Account 2:`,
       error.response?.data || error.message
     );
-    throw new Error("Failed to update inventory on eBay.");
+    
+    throw new Error(`Failed to update inventory on eBay Account 2 for SKU ${sku}: ${errorMessage}`);
   }
 }
 
@@ -108,16 +138,31 @@ async function ebayUpdateStock3(sku, stockQuantity) {
       body,
       { headers }
     );
-     console.log("✅ Update Response:", res.status, res.statusText);
+    
+    console.log("✅ Update Response:", res.status, res.statusText);
     console.log(
       `✅ Inventory updated eBay3 for SKU: ${sku}, New Quantity: ${stockQuantity}`
     );
+    
+    return {
+      success: true,
+      sku: sku,
+      newQuantity: stockQuantity,
+      platform: "eBay Account 3",
+      message: `Successfully updated inventory for SKU ${sku} to ${stockQuantity} units`
+    };
   } catch (error) {
+    const errorMessage = error.response?.data?.errors?.[0]?.message || 
+                        error.response?.data?.message || 
+                        error.message || 
+                        "Unknown eBay API error";
+    
     console.error(
-      "❌ Error updating inventory:",
+      `❌ Error updating inventory for SKU ${sku} on eBay Account 3:`,
       error.response?.data || error.message
     );
-    throw new Error("Failed to update inventory on eBay.");
+    
+    throw new Error(`Failed to update inventory on eBay Account 3 for SKU ${sku}: ${errorMessage}`);
   }
 }
 

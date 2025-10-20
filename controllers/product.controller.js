@@ -2033,12 +2033,12 @@ const updateProductQuantities = async (req, res) => {
         const oldQuantity = product.stockQuantity;
         await prisma.product.update({
           where: { sku: currentSku },
-          data: { stockQuantity: parseInt(oldQuantity - newQuantity) },
+          data: { stockQuantity: parseInt(newQuantity) },
         });
         updatedRecord = {
           sku: currentSku,
           oldQuantity: oldQuantity,
-          newQuantity: oldQuantity - newQuantity,
+          newQuantity: parseInt(newQuantity),
         };
       }
 
@@ -2077,30 +2077,30 @@ const updateProductQuantities = async (req, res) => {
           walmartOrderSync2(currentSku, stock_quantity_for_external)
         );
 
-        try {
-          await Promise.allSettled(syncPromises);
-          console.log(
-            "All order syncs initiated after product quantity updates."
-          );
-        } catch (syncError) {
-          console.error("Error during external order syncs:", syncError);
-          // Do not fail the entire response, but mark this item as failed in results
-          allSuccessful = false;
+        // Handle external platform syncing
+        const syncResults = await Promise.allSettled(syncPromises);
+        const failedSyncs = syncResults.filter(result => result.status === 'rejected');
+        
+        if (failedSyncs.length > 0) {
+          console.error(`Some external syncs failed for SKU ${currentSku}:`, failedSyncs);
+          // Product update succeeded, but some syncs failed
           results.push({
             sku: currentSku,
-            status: "failed",
-            message:
-              "Failed to sync with external platforms after quantity update.",
+            status: "partial_success",
+            oldQuantity: updatedRecord.oldQuantity,
+            newQuantity: updatedRecord.newQuantity,
+            message: `Product updated successfully, but ${failedSyncs.length} external platform sync(s) failed.`,
+            syncFailures: failedSyncs.length
           });
-          continue; // Skip to next item if sync failed
+        } else {
+          console.log(`All external syncs completed successfully for SKU ${currentSku}`);
+          results.push({
+            sku: currentSku,
+            status: "success",
+            oldQuantity: updatedRecord.oldQuantity,
+            newQuantity: updatedRecord.newQuantity,
+          });
         }
-
-        results.push({
-          sku: currentSku,
-          status: "success",
-          oldQuantity: updatedRecord.oldQuantity,
-          newQuantity: updatedRecord.newQuantity,
-        });
       }
     } catch (error) {
       allSuccessful = false;
