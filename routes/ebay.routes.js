@@ -19,7 +19,7 @@ const {
   refreshAccessToken,
 } = require("../tools/ebayAuth");
 const { createEbayProduct } = require("../services/ebayCreateProduct");
-const { ebayUpdateStock } = require("../services/ebayUpdateStock");
+const { ebayUpdateStock, manulayUpdateEbayStock } = require("../services/ebayUpdateStock");
 const { updateEbayProduct } = require("../services/ebayUpdateProduct");
 
 // Sync eBay orders
@@ -143,6 +143,26 @@ ebayRoutes.get("/sync-ebay3", async (req, res) => {
   } catch (error) {
     console.error("Error syncing eBay orders:", error);
     res.status(500).json({ error: "Failed to sync eBay3 orders" });
+  }
+});
+
+
+ebayRoutes.get("/update-stock", async (req, res) => {
+  const { sku, stockQuantity, ebayAccount } = req.query;
+  if (!sku) {
+    return res
+      .status(400)
+      .json({ error: "SKU is required" });
+  }
+
+  try {
+    const response = await manulayUpdateEbayStock(sku, stockQuantity, ebayAccount);
+    res
+      .status(200)
+      .json({ message: "Stock updated successfully", response });
+  } catch (error) {
+    console.error("Error updating eBay stock:", error);
+    res.status(500).json({ error: "Failed to update eBay stock" });
   }
 });
 
