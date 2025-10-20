@@ -1026,35 +1026,91 @@ const createProduct = async (req, res) => {
         console.log("All eBay platform creation operations completed");
 
         results.forEach((r) => {
-          eBayResponses[r.platform] = r.error ? { error: r.error } : r.value;
+          eBayResponses[r.platform] = r.error ? { 
+            error: r.error,
+            success: false,
+            timestamp: new Date().toISOString()
+          } : {
+            ...r.value,
+            success: true,
+            timestamp: new Date().toISOString()
+          };
         });
       } catch (ebayError) {
         console.error(
           "Error occurred during eBay product creation:",
-          ebayError
+          ebayError.message
         );
         // Even if eBay operations fail, we still return the successfully created product
+        // Add the error to responses for transparency
+        eBayResponses.generalError = {
+          error: `eBay integration error: ${ebayError.message}`,
+          success: false,
+          timestamp: new Date().toISOString()
+        };
       }
     }
 
     // Analyze eBay results for better messaging
-    const ebaySuccessCount = Object.values(eBayResponses).filter(result => !result.error).length;
-    const ebayErrorCount = Object.values(eBayResponses).filter(result => result.error).length;
-    const totalEbayAttempts = Object.keys(eBayResponses).length;
+    const ebayResults = Object.entries(eBayResponses).filter(([key]) => key !== 'generalError');
+    const ebaySuccessCount = ebayResults.filter(([, result]) => result.success).length;
+    const ebayErrorCount = ebayResults.filter(([, result]) => !result.success).length;
+    const totalEbayAttempts = ebayResults.length;
+    const hasGeneralError = eBayResponses.generalError;
     
-    let message = `Product "${newProduct.title}" (SKU: ${newProduct.sku}) created successfully.`;
+    let message = `Product "${newProduct.title}" (SKU: ${newProduct.sku}) created successfully in local database.`;
     let warnings = [];
+    let errors = [];
     
     if (totalEbayAttempts > 0) {
-      if (ebaySuccessCount === totalEbayAttempts) {
+      if (ebaySuccessCount === totalEbayAttempts && !hasGeneralError) {
         message += ` Successfully listed on all ${totalEbayAttempts} eBay platform(s).`;
+        
+        // Add specific platform success details
+        const successfulPlatforms = ebayResults
+          .filter(([, result]) => result.success)
+          .map(([platform, result]) => `${platform} (Offer ID: ${result.offerId || 'N/A'})`)
+          .join(', ');
+        message += ` Platforms: ${successfulPlatforms}.`;
+        
       } else if (ebaySuccessCount > 0) {
         message += ` Listed on ${ebaySuccessCount} of ${totalEbayAttempts} eBay platform(s).`;
-        warnings.push(`${ebayErrorCount} eBay listing(s) failed. Check ebayListingResults for details.`);
-      } else if (ebayErrorCount > 0) {
+        
+        // Add successful platforms
+        const successfulPlatforms = ebayResults
+          .filter(([, result]) => result.success)
+          .map(([platform]) => platform)
+          .join(', ');
+        message += ` Successful: ${successfulPlatforms}.`;
+        
+        // Add failed platforms to warnings
+        const failedPlatforms = ebayResults
+          .filter(([, result]) => !result.success)
+          .map(([platform, result]) => `${platform}: ${result.error}`)
+          .join('; ');
+        warnings.push(`eBay listing failures: ${failedPlatforms}`);
+        
+      } else if (ebayErrorCount > 0 || hasGeneralError) {
         message += " However, all eBay listings failed.";
-        warnings.push("All eBay listing attempts failed. The product is saved but not listed on eBay platforms.");
+        
+        // Collect all error details
+        const allErrors = [];
+        ebayResults
+          .filter(([, result]) => !result.success)
+          .forEach(([platform, result]) => {
+            allErrors.push(`${platform}: ${result.error}`);
+          });
+        
+        if (hasGeneralError) {
+          allErrors.push(`General: ${eBayResponses.generalError.error}`);
+        }
+        
+        errors.push(`eBay listing errors: ${allErrors.join('; ')}`);
       }
+    }
+    
+    if (hasGeneralError && ebaySuccessCount > 0) {
+      warnings.push(`eBay integration warning: ${eBayResponses.generalError.error}`);
     }
 
     const response = {
@@ -1075,7 +1131,8 @@ const createProduct = async (req, res) => {
             failed: ebayErrorCount
           }
         }
-      }
+      },
+      timestamp: new Date().toISOString()
     };
 
     if (totalEbayAttempts > 0) {
@@ -1084,6 +1141,10 @@ const createProduct = async (req, res) => {
 
     if (warnings.length > 0) {
       response.warnings = warnings;
+    }
+
+    if (errors.length > 0) {
+      response.errors = errors;
     }
 
     return res.status(201).json(response);
