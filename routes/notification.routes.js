@@ -14,7 +14,7 @@ router.post("/", createNotification);       // Create notification
 router.get("/", getNotifications);          // Get all notifications
 router.get("/:id", getNotificationById);    // Get single notification
 router.patch("/:id/read", markAsRead);      // Mark notification as read
-router.patch("/:id/allread", markAllAsRead);    // Mark notification all as unread
+router.patch("/allread", markAllAsRead);    // Mark all notifications as read
 router.delete("/:id", deleteNotification);  // Delete notification
 
 module.exports = router;
