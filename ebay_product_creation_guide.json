@@ -1,0 +1,6867 @@
+{
+  "generatedAt": "2025-10-23T15:12:31.024Z",
+  "overview": {
+    "totalCategories": 48,
+    "categoriesWithRequiredFields": 48,
+    "globalRequiredFields": 15,
+    "globalRecommendedFields": 65
+  },
+  "quickStart": {
+    "alwaysInclude": [
+      "Brand",
+      "Color",
+      "Department"
+    ],
+    "highlyRecommended": [
+      "Vintage"
+    ],
+    "commonlyNeeded": [
+      "Type",
+      "Size",
+      "Size Type",
+      "Style"
+    ]
+  },
+  "fieldGuide": {
+    "Brand": {
+      "importance": "HIGH",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 47,
+      "recommendedInCategories": 0,
+      "description": "The manufacturer or brand name of the product",
+      "validationTips": [
+        "This field is required in most categories - always provide a value",
+        "Provide as text string",
+        "Use \"Unbranded\" if no specific brand"
+      ]
+    },
+    "Color": {
+      "importance": "HIGH",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 47,
+      "recommendedInCategories": 0,
+      "description": "Primary color of the product",
+      "validationTips": [
+        "This field is required in most categories - always provide a value",
+        "Provide as text string"
+      ]
+    },
+    "Department": {
+      "importance": "HIGH",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 43,
+      "recommendedInCategories": 4,
+      "description": "Product attribute: Department",
+      "validationTips": [
+        "This field is required in most categories - always provide a value",
+        "Provide as text string"
+      ]
+    },
+    "Designer/Brand": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 1,
+      "recommendedInCategories": 0,
+      "description": "Product attribute: Designer/Brand",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Dress Length": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 1,
+      "recommendedInCategories": 0,
+      "description": "Product attribute: Dress Length",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Inseam": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 1,
+      "recommendedInCategories": 7,
+      "description": "Product attribute: Inseam",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Outer Shell Material": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 3,
+      "recommendedInCategories": 0,
+      "description": "Product attribute: Outer Shell Material",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Size": {
+      "importance": "HIGH",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 34,
+      "recommendedInCategories": 0,
+      "description": "Product size (clothing, shoes, etc.)",
+      "validationTips": [
+        "This field is required in most categories - always provide a value",
+        "Provide as text string"
+      ]
+    },
+    "Size Type": {
+      "importance": "HIGH",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 25,
+      "recommendedInCategories": 5,
+      "description": "Product attribute: Size Type",
+      "validationTips": [
+        "This field is required in most categories - always provide a value",
+        "Provide as text string"
+      ]
+    },
+    "Skirt Length": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 1,
+      "recommendedInCategories": 0,
+      "description": "Product attribute: Skirt Length",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Sleeve Length": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 1,
+      "recommendedInCategories": 11,
+      "description": "Product attribute: Sleeve Length",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Style": {
+      "importance": "HIGH",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 30,
+      "recommendedInCategories": 9,
+      "description": "Style or design variation",
+      "validationTips": [
+        "This field is required in most categories - always provide a value",
+        "Provide as text string"
+      ]
+    },
+    "Type": {
+      "importance": "HIGH",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 22,
+      "recommendedInCategories": 21,
+      "description": "Product type or category classification",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "US Shoe Size": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 9,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: US Shoe Size",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Upper Material": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 8,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Upper Material",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "AU Shoe Size": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 8,
+      "description": "Product attribute: AU Shoe Size",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Accents": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 15,
+      "description": "Product attribute: Accents",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Band Size": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Band Size",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Character": {
+      "importance": "MEDIUM",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 27,
+      "description": "Product attribute: Character",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Character Family": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 5,
+      "description": "Product attribute: Character Family",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Closure": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 19,
+      "description": "Product attribute: Closure",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Collar Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Collar Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Compression Area": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Compression Area",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Compression Level": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Compression Level",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Cup Size": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Cup Size",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Customized": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 10,
+      "description": "Product attribute: Customized",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "EU Shoe Size": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 10,
+      "description": "Product attribute: EU Shoe Size",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Fabric Type": {
+      "importance": "MEDIUM",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 28,
+      "description": "Product attribute: Fabric Type",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Fabric Wash": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 3,
+      "description": "Product attribute: Fabric Wash",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Features": {
+      "importance": "MEDIUM",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 33,
+      "description": "Product attribute: Features",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Fit": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 12,
+      "description": "Product attribute: Fit",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Front Type": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Front Type",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Heel Height": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 3,
+      "description": "Product attribute: Heel Height",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Heel Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 3,
+      "description": "Product attribute: Heel Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Insole Material": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 5,
+      "description": "Product attribute: Insole Material",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Insulation Material": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 3,
+      "description": "Product attribute: Insulation Material",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Jacket Cut": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Jacket Cut",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Jacket Front Button Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Jacket Front Button Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Jacket Lapel Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Jacket Lapel Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Jacket/Coat Length": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Jacket/Coat Length",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Leg Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Leg Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Lining Material": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 6,
+      "description": "Product attribute: Lining Material",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Material": {
+      "importance": "MEDIUM",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 34,
+      "description": "Primary material the product is made from",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Model": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 11,
+      "description": "Specific model name or number",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Neck Size": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Neck Size",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Neckline": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 10,
+      "description": "Product attribute: Neckline",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Number in Pack": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Number in Pack",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Number of Pieces": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Number of Pieces",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Occasion": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 17,
+      "description": "Product attribute: Occasion",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Outsole Material": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 5,
+      "description": "Product attribute: Outsole Material",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Pattern": {
+      "importance": "MEDIUM",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 33,
+      "description": "Pattern or design on the product",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Performance/Activity": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 13,
+      "description": "Product attribute: Performance/Activity",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Personalize": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Personalize",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Product Line": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 7,
+      "description": "Product attribute: Product Line",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Release Year": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Release Year",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Rise": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 3,
+      "description": "Product attribute: Rise",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Season": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 6,
+      "description": "Product attribute: Season",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Set Includes": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Set Includes",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Shoe Shaft Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Shoe Shaft Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Shoe Width": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 4,
+      "description": "Product attribute: Shoe Width",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Sleeve Type": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 3,
+      "description": "Product attribute: Sleeve Type",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Strap Type": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Strap Type",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Style Code": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Style Code",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Swim Bottom Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Swim Bottom Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Swim Top Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Swim Top Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Theme": {
+      "importance": "MEDIUM",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 32,
+      "description": "Product attribute: Theme",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Toe Shape": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 2,
+      "description": "Product attribute: Toe Shape",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Top Cuff Style": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Top Cuff Style",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "UK Shoe Size": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 10,
+      "description": "Product attribute: UK Shoe Size",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Underwire Type": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 1,
+      "description": "Product attribute: Underwire Type",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Vintage": {
+      "importance": "MEDIUM",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 44,
+      "description": "Product attribute: Vintage",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    },
+    "Waist Size": {
+      "importance": "LOW",
+      "dataType": "STRING",
+      "maxLength": null,
+      "requiredInCategories": 0,
+      "recommendedInCategories": 10,
+      "description": "Product attribute: Waist Size",
+      "validationTips": [
+        "Provide as text string"
+      ]
+    }
+  },
+  "categoryGuide": {
+    "3001": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 876
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Jacket/Coat Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 50
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 93
+        },
+        {
+          "name": "Lining Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Jacket Cut",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Number of Pieces",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 45
+        },
+        {
+          "name": "Jacket Front Button Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Jacket Lapel Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Inseam",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 7,
+      "totalRecommendedFields": 15
+    },
+    "11483": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2475
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 46
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Inseam",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 45
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 81
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 363
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 18
+        },
+        {
+          "name": "Fabric Wash",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Product Line",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 112
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 7,
+      "totalRecommendedFields": 13
+    },
+    "11498": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1026
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "AU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 118
+        },
+        {
+          "name": "Shoe Width",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 35
+        },
+        {
+          "name": "Outsole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Insole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2406
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 60
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 14
+    },
+    "11507": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1236
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 94
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 51
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 172
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Character Family",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 58
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Personalize",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Number in Pack",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        }
+      ],
+      "totalRequiredFields": 7,
+      "totalRecommendedFields": 10
+    },
+    "11510": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12196
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 93
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 32
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 205
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Character Family",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 163
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 22
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Season",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 10
+    },
+    "11554": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4772
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 119
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Fabric Wash",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Rise",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 18
+        },
+        {
+          "name": "Inseam",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 22
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 13
+    },
+    "11555": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13130
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 113
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 56
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 95
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 201
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 268
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 27
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 30
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 39
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Front Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 13
+    },
+    "15687": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9139
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 40
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 113
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15
+        },
+        {
+          "name": "Character Family",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 163
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 43
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 57
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 5,
+      "totalRecommendedFields": 12
+    },
+    "15690": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12663
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Swim Bottom Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 247
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 172
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 26
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 23
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        }
+      ],
+      "totalRequiredFields": 5,
+      "totalRecommendedFields": 9
+    },
+    "15709": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3463
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 35
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 18
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Style Code",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": false,
+          "valueCount": 0
+        },
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Product Line",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4022
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14325
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Shoe Width",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Shoe Shaft Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 272
+        },
+        {
+          "name": "Release Year",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 126
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 111
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 60
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 4,
+      "totalRecommendedFields": 14
+    },
+    "24087": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1136
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 31
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "AU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Lining Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Insole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Outsole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 60
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2404
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 13
+    },
+    "45238": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3655
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 32
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 78
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 173
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15
+        },
+        {
+          "name": "Season",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 4,
+      "totalRecommendedFields": 10
+    },
+    "45333": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2659
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "AU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 134
+        },
+        {
+          "name": "Insole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Lining Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Outsole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 50
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2405
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 13
+    },
+    "52365": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2766
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 30
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 95
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 51
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 172
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 5,
+      "totalRecommendedFields": 8
+    },
+    "52382": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12379
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 70
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 54
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 213
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 270
+        }
+      ],
+      "totalRequiredFields": 3,
+      "totalRecommendedFields": 7
+    },
+    "53120": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 722
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "AU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        },
+        {
+          "name": "Shoe Width",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Outsole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Insole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2404
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 46
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 12
+    },
+    "53159": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9124
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 115
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 60
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Sleeve Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 18
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 112
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 52
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 12
+    },
+    "53557": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3860
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 38
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "AU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        },
+        {
+          "name": "Shoe Shaft Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 134
+        },
+        {
+          "name": "Lining Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Insole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Outsole Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Heel Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Heel Height",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Toe Shape",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 59
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2404
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 16
+    },
+    "55793": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2182
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "AU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        },
+        {
+          "name": "Heel Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 134
+        },
+        {
+          "name": "Toe Shape",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Heel Height",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 50
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2860
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 14
+    },
+    "57990": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9129
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 40
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 18
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 112
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 57
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 43
+        },
+        {
+          "name": "Collar Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 13
+    },
+    "57991": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19160
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 53
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Neck Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Collar Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 92
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Top Cuff Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 215
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 49
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        }
+      ],
+      "totalRequiredFields": 5,
+      "totalRecommendedFields": 13
+    },
+    "59347": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15275
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 60
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 95
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Inseam",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 26
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 52
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 8
+    },
+    "59353": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16162
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 46
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Outer Shell Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 121
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 57
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Insulation Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 7,
+      "totalRecommendedFields": 7
+    },
+    "59375": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13110
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 60
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 95
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 56
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 52
+        }
+      ],
+      "totalRequiredFields": 5,
+      "totalRecommendedFields": 8
+    },
+    "59392": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14664
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 101
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 268
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 5
+    },
+    "62107": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3101
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "AU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        },
+        {
+          "name": "Heel Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 50
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2404
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 272
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Heel Height",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 14
+    },
+    "63853": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1626
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 99
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 18
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Band Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 31
+        },
+        {
+          "name": "Cup Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 31
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 62
+        },
+        {
+          "name": "Underwire Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 23
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 53
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 26
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 193
+        },
+        {
+          "name": "Strap Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 59
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 11
+    },
+    "63854": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12615
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 55
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 205
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 99
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 32
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Compression Area",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Number in Pack",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 10
+    },
+    "63855": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2009
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 102
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 94
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 54
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 172
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Character Family",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 58
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Season",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 12
+    },
+    "63861": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4523
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 81
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 22
+        },
+        {
+          "name": "Dress Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 59
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 28
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 104
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 186
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Season",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Sleeve Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        }
+      ],
+      "totalRequiredFields": 7,
+      "totalRecommendedFields": 12
+    },
+    "63862": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16197
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 110
+        },
+        {
+          "name": "Outer Shell Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 64
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Lining Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 55
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 95
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 55
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 26
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Insulation Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Jacket/Coat Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Season",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 8,
+      "totalRecommendedFields": 12
+    },
+    "63863": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5795
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 125
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 60
+        },
+        {
+          "name": "Leg Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 28
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 81
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Inseam",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 13
+    },
+    "63864": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6004
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 107
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Skirt Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 48
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 172
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 71
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Rise",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 8,
+      "totalRecommendedFields": 11
+    },
+    "63866": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4798
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 108
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 58
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 95
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 31
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13
+        },
+        {
+          "name": "Sleeve Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 18
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 172
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 12
+    },
+    "63867": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2730
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 94
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 232
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 57
+        },
+        {
+          "name": "Swim Bottom Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 38
+        },
+        {
+          "name": "Swim Top Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Cup Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 26
+        },
+        {
+          "name": "Strap Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 10
+    },
+    "95672": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3437
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 18
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Style Code",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": false,
+          "valueCount": 0
+        },
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 10704
+        },
+        {
+          "name": "Product Line",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3258
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 250
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 88
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Shoe Width",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 272
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 60
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Release Year",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 126
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 4,
+      "totalRecommendedFields": 15
+    },
+    "105515": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Designer/Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 26
+        }
+      ],
+      "recommendedFields": [],
+      "totalRequiredFields": 1,
+      "totalRecommendedFields": 0
+    },
+    "155199": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19134
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 92
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 40
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 22
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 49
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        }
+      ],
+      "totalRequiredFields": 4,
+      "totalRecommendedFields": 11
+    },
+    "155201": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 23
+        },
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16161
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Outer Shell Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 103
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 57
+        },
+        {
+          "name": "Lining Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 102
+        },
+        {
+          "name": "Insulation Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 40
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 8
+    },
+    "155226": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14681
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 108
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 205
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 39
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 34
+        },
+        {
+          "name": "Product Line",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 121
+        },
+        {
+          "name": "Character Family",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 163
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 21
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 127
+        },
+        {
+          "name": "Accents",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 20
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 16
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 7,
+      "totalRecommendedFields": 13
+    },
+    "158954": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14839
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Upper Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 51
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "AU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 29
+        },
+        {
+          "name": "US Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 26
+        },
+        {
+          "name": "UK Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 29
+        },
+        {
+          "name": "EU Shoe Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 66
+        },
+        {
+          "name": "Model",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3485
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Customized",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 7
+    },
+    "169001": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15292
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 110
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 249
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 89
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 49
+        },
+        {
+          "name": "Rise",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 58
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 42
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Inseam",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 49
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 37
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 12
+    },
+    "175654": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15274
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 7
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 93
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 38
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Inseam",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 26
+        }
+      ],
+      "totalRequiredFields": 4,
+      "totalRecommendedFields": 9
+    },
+    "185076": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19156
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 24
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 40
+        },
+        {
+          "name": "Product Line",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 299
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 49
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 35
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Compression Level",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 22
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 93
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 14
+    },
+    "185101": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19160
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 40
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 1
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 40
+        },
+        {
+          "name": "Sleeve Length",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Fabric Wash",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 8
+        },
+        {
+          "name": "Product Line",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 299
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 215
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 269
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 22
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 92
+        },
+        {
+          "name": "Fit",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 6
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 49
+        },
+        {
+          "name": "Neckline",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 14
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 5,
+      "totalRecommendedFields": 13
+    },
+    "185708": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 13494
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 33
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 57
+        },
+        {
+          "name": "Set Includes",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 22
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 246
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 273
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 67
+        },
+        {
+          "name": "Number of Pieces",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 5
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 40
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 62
+        },
+        {
+          "name": "Pattern",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 25
+        },
+        {
+          "name": "Season",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 4
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 6,
+      "totalRecommendedFields": 13
+    },
+    "260014": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 12376
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 270
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 93
+        }
+      ],
+      "totalRequiredFields": 4,
+      "totalRecommendedFields": 2
+    },
+    "260956": {
+      "categoryName": "Unknown",
+      "requiredFields": [
+        {
+          "name": "Brand",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 15298
+        },
+        {
+          "name": "Color",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 17
+        },
+        {
+          "name": "Department",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 3
+        },
+        {
+          "name": "Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 36
+        },
+        {
+          "name": "Size Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        },
+        {
+          "name": "Style",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "recommendedFields": [
+        {
+          "name": "Product Line",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 217
+        },
+        {
+          "name": "Fabric Type",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 58
+        },
+        {
+          "name": "Features",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 48
+        },
+        {
+          "name": "Theme",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 246
+        },
+        {
+          "name": "Material",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 95
+        },
+        {
+          "name": "Performance/Activity",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 42
+        },
+        {
+          "name": "Character",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 271
+        },
+        {
+          "name": "Waist Size",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 45
+        },
+        {
+          "name": "Closure",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 11
+        },
+        {
+          "name": "Inseam",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 19
+        },
+        {
+          "name": "Occasion",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 9
+        },
+        {
+          "name": "Vintage",
+          "dataType": "STRING",
+          "maxLength": null,
+          "hasValues": true,
+          "valueCount": 2
+        }
+      ],
+      "totalRequiredFields": 7,
+      "totalRecommendedFields": 12
+    }
+  },
+  "validationExamples": {}
+}

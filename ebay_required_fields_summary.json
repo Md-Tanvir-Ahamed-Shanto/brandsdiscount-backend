@@ -1,0 +1,245 @@
+{
+  "generatedAt": "2025-10-23T15:07:47.115Z",
+  "categories": {
+    "3001": {
+      "categoryName": "Unknown",
+      "totalAspects": 38,
+      "requiredAspects": []
+    },
+    "11483": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "11498": {
+      "categoryName": "Unknown",
+      "totalAspects": 37,
+      "requiredAspects": []
+    },
+    "11507": {
+      "categoryName": "Unknown",
+      "totalAspects": 25,
+      "requiredAspects": []
+    },
+    "11510": {
+      "categoryName": "Unknown",
+      "totalAspects": 27,
+      "requiredAspects": []
+    },
+    "11554": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "11555": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "15687": {
+      "categoryName": "Unknown",
+      "totalAspects": 31,
+      "requiredAspects": []
+    },
+    "15690": {
+      "categoryName": "Unknown",
+      "totalAspects": 23,
+      "requiredAspects": []
+    },
+    "15709": {
+      "categoryName": "Unknown",
+      "totalAspects": 37,
+      "requiredAspects": []
+    },
+    "24087": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "45238": {
+      "categoryName": "Unknown",
+      "totalAspects": 25,
+      "requiredAspects": []
+    },
+    "45333": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "52365": {
+      "categoryName": "Unknown",
+      "totalAspects": 24,
+      "requiredAspects": []
+    },
+    "52382": {
+      "categoryName": "Unknown",
+      "totalAspects": 23,
+      "requiredAspects": []
+    },
+    "53120": {
+      "categoryName": "Unknown",
+      "totalAspects": 31,
+      "requiredAspects": []
+    },
+    "53159": {
+      "categoryName": "Unknown",
+      "totalAspects": 32,
+      "requiredAspects": []
+    },
+    "53557": {
+      "categoryName": "Unknown",
+      "totalAspects": 40,
+      "requiredAspects": []
+    },
+    "55793": {
+      "categoryName": "Unknown",
+      "totalAspects": 37,
+      "requiredAspects": []
+    },
+    "57990": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "57991": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "59347": {
+      "categoryName": "Unknown",
+      "totalAspects": 40,
+      "requiredAspects": []
+    },
+    "59353": {
+      "categoryName": "Unknown",
+      "totalAspects": 40,
+      "requiredAspects": []
+    },
+    "59375": {
+      "categoryName": "Unknown",
+      "totalAspects": 37,
+      "requiredAspects": []
+    },
+    "59392": {
+      "categoryName": "Unknown",
+      "totalAspects": 41,
+      "requiredAspects": []
+    },
+    "62107": {
+      "categoryName": "Unknown",
+      "totalAspects": 35,
+      "requiredAspects": []
+    },
+    "63853": {
+      "categoryName": "Unknown",
+      "totalAspects": 29,
+      "requiredAspects": []
+    },
+    "63854": {
+      "categoryName": "Unknown",
+      "totalAspects": 26,
+      "requiredAspects": []
+    },
+    "63855": {
+      "categoryName": "Unknown",
+      "totalAspects": 30,
+      "requiredAspects": []
+    },
+    "63861": {
+      "categoryName": "Unknown",
+      "totalAspects": 30,
+      "requiredAspects": []
+    },
+    "63862": {
+      "categoryName": "Unknown",
+      "totalAspects": 32,
+      "requiredAspects": []
+    },
+    "63863": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "63864": {
+      "categoryName": "Unknown",
+      "totalAspects": 29,
+      "requiredAspects": []
+    },
+    "63866": {
+      "categoryName": "Unknown",
+      "totalAspects": 31,
+      "requiredAspects": []
+    },
+    "63867": {
+      "categoryName": "Unknown",
+      "totalAspects": 25,
+      "requiredAspects": []
+    },
+    "95672": {
+      "categoryName": "Unknown",
+      "totalAspects": 39,
+      "requiredAspects": []
+    },
+    "105515": {
+      "categoryName": "Unknown",
+      "totalAspects": 14,
+      "requiredAspects": []
+    },
+    "155199": {
+      "categoryName": "Unknown",
+      "totalAspects": 29,
+      "requiredAspects": []
+    },
+    "155201": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "155226": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "158954": {
+      "categoryName": "Unknown",
+      "totalAspects": 43,
+      "requiredAspects": []
+    },
+    "169001": {
+      "categoryName": "Unknown",
+      "totalAspects": 31,
+      "requiredAspects": []
+    },
+    "175654": {
+      "categoryName": "Unknown",
+      "totalAspects": 29,
+      "requiredAspects": []
+    },
+    "185076": {
+      "categoryName": "Unknown",
+      "totalAspects": 37,
+      "requiredAspects": []
+    },
+    "185101": {
+      "categoryName": "Unknown",
+      "totalAspects": 34,
+      "requiredAspects": []
+    },
+    "185708": {
+      "categoryName": "Unknown",
+      "totalAspects": 33,
+      "requiredAspects": []
+    },
+    "260014": {
+      "categoryName": "Unknown",
+      "totalAspects": 20,
+      "requiredAspects": []
+    },
+    "260956": {
+      "categoryName": "Unknown",
+      "totalAspects": 32,
+      "requiredAspects": []
+    }
+  }
+}

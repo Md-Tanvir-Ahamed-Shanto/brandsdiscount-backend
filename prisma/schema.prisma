@@ -35,10 +35,11 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  updatedById  String? // Foreign key reference to another User
-  updatedBy    User?   @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
-  updatedUsers User[]  @relation("UserUpdatedBy") // Inverse relation: Tracks users this user has updated
-  orders       Order[] @relation("UserOrders") // Unique relation name for the relation with orders
+  updatedById     String? // Foreign key reference to another User
+  updatedBy       User?           @relation("UserUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedUsers    User[]          @relation("UserUpdatedBy") // Inverse relation: Tracks users this user has updated
+  orders          Order[]         @relation("UserOrders") // Unique relation name for the relation with orders
+  stripeSessions  StripeSession[] // Stripe payment sessions
 
   @@index([email]) // Index on email for faster queries
 }
@@ -315,4 +316,31 @@ enum UserRole {
   PlatformUser
   Cashier
   SuperAdmin
+}
+
+model StripeSession {
+  id                String    @id @default(uuid())
+  sessionId         String    @unique // Stripe session ID
+  userId            String?   // Optional user ID for logged-in users
+  amount            Float     // Total amount in cents
+  currency          String    @default("usd")
+  status            String    @default("pending") // pending, completed, expired, payment_failed
+  paymentIntentId   String?   // Stripe payment intent ID
+  customerEmail     String?   // Customer email from Stripe
+  customerName      String?   // Customer name from Stripe
+  cartItems         String    // JSON string of cart items
+  appliedPoints     Float?    @default(0) // Loyalty points applied
+  shippingAddress   String?   // JSON string of shipping address
+  billingAddress    String?   // JSON string of billing address
+  failureReason     String?   // Reason for payment failure
+  completedAt       DateTime? // When payment was completed
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }

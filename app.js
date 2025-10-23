@@ -83,6 +83,13 @@ app.use("/api/walmart", walmartRoutes)
 app.use("/api/shein", sheinRoutes)
 app.use("/api/sync-logs", syncLogRouter)
 
+// Stripe routes
+const stripeRoutes = require("./routes/stripe.route");
+const stripeWebhook = require("./webhook/stripeWebhook");
+
+app.use("/api/stripe", stripeRoutes);
+app.use("/webhook", stripeWebhook);
+
 
 app.get("/ebay/auth/callback", async (req, res) => {
   try {

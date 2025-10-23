@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2025-10-23T15:12:31.298Z",
+  "totalCategories": 48,
+  "categoriesWithRequiredFields": 48,
+  "globalRequiredFields": [
+    "Brand",
+    "Color",
+    "Department",
+    "Designer/Brand",
+    "Dress Length",
+    "Inseam",
+    "Outer Shell Material",
+    "Size",
+    "Size Type",
+    "Skirt Length",
+    "Sleeve Length",
+    "Style",
+    "Type",
+    "US Shoe Size",
+    "Upper Material"
+  ],
+  "globalRecommendedFields": [
+    "AU Shoe Size",
+    "Accents",
+    "Band Size",
+    "Character",
+    "Character Family",
+    "Closure",
+    "Collar Style",
+    "Compression Area",
+    "Compression Level",
+    "Cup Size",
+    "Customized",
+    "Department",
+    "EU Shoe Size",
+    "Fabric Type",
+    "Fabric Wash",
+    "Features",
+    "Fit",
+    "Front Type",
+    "Heel Height",
+    "Heel Style"
+  ],
+  "alwaysRequired": [
+    "Brand",
+    "Color",
+    "Department"
+  ],
+  "alwaysRecommended": [
+    "Vintage"
+  ],
+  "quickStartFields": [
+    "Brand",
+    "Color",
+    "Department",
+    "Vintage"
+  ]
+}
