@@ -15,7 +15,7 @@ async function createPolicyRestrictionNotification(sku, ebayAccount) {
   try {
     await createNotification({
       title: "eBay Policy Restriction - Manual Action Required",
-      message: `The Order (SKU-${sku}) from "ebay${ebayAccount}" could not be synced due to an eBay policy restriction. Please manually reduce the inventory by 1 on "ebay${ebayAccount}".`,
+      message: `The Order (${sku}) from "ebay${ebayAccount}" could not be synced due to an eBay policy restriction. Please manually reduce the inventory.`,
       location: `eBay${ebayAccount}`,
       selledBy: `EBAY${ebayAccount}`,
     });
@@ -44,7 +44,7 @@ async function createStockDeletionErrorNotification(
   try {
     await createNotification({
       title: "eBay Stock Deletion Failed",
-      message: `Failed to delete inventory for SKU-${sku} on "ebay${ebayAccount}". Error: ${errorMessage}. Please manually check and update the inventory.`,
+      message: `Failed to delete inventory for ${sku} on "ebay${ebayAccount}". Error: ${errorMessage}. Please manually check and update the inventory.`,
       location: `eBay${ebayAccount}`,
       selledBy: `EBAY${ebayAccount}`,
     });
