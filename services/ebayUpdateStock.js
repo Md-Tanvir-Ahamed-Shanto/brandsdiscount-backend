@@ -11,11 +11,11 @@ const EBAY_API_BASE_URL = "https://api.ebay.com";
  * @param {string} sku - Product SKU
  * @param {string} ebayAccount - eBay account identifier (1, 2, or 3)
  */
-async function createPolicyRestrictionNotification(sku, ebayAccount) {
+async function createPolicyRestrictionNotification(sku, ebayAccount, qty) {
   try {
     await createNotification({
       title: "eBay Policy Restriction - Manual Action Required",
-      message: `The Order (${sku}) from "ebay${ebayAccount}" could not be synced due to an eBay policy restriction. Please manually reduce the inventory on the other ebay accounts.`,
+      message: `The Order (${sku}) from "ebay${ebayAccount}" could not be synced due to an eBay policy restriction. Please manually reduce the inventory of ${qty} on the other ebay accounts.`,
       location: `eBay${ebayAccount}`,
       selledBy: `EBAY${ebayAccount}`,
     });
@@ -59,7 +59,7 @@ async function createStockDeletionErrorNotification(
   }
 }
 
-async function ebayUpdateStock(sku, stockQuantity) {
+async function ebayUpdateStock(sku, stockQuantity, qty) {
   const token = await getValidAccessToken();
   const quantity = parseInt(stockQuantity) || 0;
 
@@ -138,14 +138,14 @@ async function ebayUpdateStock(sku, stockQuantity) {
           message: `Successfully updated inventory for SKU ${sku} to ${quantity} units`,
         };
       } catch (error) {
-        await createPolicyRestrictionNotification(sku, "1");
+        await createPolicyRestrictionNotification(sku, "1", qty);
 
         return {
           success: false,
           sku: sku,
           newQuantity: quantity,
           platform: "eBay Account 1",
-          message: `Please Update manually on eBay Account 2 for SKU ${sku} to ${quantity} units`,
+          message: `Please Update manually on eBay Account 2 for SKU ${sku} to ${qty} units`,
         };
       }
     }
@@ -182,7 +182,7 @@ async function ebayUpdateStock(sku, stockQuantity) {
 
     // Create appropriate notifications based on error type
     if (isPolicyRestriction) {
-      await createPolicyRestrictionNotification(sku, "1");
+      await createPolicyRestrictionNotification(sku, "1", qty);
     } else if (quantity === 0) {
       // Stock deletion error
       await createStockDeletionErrorNotification(sku, "1", errorMessage);
@@ -197,7 +197,7 @@ async function ebayUpdateStock(sku, stockQuantity) {
   }
 }
 
-async function ebayUpdateStock2(sku, stockQuantity) {
+async function ebayUpdateStock2(sku, stockQuantity, qty) {
   const token = await getValidAccessToken2();
   const quantity = parseInt(stockQuantity) || 0;
 
@@ -275,14 +275,14 @@ async function ebayUpdateStock2(sku, stockQuantity) {
           message: `Successfully updated inventory for SKU ${sku} to ${quantity} units`,
         };
       } catch (error) {
-        await createPolicyRestrictionNotification(sku, "2");
+        await createPolicyRestrictionNotification(sku, "2", qty);
 
         return {
           success: false,
           sku: sku,
           newQuantity: quantity,
           platform: "eBay Account 1",
-          message: `Please Update manually on eBay Account 2 for SKU ${sku} to ${quantity} units`,
+          message: `Please Update manually on eBay Account 2 for SKU ${sku} to ${qty} units`,
         };
       }
     }
@@ -319,7 +319,7 @@ async function ebayUpdateStock2(sku, stockQuantity) {
 
     // Create appropriate notifications based on error type
     if (isPolicyRestriction) {
-      await createPolicyRestrictionNotification(sku, "2");
+      await createPolicyRestrictionNotification(sku, "2", qty);
     } else if (quantity === 0) {
       // Stock deletion error
       await createStockDeletionErrorNotification(sku, "2", errorMessage);
@@ -334,7 +334,7 @@ async function ebayUpdateStock2(sku, stockQuantity) {
   }
 }
 
-async function ebayUpdateStock3(sku, stockQuantity) {
+async function ebayUpdateStock3(sku, stockQuantity, qty) {
   const token = await getValidAccessToken3();
   const quantity = parseInt(stockQuantity) || 0;
 
@@ -412,14 +412,14 @@ async function ebayUpdateStock3(sku, stockQuantity) {
           message: `Successfully updated inventory for SKU ${sku} to ${quantity} units`,
         };
       } catch (error) {
-        await createPolicyRestrictionNotification(sku, "3");
+        await createPolicyRestrictionNotification(sku, "3", qty);
 
         return {
           success: false,
           sku: sku,
           newQuantity: quantity,
           platform: "eBay Account 3",
-          message: `Please Update manually on eBay Account 3 for SKU ${sku} to ${quantity} units`,
+          message: `Please Update manually on eBay Account 3 for SKU ${sku} to ${qty} units`,
         };
       }
     }
@@ -456,7 +456,7 @@ async function ebayUpdateStock3(sku, stockQuantity) {
 
     // Create appropriate notifications based on error type
     if (isPolicyRestriction) {
-      await createPolicyRestrictionNotification(sku, "3");
+      await createPolicyRestrictionNotification(sku, "3", qty);
     } else if (quantity === 0) {
       // Stock deletion error
       await createStockDeletionErrorNotification(sku, "3", errorMessage);

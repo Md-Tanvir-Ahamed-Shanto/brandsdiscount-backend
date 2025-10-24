@@ -14,15 +14,17 @@ const { createNotification } = require("../utils/notification");
 
 async function ebayOrderSync() {
   try {
-    console.log('Try eBay1 sync');
+    console.log("Try eBay1 sync");
     let token;
     try {
       token = await getValidAccessToken();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay1 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay1 account through the authorization flow"
+      );
       return [];
     }
-    
+
     const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
@@ -35,11 +37,17 @@ async function ebayOrderSync() {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay1 orders`);
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay1 orders`
+      );
     } catch (apiError) {
       console.error(`❌ eBay1 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay1 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay1 account."
+        );
       }
       return [];
     }
@@ -49,9 +57,11 @@ async function ebayOrderSync() {
       return [];
     }
 
-    const existingOrders = await executeWithRetry(() => prisma.ebayOrder.findMany({
-      select: { orderId: true },
-    }));
+    const existingOrders = await executeWithRetry(() =>
+      prisma.ebayOrder.findMany({
+        select: { orderId: true },
+      })
+    );
     const existingOrderIds = new Set(existingOrders.map((o) => o.orderId));
 
     const newOrders = orders.filter(
@@ -59,13 +69,15 @@ async function ebayOrderSync() {
     );
 
     for (const order of newOrders) {
-      await executeWithRetry(() => prisma.ebayOrder.create({
-        data: {
-          orderId: order.orderId,
-          orderCreationDate: new Date(order.creationDate),
-          status: order.orderFulfillmentStatus,
-        },
-      }));
+      await executeWithRetry(() =>
+        prisma.ebayOrder.create({
+          data: {
+            orderId: order.orderId,
+            orderCreationDate: new Date(order.creationDate),
+            status: order.orderFulfillmentStatus,
+          },
+        })
+      );
 
       const lineItems = order.lineItems || [];
 
@@ -75,17 +87,21 @@ async function ebayOrderSync() {
 
         if (!sku || !qty) continue;
 
-        const product = await executeWithRetry(() => prisma.product.findUnique({
-          where: { sku },
-        }));
+        const product = await executeWithRetry(() =>
+          prisma.product.findUnique({
+            where: { sku },
+          })
+        );
 
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
 
-          await executeWithRetry(() => prisma.product.update({
-            where: { sku },
-            data: { stockQuantity: newStock },
-          }));
+          await executeWithRetry(() =>
+            prisma.product.update({
+              where: { sku },
+              data: { stockQuantity: newStock },
+            })
+          );
 
           try {
             await createNotification({
@@ -100,31 +116,47 @@ async function ebayOrderSync() {
 
           // Try each platform update independently with proper async handling
           try {
-            await ebayUpdateStock2(sku, newStock);
-            console.log(`✅ [eBay1 Order] Successfully updated eBay2 stock for ${sku} to ${newStock}`);
+            await ebayUpdateStock2(sku, newStock, qty);
+            console.log(
+              `✅ [eBay1 Order] Successfully updated eBay2 stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay1 Order] eBay2 inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay1 Order] eBay2 inventory update failed for ${sku}: ${err.message}`
+            );
           }
 
           try {
-            await ebayUpdateStock3(sku, newStock);
-            console.log(`✅ [eBay1 Order] Successfully updated eBay3 stock for ${sku} to ${newStock}`);
+            await ebayUpdateStock3(sku, newStock, qty);
+            console.log(
+              `✅ [eBay1 Order] Successfully updated eBay3 stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay1 Order] eBay3 inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay1 Order] eBay3 inventory update failed for ${sku}: ${err.message}`
+            );
           }
 
           try {
             await walmartItemUpdate(sku, newStock);
-            console.log(`✅ [eBay1 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`);
+            console.log(
+              `✅ [eBay1 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay1 Order] Walmart inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay1 Order] Walmart inventory update failed for ${sku}: ${err.message}`
+            );
           }
-          
+
           try {
             await walmartOrderSync2(sku, newStock);
-            console.log(`✅ [eBay1 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`);
+            console.log(
+              `✅ [eBay1 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`
+            );
           } catch (error) {
-            console.warn(`❌ [eBay1 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`);
+            console.warn(
+              `❌ [eBay1 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`
+            );
           }
         }
       }
@@ -141,16 +173,18 @@ async function ebayOrderSync() {
 }
 
 async function ebayOrderSync2() {
-  console.log('Try eBay2 sync');
+  console.log("Try eBay2 sync");
   try {
     let token;
     try {
       token = await getValidAccessToken2();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay2 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay2 account through the authorization flow"
+      );
       return [];
     }
-    
+
     const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
@@ -163,11 +197,17 @@ async function ebayOrderSync2() {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay2 orders`
+      );
     } catch (apiError) {
       console.error(`❌ eBay2 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay2 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay2 account."
+        );
       }
       return [];
     }
@@ -177,9 +217,11 @@ async function ebayOrderSync2() {
       return [];
     }
 
-    const existingOrders = await executeWithRetry(() => prisma.ebayOrder.findMany({
-      select: { orderId: true },
-    }));
+    const existingOrders = await executeWithRetry(() =>
+      prisma.ebayOrder.findMany({
+        select: { orderId: true },
+      })
+    );
     const existingOrderIds = new Set(existingOrders.map((o) => o.orderId));
 
     const newOrders = orders.filter(
@@ -187,13 +229,15 @@ async function ebayOrderSync2() {
     );
 
     for (const order of newOrders) {
-      await executeWithRetry(() => prisma.ebayOrder.create({
-        data: {
-          orderId: order.orderId,
-          orderCreationDate: new Date(order.creationDate),
-          status: order.orderFulfillmentStatus,
-        },
-      }));
+      await executeWithRetry(() =>
+        prisma.ebayOrder.create({
+          data: {
+            orderId: order.orderId,
+            orderCreationDate: new Date(order.creationDate),
+            status: order.orderFulfillmentStatus,
+          },
+        })
+      );
 
       const lineItems = order.lineItems || [];
 
@@ -203,17 +247,21 @@ async function ebayOrderSync2() {
 
         if (!sku || !qty) continue;
 
-        const product = await executeWithRetry(() => prisma.product.findUnique({
-          where: { sku },
-        }));
+        const product = await executeWithRetry(() =>
+          prisma.product.findUnique({
+            where: { sku },
+          })
+        );
 
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
 
-          await executeWithRetry(() => prisma.product.update({
-            where: { sku },
-            data: { stockQuantity: newStock },
-          }));
+          await executeWithRetry(() =>
+            prisma.product.update({
+              where: { sku },
+              data: { stockQuantity: newStock },
+            })
+          );
 
           try {
             await createNotification({
@@ -228,31 +276,47 @@ async function ebayOrderSync2() {
 
           // Try each platform update independently with proper async handling
           try {
-            await ebayUpdateStock(sku, newStock);
-            console.log(`✅ [eBay2 Order] Successfully updated eBay1 stock for ${sku} to ${newStock}`);
+            await ebayUpdateStock(sku, newStock, qty);
+            console.log(
+              `✅ [eBay2 Order] Successfully updated eBay1 stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay2 Order] eBay1 inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay2 Order] eBay1 inventory update failed for ${sku}: ${err.message}`
+            );
           }
 
           try {
-            await ebayUpdateStock3(sku, newStock);
-            console.log(`✅ [eBay2 Order] Successfully updated eBay3 stock for ${sku} to ${newStock}`);
+            await ebayUpdateStock3(sku, newStock, qty);
+            console.log(
+              `✅ [eBay2 Order] Successfully updated eBay3 stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay2 Order] eBay3 inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay2 Order] eBay3 inventory update failed for ${sku}: ${err.message}`
+            );
           }
-          
+
           try {
             await walmartItemUpdate(sku, newStock);
-            console.log(`✅ [eBay2 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`);
+            console.log(
+              `✅ [eBay2 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay2 Order] Walmart inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay2 Order] Walmart inventory update failed for ${sku}: ${err.message}`
+            );
           }
-          
+
           try {
             await walmartOrderSync2(sku, newStock);
-            console.log(`✅ [eBay2 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`);
+            console.log(
+              `✅ [eBay2 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`
+            );
           } catch (error) {
-            console.warn(`❌ [eBay2 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`);
+            console.warn(
+              `❌ [eBay2 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`
+            );
           }
         }
       }
@@ -275,10 +339,12 @@ async function ebayOrderSync3() {
     try {
       token = await getValidAccessToken3();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay3 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay3 account through the authorization flow"
+      );
       return [];
     }
-    
+
     const tenMinAgoISO = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${tenMinAgoISO}..]&limit=180`;
@@ -291,11 +357,17 @@ async function ebayOrderSync3() {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay3 orders`
+      );
     } catch (apiError) {
       console.error(`❌ eBay3 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay3 account."
+        );
       }
       return [];
     }
@@ -305,9 +377,11 @@ async function ebayOrderSync3() {
       return [];
     }
 
-    const existingOrders = await executeWithRetry(() => prisma.ebayOrder.findMany({
-      select: { orderId: true },
-    }));
+    const existingOrders = await executeWithRetry(() =>
+      prisma.ebayOrder.findMany({
+        select: { orderId: true },
+      })
+    );
     const existingOrderIds = new Set(existingOrders.map((o) => o.orderId));
 
     const newOrders = orders.filter(
@@ -315,13 +389,15 @@ async function ebayOrderSync3() {
     );
 
     for (const order of newOrders) {
-      await executeWithRetry(() => prisma.ebayOrder.create({
-        data: {
-          orderId: order.orderId,
-          orderCreationDate: new Date(order.creationDate),
-          status: order.orderFulfillmentStatus,
-        },
-      }));
+      await executeWithRetry(() =>
+        prisma.ebayOrder.create({
+          data: {
+            orderId: order.orderId,
+            orderCreationDate: new Date(order.creationDate),
+            status: order.orderFulfillmentStatus,
+          },
+        })
+      );
 
       const lineItems = order.lineItems || [];
 
@@ -331,17 +407,21 @@ async function ebayOrderSync3() {
 
         if (!sku || !qty) continue;
 
-        const product = await executeWithRetry(() => prisma.product.findUnique({
-          where: { sku },
-        }));
+        const product = await executeWithRetry(() =>
+          prisma.product.findUnique({
+            where: { sku },
+          })
+        );
 
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
 
-          await executeWithRetry(() => prisma.product.update({
-            where: { sku },
-            data: { stockQuantity: newStock },
-          }));
+          await executeWithRetry(() =>
+            prisma.product.update({
+              where: { sku },
+              data: { stockQuantity: newStock },
+            })
+          );
 
           try {
             await createNotification({
@@ -356,31 +436,47 @@ async function ebayOrderSync3() {
 
           // Try each platform update independently with proper async handling
           try {
-            await ebayUpdateStock(sku, newStock);
-            console.log(`✅ [eBay3 Order] Successfully updated eBay1 stock for ${sku} to ${newStock}`);
+            await ebayUpdateStock(sku, newStock, qty);
+            console.log(
+              `✅ [eBay3 Order] Successfully updated eBay1 stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay3 Order] eBay1 inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay3 Order] eBay1 inventory update failed for ${sku}: ${err.message}`
+            );
           }
 
           try {
-            await ebayUpdateStock2(sku, newStock);
-            console.log(`✅ [eBay3 Order] Successfully updated eBay2 stock for ${sku} to ${newStock}`);
+            await ebayUpdateStock2(sku, newStock, qty);
+            console.log(
+              `✅ [eBay3 Order] Successfully updated eBay2 stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay3 Order] eBay2 inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay3 Order] eBay2 inventory update failed for ${sku}: ${err.message}`
+            );
           }
-          
+
           try {
             await walmartItemUpdate(sku, newStock);
-            console.log(`✅ [eBay3 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`);
+            console.log(
+              `✅ [eBay3 Order] Successfully updated Walmart stock for ${sku} to ${newStock}`
+            );
           } catch (err) {
-            console.warn(`❌ [eBay3 Order] Walmart inventory update failed for ${sku}: ${err.message}`);
+            console.warn(
+              `❌ [eBay3 Order] Walmart inventory update failed for ${sku}: ${err.message}`
+            );
           }
-          
+
           try {
             await walmartOrderSync2(sku, newStock);
-            console.log(`✅ [eBay3 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`);
+            console.log(
+              `✅ [eBay3 Order] Successfully updated Walmart2 stock for ${sku} to ${newStock}`
+            );
           } catch (error) {
-            console.warn(`❌ [eBay3 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`);
+            console.warn(
+              `❌ [eBay3 Order] Walmart2 inventory update failed for ${sku}: ${error.message}`
+            );
           }
         }
       }
@@ -397,18 +493,22 @@ async function ebayOrderSync3() {
 }
 
 async function getEbayOneLatestOrders(days = 1) {
- try {
+  try {
     let token;
     try {
       token = await getValidAccessToken();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay1 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay1 account through the authorization flow"
+      );
       return [];
     }
-    
-   // Convert days to a number and ensure it's at least 1
-   const daysNum = Math.max(1, parseInt(days) || 1);
-   const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
+
+    // Convert days to a number and ensure it's at least 1
+    const daysNum = Math.max(1, parseInt(days) || 1);
+    const pastDateISO = new Date(
+      Date.now() - daysNum * 24 * 60 * 60 * 1000
+    ).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
@@ -421,35 +521,48 @@ async function getEbayOneLatestOrders(days = 1) {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay1 orders`);
-            console.log("ebay1 response ", response.data?.orders)
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay1 orders`
+      );
+      console.log("ebay1 response ", response.data?.orders);
     } catch (apiError) {
       console.error(`❌ eBay1 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay1 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay1 account."
+        );
       }
       return [];
     }
     const orders = response.data?.orders || [];
     return orders;
- } catch (error) {
-   console.error("❌ Error eBay1 orders:", error.response?.data || error.message);
-   throw new Error( "Failed to get eBay1 orders.");
- }
+  } catch (error) {
+    console.error(
+      "❌ Error eBay1 orders:",
+      error.response?.data || error.message
+    );
+    throw new Error("Failed to get eBay1 orders.");
+  }
 }
 async function getEbayTwoLatestOrders(days = 1) {
- try {
+  try {
     let token;
     try {
       token = await getValidAccessToken2();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay2 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay2 account through the authorization flow"
+      );
       return [];
     }
-    
+
     // Convert days to a number and ensure it's at least 1
     const daysNum = Math.max(1, parseInt(days) || 1);
-    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
+    const pastDateISO = new Date(
+      Date.now() - daysNum * 24 * 60 * 60 * 1000
+    ).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
@@ -462,34 +575,47 @@ async function getEbayTwoLatestOrders(days = 1) {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay2 orders`
+      );
     } catch (apiError) {
       console.error(`❌ eBay2 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay2 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay2 account."
+        );
       }
       return [];
     }
     const orders = response.data?.orders || [];
     return orders;
- } catch (error) {
-   console.error("❌ Error eBay2 orders:", error.response?.data || error.message);
-   throw new Error( "Failed to get eBay2 orders.");
- }
+  } catch (error) {
+    console.error(
+      "❌ Error eBay2 orders:",
+      error.response?.data || error.message
+    );
+    throw new Error("Failed to get eBay2 orders.");
+  }
 }
 async function getEbayThreeLatestOrders(days = 1) {
- try {
+  try {
     let token;
     try {
       token = await getValidAccessToken3();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay3 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay3 account through the authorization flow"
+      );
       return [];
     }
-    
+
     // Convert days to a number and ensure it's at least 1
     const daysNum = Math.max(1, parseInt(days) || 1);
-    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
+    const pastDateISO = new Date(
+      Date.now() - daysNum * 24 * 60 * 60 * 1000
+    ).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
@@ -502,40 +628,49 @@ async function getEbayThreeLatestOrders(days = 1) {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
-
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay3 orders`
+      );
     } catch (apiError) {
       console.error(`❌ eBay3 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay3 account."
+        );
       }
       return [];
     }
     const orders = response.data?.orders || [];
     return orders;
- } catch (error) {
-   console.error("❌ Error eBay3 orders:", error.response?.data || error.message);
-   throw new Error( "Failed to get eBay3 orders.");
- }
+  } catch (error) {
+    console.error(
+      "❌ Error eBay3 orders:",
+      error.response?.data || error.message
+    );
+    throw new Error("Failed to get eBay3 orders.");
+  }
 }
-
-
-
 
 async function ManualEbayOrderSync(days = 1) {
   try {
-    console.log('Try eBay1 sync');
+    console.log("Try eBay1 sync");
     let token;
     try {
       token = await getValidAccessToken();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay1 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay1 account through the authorization flow"
+      );
       return [];
     }
-    
+
     // Convert days to a number and ensure it's at least 1
     const daysNum = Math.max(1, parseInt(days) || 1);
-    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
+    const pastDateISO = new Date(
+      Date.now() - daysNum * 24 * 60 * 60 * 1000
+    ).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
@@ -548,11 +683,17 @@ async function ManualEbayOrderSync(days = 1) {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay1 orders`);
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay1 orders`
+      );
     } catch (apiError) {
       console.error(`❌ eBay1 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay1 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay1 account."
+        );
       }
       return [];
     }
@@ -565,9 +706,11 @@ async function ManualEbayOrderSync(days = 1) {
       return [];
     }
 
-    const existingOrders = await executeWithRetry(() => prisma.ebayOrder.findMany({
-      select: { orderId: true },
-    }));
+    const existingOrders = await executeWithRetry(() =>
+      prisma.ebayOrder.findMany({
+        select: { orderId: true },
+      })
+    );
     const existingOrderIds = new Set(existingOrders.map((o) => o.orderId));
 
     const newOrders = orders.filter(
@@ -575,14 +718,21 @@ async function ManualEbayOrderSync(days = 1) {
     );
 
     for (const order of newOrders) {
-      await executeWithRetry(() => prisma.ebayOrder.create({
-        data: {
-          orderId: order.orderId,
-          orderCreationDate: new Date(order.creationDate),
-          status: order.orderFulfillmentStatus,
-        },
-      }));
-      syncLogger.log('eBay1', 'orderSync', 'info', `Created new eBay1 order record: ${order.orderId}`);
+      await executeWithRetry(() =>
+        prisma.ebayOrder.create({
+          data: {
+            orderId: order.orderId,
+            orderCreationDate: new Date(order.creationDate),
+            status: order.orderFulfillmentStatus,
+          },
+        })
+      );
+      syncLogger.log(
+        "eBay1",
+        "orderSync",
+        "info",
+        `Created new eBay1 order record: ${order.orderId}`
+      );
 
       const lineItems = order.lineItems || [];
 
@@ -592,17 +742,21 @@ async function ManualEbayOrderSync(days = 1) {
 
         if (!sku || !qty) continue;
 
-        const product = await executeWithRetry(() => prisma.product.findUnique({
-          where: { sku },
-        }));
+        const product = await executeWithRetry(() =>
+          prisma.product.findUnique({
+            where: { sku },
+          })
+        );
 
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
 
-          await executeWithRetry(() => prisma.product.update({
-            where: { sku },
-            data: { stockQuantity: newStock },
-          }));
+          await executeWithRetry(() =>
+            prisma.product.update({
+              where: { sku },
+              data: { stockQuantity: newStock },
+            })
+          );
 
           try {
             await createNotification({
@@ -617,13 +771,13 @@ async function ManualEbayOrderSync(days = 1) {
 
           // Try each platform update independently
           try {
-            ebayUpdateStock2(sku, newStock);
+            ebayUpdateStock2(sku, newStock, qty);
           } catch (err) {
             console.warn("eBay2 inventory update failed:", err.message);
           }
 
           try {
-            ebayUpdateStock3(sku, newStock);
+            ebayUpdateStock3(sku, newStock, qty);
           } catch (err) {
             console.warn("eBay3 inventory update failed:", err.message);
           }
@@ -653,19 +807,23 @@ async function ManualEbayOrderSync(days = 1) {
 }
 
 async function ManualEbayOrderSync2(days = 1) {
-  console.log('Try eBay2 sync');
+  console.log("Try eBay2 sync");
   try {
     let token;
     try {
       token = await getValidAccessToken2();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay2 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay2 account through the authorization flow"
+      );
       return [];
     }
-    
+
     // Convert days to a number and ensure it's at least 1
     const daysNum = Math.max(1, parseInt(days) || 1);
-    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
+    const pastDateISO = new Date(
+      Date.now() - daysNum * 24 * 60 * 60 * 1000
+    ).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
@@ -678,11 +836,17 @@ async function ManualEbayOrderSync2(days = 1) {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay2 orders`);
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay2 orders`
+      );
     } catch (apiError) {
       console.error(`❌ eBay2 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay2 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay2 account."
+        );
       }
       return [];
     }
@@ -695,9 +859,11 @@ async function ManualEbayOrderSync2(days = 1) {
       return [];
     }
 
-    const existingOrders = await executeWithRetry(() => prisma.ebayOrder.findMany({
-      select: { orderId: true },
-    }));
+    const existingOrders = await executeWithRetry(() =>
+      prisma.ebayOrder.findMany({
+        select: { orderId: true },
+      })
+    );
     const existingOrderIds = new Set(existingOrders.map((o) => o.orderId));
 
     const newOrders = orders.filter(
@@ -705,13 +871,15 @@ async function ManualEbayOrderSync2(days = 1) {
     );
 
     for (const order of newOrders) {
-      await executeWithRetry(() => prisma.ebayOrder.create({
-        data: {
-          orderId: order.orderId,
-          orderCreationDate: new Date(order.creationDate),
-          status: order.orderFulfillmentStatus,
-        },
-      }));
+      await executeWithRetry(() =>
+        prisma.ebayOrder.create({
+          data: {
+            orderId: order.orderId,
+            orderCreationDate: new Date(order.creationDate),
+            status: order.orderFulfillmentStatus,
+          },
+        })
+      );
 
       const lineItems = order.lineItems || [];
 
@@ -728,10 +896,12 @@ async function ManualEbayOrderSync2(days = 1) {
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
           console.log(`Created new eBay2 order record: ${order.orderId}`);
-          await executeWithRetry(() => prisma.product.update({
-            where: { sku },
-            data: { stockQuantity: newStock },
-          }));
+          await executeWithRetry(() =>
+            prisma.product.update({
+              where: { sku },
+              data: { stockQuantity: newStock },
+            })
+          );
 
           try {
             await createNotification({
@@ -746,13 +916,13 @@ async function ManualEbayOrderSync2(days = 1) {
 
           // Try each platform update independently
           try {
-            ebayUpdateStock(sku, newStock);
+            ebayUpdateStock(sku, newStock, qty);
           } catch (err) {
             console.warn("eBay2 inventory update failed:", err.message);
           }
 
           try {
-            ebayUpdateStock3(sku, newStock);
+            ebayUpdateStock3(sku, newStock, qty);
           } catch (err) {
             console.warn("eBay3 inventory update failed:", err.message);
           }
@@ -787,13 +957,17 @@ async function ManualEbayOrderSync3(days = 1) {
     try {
       token = await getValidAccessToken3();
     } catch (tokenError) {
-      console.error("Please re-authenticate eBay3 account through the authorization flow");
+      console.error(
+        "Please re-authenticate eBay3 account through the authorization flow"
+      );
       return [];
     }
-    
+
     // Convert days to a number and ensure it's at least 1
     const daysNum = Math.max(1, parseInt(days) || 1);
-    const pastDateISO = new Date(Date.now() - daysNum * 24 * 60 * 60 * 1000).toISOString();
+    const pastDateISO = new Date(
+      Date.now() - daysNum * 24 * 60 * 60 * 1000
+    ).toISOString();
 
     const url = `https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:[${pastDateISO}..]&limit=180`;
 
@@ -806,11 +980,17 @@ async function ManualEbayOrderSync3(days = 1) {
     let response;
     try {
       response = await axios.get(url, { headers });
-      console.log(`✅ Successfully fetched ${response.data?.orders?.length || 0} eBay3 orders`);
+      console.log(
+        `✅ Successfully fetched ${
+          response.data?.orders?.length || 0
+        } eBay3 orders`
+      );
     } catch (apiError) {
       console.error(`❌ eBay3 API error: ${apiError.message}`);
       if (apiError.response?.status === 401) {
-        console.error("Authentication error - token may be invalid. Please re-authenticate eBay3 account.");
+        console.error(
+          "Authentication error - token may be invalid. Please re-authenticate eBay3 account."
+        );
       }
       return [];
     }
@@ -823,9 +1003,11 @@ async function ManualEbayOrderSync3(days = 1) {
       return [];
     }
 
-    const existingOrders = await executeWithRetry(() => prisma.ebayOrder.findMany({
-      select: { orderId: true },
-    }));
+    const existingOrders = await executeWithRetry(() =>
+      prisma.ebayOrder.findMany({
+        select: { orderId: true },
+      })
+    );
     const existingOrderIds = new Set(existingOrders.map((o) => o.orderId));
 
     const newOrders = orders.filter(
@@ -833,13 +1015,15 @@ async function ManualEbayOrderSync3(days = 1) {
     );
 
     for (const order of newOrders) {
-      await executeWithRetry(() => prisma.ebayOrder.create({
-        data: {
-          orderId: order.orderId,
-          orderCreationDate: new Date(order.creationDate),
-          status: order.orderFulfillmentStatus,
-        },
-      }));
+      await executeWithRetry(() =>
+        prisma.ebayOrder.create({
+          data: {
+            orderId: order.orderId,
+            orderCreationDate: new Date(order.creationDate),
+            status: order.orderFulfillmentStatus,
+          },
+        })
+      );
       console.log(`Created new eBay3 order record: ${order.orderId}`);
 
       const lineItems = order.lineItems || [];
@@ -850,17 +1034,21 @@ async function ManualEbayOrderSync3(days = 1) {
 
         if (!sku || !qty) continue;
 
-        const product = await executeWithRetry(() => prisma.product.findUnique({
-          where: { sku },
-        }));
+        const product = await executeWithRetry(() =>
+          prisma.product.findUnique({
+            where: { sku },
+          })
+        );
 
         if (product && product.stockQuantity != null) {
           const newStock = Math.max(product.stockQuantity - qty, 0); // Prevent negative
 
-          await executeWithRetry(() => prisma.product.update({
-            where: { sku },
-            data: { stockQuantity: newStock },
-          }));
+          await executeWithRetry(() =>
+            prisma.product.update({
+              where: { sku },
+              data: { stockQuantity: newStock },
+            })
+          );
 
           try {
             await createNotification({
@@ -875,13 +1063,13 @@ async function ManualEbayOrderSync3(days = 1) {
 
           // Try each platform update independently
           try {
-            ebayUpdateStock(sku, newStock);
+            ebayUpdateStock(sku, newStock, qty);
           } catch (err) {
             console.warn("eBay2 inventory update failed:", err.message);
           }
 
           try {
-            ebayUpdateStock2(sku, newStock);
+            ebayUpdateStock2(sku, newStock, qty);
           } catch (err) {
             console.warn("eBay3 inventory update failed:", err.message);
           }
@@ -908,7 +1096,6 @@ async function ManualEbayOrderSync3(days = 1) {
     throw new Error("Order sync failed.");
   }
 }
-
 
 module.exports = {
   ebayOrderSync,
