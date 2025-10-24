@@ -15,7 +15,7 @@ async function createPolicyRestrictionNotification(sku, ebayAccount) {
   try {
     await createNotification({
       title: "eBay Policy Restriction - Manual Action Required",
-      message: `The Order (${sku}) from "ebay${ebayAccount}" could not be synced due to an eBay policy restriction. Please manually reduce the inventory.`,
+      message: `The Order (${sku}) from "ebay${ebayAccount}" could not be synced due to an eBay policy restriction. Please manually reduce the inventory on the other ebay accounts.`,
       location: `eBay${ebayAccount}`,
       selledBy: `EBAY${ebayAccount}`,
     });
@@ -94,44 +94,60 @@ async function ebayUpdateStock(sku, stockQuantity) {
       };
     } else {
       // Use bulk update API when stock > 0
-      // const BULK_UPDATE_API_URL = "https://api.ebay.com/sell/inventory/v1/bulk_update_price_quantity";
+      try {
+        const BULK_UPDATE_API_URL =
+          "https://api.ebay.com/sell/inventory/v1/bulk_update_price_quantity";
 
-      // console.log(`🔄 Updating inventory for SKU ${sku} on eBay Account 1 to quantity ${quantity}`);
+        console.log(
+          `🔄 Updating inventory for SKU ${sku} on eBay Account 1 to quantity ${quantity}`
+        );
 
-      // const payload = {
-      //   requests: [
-      //     {
-      //       sku: sku,
-      //       shipToLocationAvailability: {
-      //         quantity: quantity,
-      //       },
-      //     },
-      //   ],
-      // };
+        const payload = {
+          requests: [
+            {
+              sku: sku,
+              shipToLocationAvailability: {
+                quantity: quantity,
+              },
+            },
+          ],
+        };
 
-      // const res = await axios.post(BULK_UPDATE_API_URL, payload, { headers });
+        const res = await axios.post(BULK_UPDATE_API_URL, payload, { headers });
 
-      // // Check if the bulk API returned any errors in the response
-      // if (res.data && res.data.responses) {
-      //   const response = res.data.responses[0];
-      //   if (response.statusCode && response.statusCode !== 200) {
-      //     throw new Error(`eBay API returned status ${response.statusCode} for SKU ${sku}`);
-      //   }
-      // }
+        // Check if the bulk API returned any errors in the response
+        if (res.data && res.data.responses) {
+          const response = res.data.responses[0];
+          if (response.statusCode && response.statusCode !== 200) {
+            throw new Error(
+              `eBay API returned status ${response.statusCode} for SKU ${sku}`
+            );
+          }
+        }
 
-      // console.log("✅ Update Response:", res.status, res.statusText);
-      // console.log("✅ Response Data:", JSON.stringify(res.data, null, 2));
-      // console.log(`✅ Inventory updated for SKU: ${sku}, New Quantity: ${quantity}`);
+        console.log("✅ Update Response:", res.status, res.statusText);
+        console.log("✅ Response Data:", JSON.stringify(res.data, null, 2));
+        console.log(
+          `✅ Inventory updated for SKU: ${sku}, New Quantity: ${quantity}`
+        );
+        return {
+          success: true,
+          sku: sku,
+          newQuantity: quantity,
+          platform: "eBay Account 1",
+          message: `Successfully updated inventory for SKU ${sku} to ${quantity} units`,
+        };
+      } catch (error) {
+        await createPolicyRestrictionNotification(sku, "1");
 
-      await createPolicyRestrictionNotification(sku, "1");
-
-      return {
-        success: false,
-        sku: sku,
-        newQuantity: quantity,
-        platform: "eBay Account 1",
-        message: `Please Update manually on eBay Account 2 for SKU ${sku} to ${quantity} units`,
-      };
+        return {
+          success: false,
+          sku: sku,
+          newQuantity: quantity,
+          platform: "eBay Account 1",
+          message: `Please Update manually on eBay Account 2 for SKU ${sku} to ${quantity} units`,
+        };
+      }
     }
   } catch (error) {
     // Handle different API error structures
@@ -215,15 +231,60 @@ async function ebayUpdateStock2(sku, stockQuantity) {
         message: `Successfully deleted inventory item for SKU ${sku} (stock set to 0)`,
       };
     } else {
-      await createPolicyRestrictionNotification(sku, "2");
+      try {
+        const BULK_UPDATE_API_URL =
+          "https://api.ebay.com/sell/inventory/v1/bulk_update_price_quantity";
 
-      return {
-        success: false,
-        sku: sku,
-        newQuantity: quantity,
-        platform: "eBay Account 2",
-        message: `Please Update manually on eBay Account 2 for SKU ${sku} to ${quantity} units`,
-      };
+        console.log(
+          `🔄 Updating inventory for SKU ${sku} on eBay Account 2 to quantity ${quantity}`
+        );
+
+        const payload = {
+          requests: [
+            {
+              sku: sku,
+              shipToLocationAvailability: {
+                quantity: quantity,
+              },
+            },
+          ],
+        };
+
+        const res = await axios.post(BULK_UPDATE_API_URL, payload, { headers });
+
+        // Check if the bulk API returned any errors in the response
+        if (res.data && res.data.responses) {
+          const response = res.data.responses[0];
+          if (response.statusCode && response.statusCode !== 200) {
+            throw new Error(
+              `eBay API returned status ${response.statusCode} for SKU ${sku}`
+            );
+          }
+        }
+
+        console.log("✅ Update Response:", res.status, res.statusText);
+        console.log("✅ Response Data:", JSON.stringify(res.data, null, 2));
+        console.log(
+          `✅ Inventory updated for SKU: ${sku}, New Quantity: ${quantity}`
+        );
+        return {
+          success: true,
+          sku: sku,
+          newQuantity: quantity,
+          platform: "eBay Account 2",
+          message: `Successfully updated inventory for SKU ${sku} to ${quantity} units`,
+        };
+      } catch (error) {
+        await createPolicyRestrictionNotification(sku, "2");
+
+        return {
+          success: false,
+          sku: sku,
+          newQuantity: quantity,
+          platform: "eBay Account 1",
+          message: `Please Update manually on eBay Account 2 for SKU ${sku} to ${quantity} units`,
+        };
+      }
     }
   } catch (error) {
     // Handle different API error structures
@@ -307,14 +368,60 @@ async function ebayUpdateStock3(sku, stockQuantity) {
         message: `Successfully deleted inventory item for SKU ${sku} (stock set to 0)`,
       };
     } else {
-      await createPolicyRestrictionNotification(sku, "3");
-      return {
-        success: false,
-        sku: sku,
-        newQuantity: quantity,
-        platform: "eBay Account 3",
-        message: `Please Update manually on eBay Account 3 for SKU ${sku} to ${quantity} units`,
-      };
+      try {
+        const BULK_UPDATE_API_URL =
+          "https://api.ebay.com/sell/inventory/v1/bulk_update_price_quantity";
+
+        console.log(
+          `🔄 Updating inventory for SKU ${sku} on eBay Account 3 to quantity ${quantity}`
+        );
+
+        const payload = {
+          requests: [
+            {
+              sku: sku,
+              shipToLocationAvailability: {
+                quantity: quantity,
+              },
+            },
+          ],
+        };
+
+        const res = await axios.post(BULK_UPDATE_API_URL, payload, { headers });
+
+        // Check if the bulk API returned any errors in the response
+        if (res.data && res.data.responses) {
+          const response = res.data.responses[0];
+          if (response.statusCode && response.statusCode !== 200) {
+            throw new Error(
+              `eBay API returned status ${response.statusCode} for SKU ${sku}`
+            );
+          }
+        }
+
+        console.log("✅ Update Response:", res.status, res.statusText);
+        console.log("✅ Response Data:", JSON.stringify(res.data, null, 2));
+        console.log(
+          `✅ Inventory updated for SKU: ${sku}, New Quantity: ${quantity}`
+        );
+        return {
+          success: true,
+          sku: sku,
+          newQuantity: quantity,
+          platform: "eBay Account 3",
+          message: `Successfully updated inventory for SKU ${sku} to ${quantity} units`,
+        };
+      } catch (error) {
+        await createPolicyRestrictionNotification(sku, "3");
+
+        return {
+          success: false,
+          sku: sku,
+          newQuantity: quantity,
+          platform: "eBay Account 3",
+          message: `Please Update manually on eBay Account 3 for SKU ${sku} to ${quantity} units`,
+        };
+      }
     }
   } catch (error) {
     // Handle different API error structures
