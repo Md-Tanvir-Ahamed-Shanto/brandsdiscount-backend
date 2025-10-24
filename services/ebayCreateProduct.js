@@ -3,6 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const { getValidAccessToken2 } = require("../tools/ebayAuth2");
 const { getValidAccessToken3 } = require("../tools/ebayAuth3");
 const { getValidAccessToken } = require("../tools/ebayAuth");
+const { createNotification } = require("../utils/notification");
 const prisma = new PrismaClient();
 
 // Create a custom axios instance with optimized timeout
@@ -123,7 +124,64 @@ function createEbayResponse(success, platform, data = null, error = null) {
 
 const EBAY_API_BASE_URL = "https://api.ebay.com";
 
-async function createEbayProduct(product) {
+// Global required fields for eBay product creation
+const GLOBAL_REQUIRED_FIELDS = [
+  "Brand", 
+  "Color", 
+  "Department", 
+  "Designer/Brand", 
+  "Dress Length", 
+  "Inseam", 
+  "Outer Shell Material", 
+  "Size", 
+  "Size Type", 
+  "Skirt Length", 
+  "Sleeve Length", 
+  "Style", 
+  "Type", 
+  "US Shoe Size", 
+  "Upper Material"
+];
+
+/**
+ * Prepares product aspects for eBay listing using global required fields
+ * @param {Object} globalRequiredFields - Fields provided from frontend
+ * @returns {Array} Array of product aspects for eBay
+ */
+function prepareProductAspects(globalRequiredFields = {}) {
+  const aspects = [];
+  
+  // Define meaningful default values for required fields
+  const defaultValues = {
+    "Brand": "Unbranded",
+    "Color": "Multi-Color",
+    "Department": "Unisex",
+    "Designer/Brand": "Unbranded",
+    "Dress Length": "Not Applicable",
+    "Inseam": "Not Applicable",
+    "Outer Shell Material": "Not Specified",
+    "Size": "One Size",
+    "Size Type": "Regular",
+    "Skirt Length": "Not Applicable",
+    "Sleeve Length": "Not Applicable",
+    "Style": "Casual",
+    "Type": "Not Specified",
+    "US Shoe Size": "Not Applicable",
+    "Upper Material": "Not Specified"
+  };
+  
+  GLOBAL_REQUIRED_FIELDS.forEach(fieldName => {
+    const value = globalRequiredFields[fieldName] || defaultValues[fieldName] || "Not Specified";
+    aspects.push({
+      name: fieldName,
+      values: [value]
+    });
+  });
+  
+  return aspects;
+}
+
+async function createEbayProduct(product, globalRequiredFields = {}) {
   try {
     console.log(
       `Starting eBay product creation for SKU: ${product.sku || "unknown"}`
@@ -138,18 +196,22 @@ async function createEbayProduct(product) {
 
     // Truncate title to 80 characters for eBay requirements
     const title = (product.title || "Untitled Product").substring(0, 80);
-    const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
     const regularPrice = product.regularPrice || 0;
     const stockQuantity = product.stockQuantity || 0;
     const description = product.description || "";
     const categoryId = product.categoryId || "53159";
-    const size = product.size || "M";
-    const sizeType = product.sizeType || "Regular";
-    const type = product.type || "T-Shirt";
-    const department = product.department || "Men's Clothing";
-    const color = product.color || "Red";
+    
+    // Prepare dynamic aspects using global required fields
+    const aspects = {};
+    const dynamicAspects = prepareProductAspects(globalRequiredFields);
+    dynamicAspects.forEach(aspect => {
+      aspects[aspect.name] = aspect.values;
+    });
+    
+    // Add MPN as it's always required
+    aspects["MPN"] = ["Does not apply"];
 
     console.log(`eBay1: Creating inventory item for SKU: ${sku}`);
     // Step 1: Create or update inventory item (single attempt)
@@ -166,16 +228,7 @@ async function createEbayProduct(product) {
           product: {
             title: title,
             description: description,
-            aspects: {
-              Brand: [brandName],
-              MPN: ["Does not apply"],
-              Size: [size],
-              SizeType: [sizeType],
-              Type: [type],
-              Department: [department],
-              Color: [color],
-              Style: ["Casual"]
-            },
+            aspects: aspects,
             imageUrls: images,
           },
         },
@@ -183,6 +236,19 @@ async function createEbayProduct(product) {
       );
     } catch (inventoryError) {
       const categorizedError = categorizeEbayError(inventoryError);
+      
+      // Create notification for inventory creation failure
+      try {
+        await createNotification({
+          title: "eBay Inventory Creation Failed",
+          message: `Failed to create inventory for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: "eBay Account 1",
+          selledBy: product.selledBy || "EBAY1"
+        });
+      } catch (notificationError) {
+        console.error("Failed to create notification for inventory creation failure:", notificationError);
+      }
+      
       return createEbayResponse(false, "eBay1", null, {
         ...categorizedError,
         step: "inventory_creation",
@@ -223,6 +289,19 @@ async function createEbayProduct(product) {
       );
     } catch (offerError) {
       const categorizedError = categorizeEbayError(offerError);
+      
+      // Create notification for offer creation failure
+      try {
+        await createNotification({
+          title: "eBay Offer Creation Failed",
+          message: `Failed to create offer for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: "eBay Account 1",
+          selledBy: product.selledBy || "EBAY1"
+        });
+      } catch (notificationError) {
+        console.error("Failed to create notification for offer creation failure:", notificationError);
+      }
+      
       return createEbayResponse(false, "eBay1", null, {
         ...categorizedError,
         step: "offer_creation",
@@ -242,6 +321,19 @@ async function createEbayProduct(product) {
       );
     } catch (publishError) {
       const categorizedError = categorizeEbayError(publishError);
+      
+      // Create notification for publishing failure
+      try {
+        await createNotification({
+          title: "eBay Publishing Failed",
+          message: `Failed to publish offer for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: "eBay Account 1",
+          selledBy: product.selledBy || "EBAY1"
+        });
+      } catch (notificationError) {
+        console.error("Failed to create notification for publishing failure:", notificationError);
+      }
+      
       return createEbayResponse(false, "eBay1", null, {
         ...categorizedError,
         step: "offer_publishing",
@@ -251,6 +343,7 @@ async function createEbayProduct(product) {
     }
 
     console.log(`✅ Created and published eBay product: ${sku}`);
+    
     return createEbayResponse(true, "eBay1", {
       sku, 
       offerId,
@@ -267,7 +360,7 @@ async function createEbayProduct(product) {
   }
 }
 
-async function createEbayProduct2(product) {
+async function createEbayProduct2(product, globalRequiredFields = {}) {
   try {
     console.log(
       `Starting eBay2 product creation for SKU: ${product.sku || "unknown"}`
@@ -282,18 +375,22 @@ async function createEbayProduct2(product) {
 
     // Truncate title to 80 characters for eBay requirements
     const title = (product.title || "Untitled Product").substring(0, 80);
-    const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
     const regularPrice = product.regularPrice || 0;
     const stockQuantity = product.stockQuantity || 0;
     const description = product.description || "";
     const categoryId = product.categoryId || "53159";
-    const size = product.size || "M";
-    const sizeType = product.sizeType || "Regular";
-    const type = product.type || "T-Shirt";
-    const department = product.department || "Men's Clothing";
-    const color = product.color || "Red";
+    
+    // Prepare dynamic aspects using global required fields
+    const aspects = {};
+    const dynamicAspects = prepareProductAspects(globalRequiredFields);
+    dynamicAspects.forEach(aspect => {
+      aspects[aspect.name] = aspect.values;
+    });
+    
+    // Add MPN as it's always required
+    aspects["MPN"] = ["Does not apply"];
 
     console.log(`eBay2: Creating inventory item for SKU: ${sku}`);
     // Step 1: Create or update inventory item (single attempt)
@@ -310,16 +407,7 @@ async function createEbayProduct2(product) {
           product: {
             title: title,
             description: description,
-            aspects: {
-              Brand: [brandName],
-              MPN: ["Does not apply"],
-              Size: [size],
-              SizeType: [sizeType],
-              Type: [type],
-              Department: [department],
-              Color: [color],
-              Style: ["Casual"]
-            },
+            aspects: aspects,
             imageUrls: images,
           },
         },
@@ -327,6 +415,19 @@ async function createEbayProduct2(product) {
       );
     } catch (inventoryError) {
       const categorizedError = categorizeEbayError(inventoryError);
+      
+      // Create notification for inventory creation failure
+      try {
+        await createNotification({
+          title: "eBay2 Inventory Creation Failed",
+          message: `Failed to create inventory for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: "eBay Account 2",
+          selledBy: product.selledBy || "EBAY1"
+        });
+      } catch (notificationError) {
+        console.error("Failed to create notification for inventory creation failure:", notificationError);
+      }
+      
       return createEbayResponse(false, "eBay2", null, {
         ...categorizedError,
         step: "inventory_creation",
@@ -368,6 +469,19 @@ async function createEbayProduct2(product) {
       );
     } catch (offerError) {
       const categorizedError = categorizeEbayError(offerError);
+      
+      // Create notification for offer creation failure
+      try {
+        await createNotification({
+          title: "eBay2 Offer Creation Failed",
+          message: `Failed to create offer for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: "eBay Account 2",
+          selledBy: product.selledBy || "EBAY2"
+        });
+      } catch (notificationError) {
+        console.error("Failed to create notification for offer creation failure:", notificationError);
+      }
+      
       return createEbayResponse(false, "eBay2", null, {
         ...categorizedError,
         step: "offer_creation",
@@ -387,6 +501,19 @@ async function createEbayProduct2(product) {
       );
     } catch (publishError) {
       const categorizedError = categorizeEbayError(publishError);
+      
+      // Create notification for publishing failure
+      try {
+        await createNotification({
+          title: "eBay2 Publishing Failed",
+          message: `Failed to publish offer for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: "eBay Account 2",
+          selledBy: product.selledBy || "EBAY2"
+        });
+      } catch (notificationError) {
+        console.error("Failed to create notification for publishing failure:", notificationError);
+      }
+      
       return createEbayResponse(false, "eBay2", null, {
         ...categorizedError,
         step: "offer_publishing",
@@ -396,6 +523,7 @@ async function createEbayProduct2(product) {
     }
 
     console.log(`✅ Created and published eBay2 product: ${sku}`);
+    
     return createEbayResponse(true, "eBay2", {
       sku, 
       offerId,
@@ -412,7 +540,7 @@ async function createEbayProduct2(product) {
   }
 }
 
-async function createEbayProduct3(product) {
+async function createEbayProduct3(product, globalRequiredFields = {}) {
   try {
     console.log(
       `Starting eBay3 product creation for SKU: ${product.sku || "unknown"}`
@@ -427,18 +555,22 @@ async function createEbayProduct3(product) {
 
     // Truncate title to 80 characters for eBay requirements
     const title = (product.title || "Untitled Product").substring(0, 80);
-    const brandName = "Generic Brand";
     const images = product.images || [];
     const sku = product.sku || `SKU-${Date.now()}`;
     const regularPrice = product.regularPrice || 0;
     const stockQuantity = product.stockQuantity || 0;
     const description = product.description || "";
     const categoryId = product.categoryId || "53159";
-    const size = product.size || "M";
-    const sizeType = product.sizeType || "Regular";
-    const type = product.type || "T-Shirt";
-    const department = product.department || "Men's Clothing";
-    const color = product.color || "Red";
+    
+    // Prepare dynamic aspects using global required fields
+    const aspects = {};
+    const dynamicAspects = prepareProductAspects(globalRequiredFields);
+    dynamicAspects.forEach(aspect => {
+      aspects[aspect.name] = aspect.values;
+    });
+    
+    // Add MPN as it's always required
+    aspects["MPN"] = ["Does not apply"];
 
     console.log(`eBay3: Creating inventory item for SKU: ${sku}`);
     // Step 1: Create or update inventory item (single attempt)
@@ -455,16 +587,7 @@ async function createEbayProduct3(product) {
           product: {
             title: title,
             description: description,
-            aspects: {
-              Brand: [brandName],
-              MPN: ["Does not apply"],
-              Size: [size],
-              SizeType: [sizeType],
-              Type: [type],
-              Department: [department],
-              Color: [color],
-              Style: ["Casual"]
-            },
+            aspects: aspects,
             imageUrls: images,
           },
         },
@@ -472,6 +595,26 @@ async function createEbayProduct3(product) {
       );
     } catch (inventoryError) {
       const categorizedError = categorizeEbayError(inventoryError);
+      
+      // Send notification for inventory creation failure
+      try {
+        await createNotification({
+          type: 'error',
+          title: 'eBay3 Inventory Creation Failed',
+          message: `Failed to create inventory for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: 'eBay3 Inventory Creation',
+          selledBy: product.selledBy || "EBAY3",
+          metadata: {
+            platform: 'eBay3',
+            sku: sku,
+            step: 'inventory_creation',
+            error: categorizedError
+          }
+        });
+      } catch (notificationError) {
+        console.error('Failed to create notification for inventory creation failure:', notificationError);
+      }
+      
       return createEbayResponse(false, "eBay3", null, {
         ...categorizedError,
         step: "inventory_creation",
@@ -512,6 +655,26 @@ async function createEbayProduct3(product) {
       );
     } catch (offerError) {
       const categorizedError = categorizeEbayError(offerError);
+      
+      // Send notification for offer creation failure
+      try {
+        await createNotification({
+          type: 'error',
+          title: 'eBay3 Offer Creation Failed',
+          message: `Failed to create offer for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: 'eBay3 Offer Creation',
+          selledBy: product.selledBy || "EBAY3",
+          metadata: {
+            platform: 'eBay3',
+            sku: sku,
+            step: 'offer_creation',
+            error: categorizedError
+          }
+        });
+      } catch (notificationError) {
+        console.error('Failed to create notification for offer creation failure:', notificationError);
+      }
+      
       return createEbayResponse(false, "eBay3", null, {
         ...categorizedError,
         step: "offer_creation",
@@ -531,6 +694,27 @@ async function createEbayProduct3(product) {
       );
     } catch (publishError) {
       const categorizedError = categorizeEbayError(publishError);
+      
+      // Send notification for publishing failure
+      try {
+        await createNotification({
+          type: 'error',
+          title: 'eBay3 Publishing Failed',
+          message: `Failed to publish offer ${offerId} for SKU: ${sku}. Error: ${categorizedError.message}`,
+          location: 'eBay3 Publishing',
+          selledBy: product.selledBy || "EBAY3",
+          metadata: {
+            platform: 'eBay3',
+            sku: sku,
+            offerId: offerId,
+            step: 'offer_publishing',
+            error: categorizedError
+          }
+        });
+      } catch (notificationError) {
+        console.error('Failed to create notification for publishing failure:', notificationError);
+      }
+      
       return createEbayResponse(false, "eBay3", null, {
         ...categorizedError,
         step: "offer_publishing",
@@ -540,6 +724,7 @@ async function createEbayProduct3(product) {
     }
 
     console.log(`✅ Created and published eBay3 product: ${sku}`);
+    
     return createEbayResponse(true, "eBay3", {
       sku, 
       offerId,

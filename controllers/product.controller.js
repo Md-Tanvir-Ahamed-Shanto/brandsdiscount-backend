@@ -5,6 +5,20 @@ const {
   createEbayProduct3,
 } = require("../services/ebayCreateProduct");
 
+// Load global required fields for eBay product creation
+const fs = require("fs");
+const path = require("path");
+const globalRequiredFieldsPath = path.join(__dirname, "..", "ebay_required_fields_corrected.json");
+let globalRequiredFields = [];
+try {
+  const data = fs.readFileSync(globalRequiredFieldsPath, "utf8");
+  const parsedData = JSON.parse(data);
+  globalRequiredFields = parsedData.globalRequiredFields || [];
+} catch (error) {
+  console.error("Error loading global required fields:", error);
+  globalRequiredFields = ["Brand", "Color", "Department"]; // Fallback to basic required fields
+}
+
 const {
   ebayUpdateStock,
   ebayUpdateStock2,
@@ -984,7 +998,7 @@ const createProduct = async (req, res) => {
       if (ebayOne) {
         console.log("Attempting to create product on eBay1 platform");
         ebayPromises.push(
-          createEbayProduct(eBayProductForService)
+          createEbayProduct(eBayProductForService, globalRequiredFields)
             .then((res) => {
               if (res.success) {
                 console.log(
@@ -1022,7 +1036,7 @@ const createProduct = async (req, res) => {
       if (ebayTwo) {
         console.log("Attempting to create product on eBay2 platform");
         ebayPromises.push(
-          createEbayProduct2(eBayProductForService)
+          createEbayProduct2(eBayProductForService, globalRequiredFields)
             .then((res) => {
               if (res.success) {
                 console.log(
@@ -1060,7 +1074,7 @@ const createProduct = async (req, res) => {
       if (ebayThree) {
         console.log("Attempting to create product on eBay3 platform");
         ebayPromises.push(
-          createEbayProduct3(eBayProductForService)
+          createEbayProduct3(eBayProductForService, globalRequiredFields)
             .then((res) => {
               if (res.success) {
                 console.log(
@@ -1680,7 +1694,7 @@ const updateProduct = async (req, res) => {
 
       if (ebayOne) {
         ebayPromises.push(
-          createEbayProduct(eBayProductForService)
+          createEbayProduct(eBayProductForService, globalRequiredFields)
             .then((res) => {
               if (res.success) {
                 return { platform: "eBayOne", value: res };
@@ -1706,7 +1720,7 @@ const updateProduct = async (req, res) => {
       }
       if (ebayTwo) {
         ebayPromises.push(
-          createEbayProduct2(eBayProductForService)
+          createEbayProduct2(eBayProductForService, globalRequiredFields)
             .then((res) => {
               if (res.success) {
                 return { platform: "eBayTwo", value: res };
@@ -1732,7 +1746,7 @@ const updateProduct = async (req, res) => {
       }
       if (ebayThree) {
         ebayPromises.push(
-          createEbayProduct3(eBayProductForService)
+          createEbayProduct3(eBayProductForService, globalRequiredFields)
             .then((res) => {
               if (res.success) {
                 return { platform: "eBayThree", value: res };
