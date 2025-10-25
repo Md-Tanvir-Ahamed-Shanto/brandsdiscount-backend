@@ -26,4 +26,7 @@ emailRoutes.post('/admin/platform-sale-alert', emailController.sendAdminPlatform
 emailRoutes.post('/admin/physical-store-sale-confirmation', emailController.sendAdminPhysicalStoreSaleConfirmationController);
 emailRoutes.post('/admin/inventory-sync-failure-alert', emailController.sendAdminInventorySyncFailureAlertController);
 
+// --- Dashboard to Customer Email ---
+emailRoutes.post('/order-update', emailController.sendOrderUpdateEmailController);
+
 module.exports = emailRoutes;

@@ -240,3 +240,30 @@ exports.sendAdminInventorySyncFailureAlertController = async (req, res) => {
         handleError(res, error, 'Failed to send admin inventory sync failure alert email');
     }
 };
+
+// 7.1. Order Update Email (from Admin Dashboard)
+exports.sendOrderUpdateEmailController = async (req, res) => {
+    const { toEmail, subject, customerName, orderNumber, message } = req.body;
+    const recipient = toEmail;
+    
+    if (!recipient || !orderNumber || !message) {
+        return res.status(400).json({ message: 'Recipient email, order number, and message are required.' });
+    }
+    
+    try {
+        // Use the generic email sending function or create a specific one in email service
+        await emailService.sendCustomEmail(
+            recipient,
+            subject || `Update for your order ${orderNumber}`,
+            message,
+            {
+                customerName: customerName || 'Valued Customer',
+                orderNumber: orderNumber
+            }
+        );
+        
+        res.status(200).json({ message: `Order update email sent to ${recipient}` });
+    } catch (error) {
+        handleError(res, error, 'Failed to send order update email');
+    }
+};

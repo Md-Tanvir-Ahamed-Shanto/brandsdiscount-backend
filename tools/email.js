@@ -42,6 +42,40 @@ async function sendEmail(to, from, subject, htmlContent) {
   }
 }
 
+// Custom email function for order updates from admin dashboard
+async function sendCustomEmail(to, subject, message, data = {}) {
+  try {
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${process.env.FRONTEND_URL || 'https://brandsdiscounts.com'}/logo.png" alt="Brands Discounts Logo" style="max-width: 150px;">
+        </div>
+        <h2 style="color: #333;">Order Update</h2>
+        <p>Hello ${data.customerName || 'Valued Customer'},</p>
+        <p>Regarding your order #${data.orderNumber}:</p>
+        <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 15px 0;">
+          ${message.replace(/\n/g, '<br>')}
+        </div>
+        <p>If you have any questions, please reply to this email or contact our customer support.</p>
+        <p>Thank you for shopping with us!</p>
+        <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; text-align: center; color: #777; font-size: 12px;">
+          <p>© ${new Date().getFullYear()} Brands Discounts. All rights reserved.</p>
+        </div>
+      </div>
+    `;
+    
+    return await sendEmail(
+      to,
+      process.env.EMAIL_FROM || 'support@brandsdiscounts.com',
+      subject,
+      htmlContent
+    );
+  } catch (error) {
+    console.error('Error sending custom email:', error);
+    throw error;
+  }
+}
+
 
 
 async function sendWelcomeEmail(customerEmail, customerName) {
@@ -344,5 +378,6 @@ module.exports = {
   // New email functions
   sendNewsletterOptInEmail,
   sendOrderOfferUsedEmail,
-  sendOrderOfferNotUsedEmail
+  sendOrderOfferNotUsedEmail,
+  sendCustomEmail
 };
