@@ -35,7 +35,9 @@ router.post('/create-checkout-session', async (req, res) => {
             billingAddress,
             finalAmount,
             appliedPoints = 0,
-            metadata = {}
+            metadata = {},
+            customerEmail,
+            ui_mode
         } = req.body;
 
         // Validate required fields
@@ -52,6 +54,9 @@ router.post('/create-checkout-session', async (req, res) => {
                 error: 'Valid final amount is required'
             });
         }
+        
+        // Ensure we have a valid email
+        const email = customerEmail || 'customer@example.com';
 
         // Prepare line items for Stripe
         const lineItems = cartItems.map(item => ({
@@ -98,7 +103,7 @@ router.post('/create-checkout-session', async (req, res) => {
             },
 
             // Customer information
-            customer_email: req.body.customerEmail,
+            customer_email: email,
             
             // URLs
             success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
