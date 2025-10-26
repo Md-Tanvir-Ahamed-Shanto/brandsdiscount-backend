@@ -89,6 +89,8 @@ const stripeWebhook = require("./webhook/stripeWebhook");
 
 app.use("/api/stripe", stripeRoutes);
 app.use("/webhook", stripeWebhook);
+// Add the API prefix route for Stripe webhook
+app.use("/api/stripe", stripeWebhook);
 
 
 app.get("/ebay/auth/callback", async (req, res) => {
