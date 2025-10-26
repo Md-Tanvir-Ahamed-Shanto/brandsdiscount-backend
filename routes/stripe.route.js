@@ -7,7 +7,17 @@ try {
     if (!process.env.STRIPE_SECRET_KEY) {
         throw new Error('STRIPE_SECRET_KEY environment variable is required');
     }
-    stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    
+    // Check if we're using a live key that might be malformed
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (apiKey.startsWith('sk_live_') && apiKey.length > 100) {
+        console.warn('Warning: Stripe live key appears to be malformed or contains extra characters');
+    }
+    
+    // Clean the key by trimming any whitespace
+    const cleanKey = apiKey.trim();
+    stripe = require('stripe')(cleanKey);
+    console.log('Stripe initialized successfully with key type:', cleanKey.startsWith('sk_live') ? 'live' : 'test');
 } catch (error) {
     console.error('Stripe initialization error:', error.message);
     // Don't crash the server, but log the error
