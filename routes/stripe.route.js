@@ -56,7 +56,7 @@ router.post('/create-checkout-session', async (req, res) => {
         }
         
         // Ensure we have a valid email
-        const email = customerEmail || 'customer@example.com';
+        const email = customerEmail || 'customer@brandsdiscounts.com';
 
         // Prepare line items for Stripe
         const lineItems = cartItems.map(item => ({
@@ -103,7 +103,7 @@ router.post('/create-checkout-session', async (req, res) => {
             },
 
             // Customer information
-            customer_email: email,
+            customer_email: email, // Using validated email variable
             
             // URLs
             success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
