@@ -277,23 +277,6 @@ function createAddFixedPriceItemXML(product, globalRequiredFields = {}, authToke
   return xml;
 }
 
-function createReviseInventoryStatusXML(itemId, quantity, authToken) {
-  const xml = `<?xml version="1.0" encoding="utf-8"?>
-<ReviseInventoryStatusRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-  <RequesterCredentials>
-    <eBayAuthToken>${authToken}</eBayAuthToken>
-  </RequesterCredentials>
-  <ErrorLanguage>en_US</ErrorLanguage>
-  <WarningLevel>High</WarningLevel>
-  <InventoryStatus>
-    <ItemID>${itemId}</ItemID>
-    <Quantity>${quantity}</Quantity>
-  </InventoryStatus>
-</ReviseInventoryStatusRequest>`;
-
-  return xml;
-}
-
 function createReviseItemXML(itemId, quantity, authToken) {
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <ReviseItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
@@ -309,6 +292,109 @@ function createReviseItemXML(itemId, quantity, authToken) {
 </ReviseItemRequest>`;
 
   return xml;
+}
+
+function createGetMyeBaySellingXML(authToken, sku) {
+  const xml = `<?xml version="1.0" encoding="utf-8"?>
+<GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials>
+    <eBayAuthToken>${authToken}</eBayAuthToken>
+  </RequesterCredentials>
+  <ErrorLanguage>en_US</ErrorLanguage>
+  <WarningLevel>High</WarningLevel>
+  <ActiveList>
+    <Include>true</Include>
+    <Pagination>
+      <EntriesPerPage>200</EntriesPerPage>
+      <PageNumber>1</PageNumber>
+    </Pagination>
+  </ActiveList>
+  <DetailLevel>ReturnAll</DetailLevel>
+</GetMyeBaySellingRequest>`;
+
+  return xml;
+}
+
+async function getItemIdBySku(sku, accountNumber = 1) {
+  try {
+    console.log(`Getting ItemID for SKU: ${sku} on eBay Account ${accountNumber}`);
+    
+    let token;
+    switch(accountNumber) {
+      case 1:
+        token = await getValidAccessToken();
+        break;
+      case 2:
+        token = await getValidAccessToken2();
+        break;
+      case 3:
+        token = await getValidAccessToken3();
+        break;
+      default:
+        throw new Error(`Invalid account number: ${accountNumber}. Must be 1, 2, or 3.`);
+    }
+    
+    const xml = createGetMyeBaySellingXML(token, sku);
+    const response = await sendTradingAPIRequest(xml, 'GetMyeBaySelling');
+    
+    if (response.GetMyeBaySellingResponse && response.GetMyeBaySellingResponse.Errors) {
+      const error = response.GetMyeBaySellingResponse.Errors;
+      throw new Error(`Failed to get ItemID for SKU ${sku}: ${error.LongMessage || error.ShortMessage}`);
+    }
+    
+    const activeList = response.GetMyeBaySellingResponse.ActiveList;
+    if (!activeList || !activeList.ItemArray || !activeList.ItemArray.Item) {
+      throw new Error(`No active listings found for SKU: ${sku}`);
+    }
+    
+    const items = Array.isArray(activeList.ItemArray.Item) 
+      ? activeList.ItemArray.Item 
+      : [activeList.ItemArray.Item];
+    
+    const item = items.find(item => item.SKU === sku);
+    if (!item) {
+      throw new Error(`SKU ${sku} not found in active listings`);
+    }
+    
+    console.log(`Found ItemID: ${item.ItemID} for SKU: ${sku}`);
+    return item.ItemID;
+    
+  } catch (error) {
+    console.error(`Error getting ItemID for SKU ${sku}:`, error.message);
+    throw error;
+  }
+}
+
+async function updateEbayStockBySku(sku, stockQuantity, accountNumber = 1) {
+  try {
+    console.log(`Starting SKU-based stock update for SKU: ${sku}, Quantity: ${stockQuantity} on Account ${accountNumber}`);
+    
+    const itemId = await getItemIdBySku(sku, accountNumber);
+    
+    if (!itemId) {
+      throw new Error(`Could not find ItemID for SKU: ${sku}`);
+    }
+    
+    console.log(`Found ItemID: ${itemId} for SKU: ${sku}, proceeding with stock update`);
+    
+    const result = await updateEbayStockTrading(itemId, stockQuantity, accountNumber);
+    
+    return {
+      ...result,
+      sku: sku,
+      itemId: itemId,
+      message: `Successfully updated stock for SKU ${sku} (ItemID: ${itemId}) to ${stockQuantity} units`
+    };
+    
+  } catch (error) {
+    console.error(`Error updating stock by SKU ${sku}:`, error.message);
+    const categorizedError = categorizeTradingError(error);
+    return createTradingResponse(false, `eBay${accountNumber}`, null, {
+      ...categorizedError,
+      step: "sku_lookup_or_update",
+      sku: sku
+    });
+  }
 }
 
 async function sendTradingAPIRequest(xml, callName) {
@@ -577,9 +663,12 @@ async function manualUpdateEbayStockTrading(itemId, stockQuantity = 0, ebayAccou
 module.exports = {
   createEbayProductTrading,
   updateEbayStockTrading,
+  updateEbayStockBySku,
+  getItemIdBySku,
   manualUpdateEbayStockTrading,
   sendTradingAPIRequest,
   createAddFixedPriceItemXML,
   createReviseInventoryStatusXML,
-  createReviseItemXML
+  createReviseItemXML,
+  createGetMyeBaySellingXML
 };
