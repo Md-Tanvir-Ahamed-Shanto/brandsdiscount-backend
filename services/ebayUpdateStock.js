@@ -80,10 +80,26 @@ async function ebayUpdateStock(sku, stockQuantity, qty) {
         `🗑️ Deleting inventory item for SKU ${sku} on eBay Account 1 (stock = 0)`
       );
 
-      const res = await axios.delete(DELETE_API_URL, { headers });
-
-      console.log("✅ Delete Response:", res.status, res.statusText);
-      console.log(`✅ Inventory item deleted for SKU: ${sku}`);
+      try {
+        const res = await axios.delete(DELETE_API_URL, { headers });
+        console.log("✅ Delete Response:", res.status, res.statusText);
+        console.log(`✅ Inventory item deleted for SKU: ${sku}`);
+      } catch (deleteError) {
+        // Check if error is "resource not found" (404)
+        if (deleteError.response && deleteError.response.status === 404) {
+          console.log(`ℹ️ Inventory item for SKU ${sku} not found on eBay Account 1. It may have been already deleted or never existed.`);
+          // Consider this a success since the end goal (item not in inventory) is achieved
+          return {
+            success: true,
+            sku: sku,
+            newQuantity: 0,
+            platform: "eBay Account 1",
+            message: `Inventory item for SKU ${sku} not found on eBay Account 1. No deletion needed.`,
+          };
+        }
+        // For other errors, rethrow to be caught by the outer catch block
+        throw deleteError;
+      }
 
       return {
         success: true,
@@ -218,10 +234,26 @@ async function ebayUpdateStock2(sku, stockQuantity, qty) {
         `🗑️ Deleting inventory item for SKU ${sku} on eBay Account 2 (stock = 0)`
       );
 
-      const res = await axios.delete(DELETE_API_URL, { headers });
-
-      console.log("✅ Delete Response:", res.status, res.statusText);
-      console.log(`✅ Inventory item deleted for SKU: ${sku}`);
+      try {
+        const res = await axios.delete(DELETE_API_URL, { headers });
+        console.log("✅ Delete Response:", res.status, res.statusText);
+        console.log(`✅ Inventory item deleted for SKU: ${sku}`);
+      } catch (deleteError) {
+        // Check if error is "resource not found" (404)
+        if (deleteError.response && deleteError.response.status === 404) {
+          console.log(`ℹ️ Inventory item for SKU ${sku} not found on eBay Account 2. It may have been already deleted or never existed.`);
+          // Consider this a success since the end goal (item not in inventory) is achieved
+          return {
+            success: true,
+            sku: sku,
+            newQuantity: 0,
+            platform: "eBay Account 2",
+            message: `Inventory item for SKU ${sku} not found on eBay Account 2. No deletion needed.`,
+          };
+        }
+        // For other errors, rethrow to be caught by the outer catch block
+        throw deleteError;
+      }
 
       return {
         success: true,
@@ -355,10 +387,26 @@ async function ebayUpdateStock3(sku, stockQuantity, qty) {
         `🗑️ Deleting inventory item for SKU ${sku} on eBay Account 3 (stock = 0)`
       );
 
-      const res = await axios.delete(DELETE_API_URL, { headers });
-
-      console.log("✅ Delete Response:", res.status, res.statusText);
-      console.log(`✅ Inventory item deleted for SKU: ${sku}`);
+      try {
+        const res = await axios.delete(DELETE_API_URL, { headers });
+        console.log("✅ Delete Response:", res.status, res.statusText);
+        console.log(`✅ Inventory item deleted for SKU: ${sku}`);
+      } catch (deleteError) {
+        // Check if error is "resource not found" (404)
+        if (deleteError.response && deleteError.response.status === 404) {
+          console.log(`ℹ️ Inventory item for SKU ${sku} not found on eBay Account 3. It may have been already deleted or never existed.`);
+          // Consider this a success since the end goal (item not in inventory) is achieved
+          return {
+            success: true,
+            sku: sku,
+            newQuantity: 0,
+            platform: "eBay Account 3",
+            message: `Inventory item for SKU ${sku} not found on eBay Account 3. No deletion needed.`,
+          };
+        }
+        // For other errors, rethrow to be caught by the outer catch block
+        throw deleteError;
+      }
 
       return {
         success: true,
@@ -553,14 +601,27 @@ async function manulayUpdateEbayStock(
   results.success = successfulAccounts.length > 0;
 
   if (results.success) {
-    results.message = `Successfully updated inventory for SKU ${sku} to ${stockQuantity} units on ${successfulAccounts.length} eBay account(s)`;
+    // Customize message based on operation type (update or delete)
+    if (stockQuantity === 0) {
+      results.message = `Successfully processed inventory deletion for SKU ${sku} on ${successfulAccounts.length} eBay account(s)`;
+    } else {
+      results.message = `Successfully updated inventory for SKU ${sku} to ${stockQuantity} units on ${successfulAccounts.length} eBay account(s)`;
+    }
+    
     if (results.errors.length > 0) {
       results.message += `. Some accounts failed: ${results.errors.join(", ")}`;
     }
   } else {
-    results.message = `Failed to update inventory for SKU ${sku} on all eBay accounts: ${results.errors.join(
-      ", "
-    )}`;
+    // Customize error message based on operation type
+    if (stockQuantity === 0) {
+      results.message = `Failed to delete inventory for SKU ${sku} on eBay accounts: ${results.errors.join(
+        ", "
+      )}`;
+    } else {
+      results.message = `Failed to update inventory for SKU ${sku} on eBay accounts: ${results.errors.join(
+        ", "
+      )}`;
+    }
     throw new Error(results.message);
   }
 
