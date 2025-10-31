@@ -26,6 +26,6 @@ orderRoutes.put("/:id",verifyUser, ensureRoleAdmin, updateOrder);
 
 // Delete an order by ID
 orderRoutes.delete("/:id",verifyUser, ensureRoleAdmin, deleteOrder);
-orderRoutes.post(":id/send-email",verifyUser, ensureRoleAdmin, sendOrderEmail);
+orderRoutes.post("/:id/send-email", verifyUser, ensureRoleAdmin, sendOrderEmail);
 
 module.exports = orderRoutes;
