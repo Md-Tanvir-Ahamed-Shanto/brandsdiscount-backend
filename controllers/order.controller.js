@@ -439,86 +439,24 @@ const updateOrderStatus = async (req, res) => {
 };
 
 const sendOrderEmail = async (req, res) => {
-  const { orderId, emailType } = req.body;
+  const { body, to,subject,from = "shipping@brandsdiscounts.com" } = req.body;
 
-  if (!orderId || !emailType) {
-    return res.status(400).json({ error: "Order ID and email type are required" });
+  if (!body || !to || !subject) {
+    return res.status(400).json({ error: "Body, to, and subject are required" });
   }
 
   try {
-    const order = await prisma.order.findUnique({
-      where: { orderId },
-      include: {
-        orderDetails: true,
-        user: true,
-      },
+    
+    await sendEmail({
+      to,
+      from,
+      subject,
+      body,
     });
-
-    if (!order) {
-      return res.status(404).json({ error: "Order not found" });
-    }
-
-    if (!order.user || !order.user.email) {
-      return res.status(400).json({ error: "User email not found for this order" });
-    }
-
-    let emailSent = false;
-    const customerName = order.user.name || 'Valued Customer';
-
-    switch (emailType) {
-      case 'confirmation':
-        await sendOrderConfirmationEmail(
-          order.user.email,
-          customerName,
-          order.orderId,
-          order.orderDetails,
-          order.totalAmount
-        );
-        emailSent = true;
-        break;
-      case 'processing':
-        await sendOrderProcessingEmail(
-          order.user.email,
-          customerName,
-          order.orderId
-        );
-        emailSent = true;
-        break;
-      case 'shipped':
-        await sendOrderShippedEmail(
-          order.user.email,
-          customerName,
-          order.orderId,
-          order.trackingNumber || 'Not available'
-        );
-        emailSent = true;
-        break;
-      case 'delivered':
-        await sendOrderDeliveredEmail(
-          order.user.email,
-          customerName,
-          order.orderId
-        );
-        emailSent = true;
-        break;
-      case 'cancelled':
-        await sendOrderCancelledEmail(
-          order.user.email,
-          customerName,
-          order.orderId
-        );
-        emailSent = true;
-        break;
-      default:
-        return res.status(400).json({ error: "Invalid email type" });
-    }
-
-    if (emailSent) {
-      return res.status(200).json({ message: `${emailType} email sent successfully` });
-    }
+    res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
-    console.error(`Error sending ${emailType} email:`, error);
-    return res.status(500).json({ error: `Failed to send ${emailType} email` });
+    console.error("Error sending email:", error);
+    res.status(500).json({ error: "Could not send email." });
   }
 };
 
