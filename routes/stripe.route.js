@@ -50,19 +50,42 @@ router.post('/create-checkout-session', async (req, res) => {
             ui_mode
         } = req.body;
 
-        // Validate required fields
+        // Enhanced validation with specific error messages
         if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
             return res.status(400).json({
                 success: false,
-                error: 'Cart items are required'
+                error: 'Cart items are required and cannot be empty'
             });
         }
 
-        if (!finalAmount || finalAmount <= 0) {
+        if (!finalAmount || typeof finalAmount !== 'number' || finalAmount <= 0) {
             return res.status(400).json({
                 success: false,
-                error: 'Valid final amount is required'
+                error: 'Valid final amount is required and must be greater than 0'
             });
+        }
+
+        // Validate cart items structure
+        for (let i = 0; i < cartItems.length; i++) {
+            const item = cartItems[i];
+            if (!item.title && !item.name) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Cart item ${i + 1} is missing a title or name`
+                });
+            }
+            if (!item.salePrice && !item.price) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Cart item ${i + 1} is missing price information`
+                });
+            }
+            if (!item.quantity || item.quantity <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: `Cart item ${i + 1} has invalid quantity`
+                });
+            }
         }
         
         // Get user's actual email if userId is provided
@@ -78,6 +101,7 @@ router.post('/create-checkout-session', async (req, res) => {
                 }
             } catch (error) {
                 console.error('Error fetching user email:', error);
+                // Don't fail the request, just log the error
             }
         }
         
@@ -86,28 +110,55 @@ router.post('/create-checkout-session', async (req, res) => {
             email = 'customer@brandsdiscounts.com';
         }
 
-        // Prepare line items for Stripe
-        const lineItems = cartItems.map(item => ({
-            price_data: {
-                currency: 'usd',
-                product_data: {
-                    name: item.title || item.name,
-                    description: item.description || `${item.brandName || ''} - ${item.color || ''} - ${item.sizeType || item.size || ''}`.trim(),
-                    images: item.imageUrl ? [item.imageUrl] : [],
-                    metadata: {
-                        productId: item.id?.toString() || '',
-                        sku: item.sku || '',
-                        color: item.color || '',
-                        size: item.sizeType || item.size || ''
-                    }
-                },
-                unit_amount: Math.round((item.salePrice || item.price) * 100) // Convert to cents
-            },
-            quantity: item.quantity || 1
-        }));
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid email format'
+            });
+        }
 
-        // Create checkout session
-        const session = await stripe.checkout.sessions.create({
+        // Prepare line items for Stripe with enhanced validation
+        const lineItems = cartItems.map((item, index) => {
+            const price = item.salePrice || item.price;
+            const unitAmount = Math.round(price * 100); // Convert to cents
+            
+            if (unitAmount <= 0) {
+                throw new Error(`Invalid price for item ${index + 1}: ${price}`);
+            }
+
+            return {
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: (item.title || item.name).substring(0, 100), // Stripe limit
+                        description: `${item.brandName || ''} - ${item.color || ''} - ${item.sizeType || item.size || ''}`.trim().substring(0, 300), // Stripe limit
+                        images: item.imageUrl ? [item.imageUrl] : [],
+                        metadata: {
+                            productId: (item.id?.toString() || '').substring(0, 500),
+                            sku: (item.sku || '').substring(0, 500),
+                            color: (item.color || '').substring(0, 500),
+                            size: (item.sizeType || item.size || '').substring(0, 500)
+                        }
+                    },
+                    unit_amount: unitAmount
+                },
+                quantity: Math.max(1, Math.floor(item.quantity || 1)) // Ensure positive integer
+            };
+        });
+
+        // Validate total amount matches line items
+        const calculatedTotal = lineItems.reduce((sum, item) => {
+            return sum + (item.price_data.unit_amount * item.quantity);
+        }, 0) / 100; // Convert back to dollars
+
+        if (Math.abs(calculatedTotal - finalAmount) > 0.01) { // Allow for small rounding differences
+            console.warn(`Amount mismatch: calculated ${calculatedTotal}, provided ${finalAmount}`);
+        }
+
+        // Create checkout session with enhanced error handling
+        const sessionConfig = {
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
@@ -115,12 +166,15 @@ router.post('/create-checkout-session', async (req, res) => {
             // Payment settings
             payment_intent_data: {
                 capture_method: 'automatic',
-                setup_future_usage: 'off_session', // For future payments
+                setup_future_usage: 'off_session',
                 metadata: {
-                    userId: userId?.toString() || '',
+                    userId: (userId?.toString() || '').substring(0, 500),
                     appliedPoints: appliedPoints.toString(),
                     orderType: 'ecommerce',
-                    ...metadata
+                    timestamp: new Date().toISOString(),
+                    ...Object.fromEntries(
+                        Object.entries(metadata).map(([k, v]) => [k, String(v).substring(0, 500)])
+                    )
                 }
             },
 
@@ -131,29 +185,32 @@ router.post('/create-checkout-session', async (req, res) => {
             },
 
             // Customer information
-            customer_email: email, // Using validated email variable
+            customer_email: email,
             
-            // URLs
+            // URLs with fallback
             success_url: `${process.env.FRONTEND_URL || process.env.CLIENT_URL || 'https://brandsdiscounts.com'}/success?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${process.env.FRONTEND_URL || process.env.CLIENT_URL || 'https://brandsdiscounts.com'}/checkout`,
 
             // Additional metadata
             metadata: {
-                userId: userId?.toString() || '',
+                userId: (userId?.toString() || '').substring(0, 500),
                 appliedPoints: appliedPoints.toString(),
                 cartItemsCount: cartItems.length.toString(),
-                originalAmount: (finalAmount + (appliedPoints / 100)).toString(), // Add back points for tracking
-                finalAmount: finalAmount.toString()
+                originalAmount: (finalAmount + (appliedPoints / 100)).toString(),
+                finalAmount: finalAmount.toString(),
+                timestamp: new Date().toISOString()
             },
 
-            // Automatic tax calculation (optional)
+            // Automatic tax calculation
             automatic_tax: {
-                enabled: false // Set to true if you want Stripe to calculate taxes
+                enabled: false
             },
 
             // Expires in 24 hours
             expires_at: Math.floor(Date.now() / 1000) + (24 * 60 * 60)
-        });
+        };
+
+        const session = await stripe.checkout.sessions.create(sessionConfig);
 
         // Store session info in database for tracking
         try {
@@ -192,10 +249,55 @@ router.post('/create-checkout-session', async (req, res) => {
 
     } catch (error) {
         console.error('Stripe checkout session creation error:', error);
-        res.status(500).json({
+        
+        // Handle different types of errors
+        let statusCode = 500;
+        let errorMessage = 'Failed to create checkout session';
+        let errorCode = 'UNKNOWN_ERROR';
+
+        if (error.type === 'StripeCardError') {
+            statusCode = 400;
+            errorMessage = 'Your card was declined. Please try a different payment method.';
+            errorCode = 'CARD_DECLINED';
+        } else if (error.type === 'StripeRateLimitError') {
+            statusCode = 429;
+            errorMessage = 'Too many requests. Please try again in a moment.';
+            errorCode = 'RATE_LIMIT';
+        } else if (error.type === 'StripeInvalidRequestError') {
+            statusCode = 400;
+            errorMessage = 'Invalid request parameters. Please check your cart and try again.';
+            errorCode = 'INVALID_REQUEST';
+        } else if (error.type === 'StripeAPIError') {
+            statusCode = 502;
+            errorMessage = 'Payment service temporarily unavailable. Please try again.';
+            errorCode = 'API_ERROR';
+        } else if (error.type === 'StripeConnectionError') {
+            statusCode = 503;
+            errorMessage = 'Network connection error. Please check your connection and try again.';
+            errorCode = 'CONNECTION_ERROR';
+        } else if (error.type === 'StripeAuthenticationError') {
+            statusCode = 500;
+            errorMessage = 'Payment configuration error. Please contact support.';
+            errorCode = 'AUTH_ERROR';
+        } else if (error.message && error.message.includes('Invalid price')) {
+            statusCode = 400;
+            errorMessage = 'Invalid product pricing. Please refresh your cart and try again.';
+            errorCode = 'INVALID_PRICE';
+        } else if (error.message && error.message.includes('email')) {
+            statusCode = 400;
+            errorMessage = 'Invalid email address. Please check your email and try again.';
+            errorCode = 'INVALID_EMAIL';
+        }
+
+        res.status(statusCode).json({
             success: false,
-            error: 'Failed to create checkout session',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            error: errorMessage,
+            code: errorCode,
+            details: process.env.NODE_ENV === 'development' ? {
+                message: error.message,
+                type: error.type,
+                stack: error.stack
+            } : undefined
         });
     }
 });
