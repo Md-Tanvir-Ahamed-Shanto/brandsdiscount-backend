@@ -6,7 +6,8 @@ const {
   sendOrderProcessingEmail, 
   sendOrderShippedEmail,
   sendOrderDeliveredEmail,
-  sendOrderCancelledEmail
+  sendOrderCancelledEmail,
+  sendEmail
 } = require("../tools/email.js");
 
 // Create a new order
