@@ -22,7 +22,7 @@ async function renderEmailTemplate(templateName, data) {
 async function sendEmail(to, from, subject, htmlContent) {
   try {
     const data = await resend.emails.send({
-      from: from,
+      from: "noreply@brandsdiscounts.com",
       to: to,
       subject: subject,
       html: htmlContent,
@@ -66,7 +66,7 @@ async function sendCustomEmail(to, subject, message, data = {}) {
     
     return await sendEmail(
       to,
-      process.env.EMAIL_FROM || 'support@brandsdiscounts.com',
+      "noreply@brandsdiscounts.com",
       subject,
       htmlContent
     );
