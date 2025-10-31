@@ -440,20 +440,18 @@ const updateOrderStatus = async (req, res) => {
 };
 
 const sendOrderEmail = async (req, res) => {
-  const { body, to,subject,from = "shipping@brandsdiscounts.com" } = req.body;
+  const { body, to, subject, from = "shipping@brandsdiscounts.com" } = req.body;
+
+  // Log the received data for debugging
+  console.log("Received email data:", { body, to, subject, from });
 
   if (!body || !to || !subject) {
     return res.status(400).json({ error: "Body, to, and subject are required" });
   }
 
   try {
-    
-    await sendEmail({
-      to,
-      from,
-      subject,
-      body,
-    });
+    // Call sendEmail with individual parameters: (to, from, subject, htmlContent)
+    await sendEmail(to, from, subject, body);
     res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
     console.error("Error sending email:", error);
