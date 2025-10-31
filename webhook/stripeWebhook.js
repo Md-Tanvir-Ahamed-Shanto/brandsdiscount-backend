@@ -12,7 +12,7 @@ try {
     console.error('Stripe initialization error:', error.message);
 }
 
-const prisma = require('../db/connection');
+const { prisma } = require('../db/connection');
 const { sendOrderConfirmationEmail } = require('../utils/emailSender');
 
 // Webhook endpoint secret
@@ -120,42 +120,11 @@ async function handleCheckoutSessionCompleted(session) {
             return;
         }
 
-        // Create order in database
-        const orderData = {
-            userId: dbSession.userId,
-            totalAmount: dbSession.amount,
-            status: 'confirmed',
-            paymentStatus: 'paid',
-            paymentMethod: 'stripe',
-            stripeSessionId: session.id,
-            stripePaymentIntentId: session.payment_intent,
-            customerEmail: session.customer_details?.email,
-            customerName: session.customer_details?.name,
-            appliedPoints: dbSession.appliedPoints || 0,
-            shippingAddress: dbSession.shippingAddress ? JSON.parse(dbSession.shippingAddress) : null,
-            billingAddress: dbSession.billingAddress ? JSON.parse(dbSession.billingAddress) : null,
-            createdAt: new Date()
-        };
-
-        const order = await prisma.order.create({
-            data: orderData
-        });
-
-        // Create order items
+        // Note: Order creation is handled by the frontend success page
+        // The webhook only updates the session status and handles stock/points
+        // This prevents duplicate order creation
+        
         const cartItems = JSON.parse(dbSession.cartItems);
-        const orderItems = cartItems.map(item => ({
-            orderId: order.id,
-            productId: item.id,
-            quantity: item.quantity || 1,
-            price: item.salePrice || item.price,
-            color: item.color,
-            size: item.sizeType || item.size,
-            sku: item.sku
-        }));
-
-        await prisma.orderDetail.createMany({
-            data: orderItems
-        });
 
         // Update product stock
         for (const item of cartItems) {
@@ -207,7 +176,7 @@ async function handleCheckoutSessionCompleted(session) {
                 await sendOrderConfirmationEmail({
                     email: session.customer_details.email,
                     customerName: session.customer_details.name,
-                    orderId: order.id,
+                    orderId: session.id, // Use session ID as order reference
                     orderItems: cartItems,
                     totalAmount: dbSession.amount,
                     appliedPoints: dbSession.appliedPoints
@@ -217,7 +186,7 @@ async function handleCheckoutSessionCompleted(session) {
             }
         }
 
-        console.log('Order created successfully:', order.id);
+        console.log('Payment processing completed for session:', session.id);
 
     } catch (error) {
         console.error('Error processing checkout session completion:', error);

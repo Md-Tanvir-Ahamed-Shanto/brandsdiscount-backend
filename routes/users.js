@@ -38,7 +38,7 @@ router.get(
 );
 
 // API route to get a single user by ID
-router.get("/user/:id", verifyUser, async (req, res) => {
+router.get("/user/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const user = await prisma.user.findUnique({

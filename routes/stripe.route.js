@@ -23,7 +23,7 @@ try {
     // Don't crash the server, but log the error
 }
 
-const prisma = require('../db/connection');
+const { prisma } = require('../db/connection');
 
 /**
  * Create Stripe Checkout Session
@@ -65,8 +65,26 @@ router.post('/create-checkout-session', async (req, res) => {
             });
         }
         
-        // Ensure we have a valid email
-        const email = customerEmail || 'customer@brandsdiscounts.com';
+        // Get user's actual email if userId is provided
+        let email = customerEmail;
+        if (userId && !email) {
+            try {
+                const user = await prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { email: true }
+                });
+                if (user) {
+                    email = user.email;
+                }
+            } catch (error) {
+                console.error('Error fetching user email:', error);
+            }
+        }
+        
+        // Only use fallback if no email is available at all
+        if (!email) {
+            email = 'customer@brandsdiscounts.com';
+        }
 
         // Prepare line items for Stripe
         const lineItems = cartItems.map(item => ({
@@ -139,21 +157,27 @@ router.post('/create-checkout-session', async (req, res) => {
 
         // Store session info in database for tracking
         try {
+            const sessionData = {
+                sessionId: session.id,
+                amount: finalAmount,
+                currency: 'usd',
+                status: 'pending',
+                appliedPoints: appliedPoints,
+                cartItems: JSON.stringify(cartItems),
+                shippingAddress: shippingAddress ? JSON.stringify(shippingAddress) : null,
+                billingAddress: billingAddress ? JSON.stringify(billingAddress) : null,
+                customerEmail: email // Store the actual email being used
+            };
+
+            // Add user relation if userId exists
+            if (userId) {
+                sessionData.user = {
+                    connect: { id: userId }
+                };
+            }
+
             await prisma.stripeSession.create({
-                data: {
-                    sessionId: session.id,
-                    userId: userId || null,
-                    amount: finalAmount,
-                    currency: 'usd',
-                    status: 'pending',
-                    appliedPoints: appliedPoints,
-                    cartItems: JSON.stringify(cartItems),
-                    shippingAddress: shippingAddress ? JSON.stringify(shippingAddress) : null,
-                    billingAddress: billingAddress ? JSON.stringify(billingAddress) : null,
-                    metadata: JSON.stringify(metadata),
-                    createdAt: new Date(),
-                    expiresAt: new Date(Date.now() + (24 * 60 * 60 * 1000)) // 24 hours
-                }
+                data: sessionData
             });
         } catch (dbError) {
             console.error('Database error storing session:', dbError);

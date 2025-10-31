@@ -1,6 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 
-// Create Prisma client instance with logging for debugging connection issues
+// Create Prisma client instance with optimized settings for Neon database
 const prisma = new PrismaClient({
   datasources: {
     db: {
@@ -38,8 +38,8 @@ prisma.$on('query', (e) => {
   // console.log('Query:', e);
 });
 
-// Wrapper function with retry functionality
-async function executeWithRetry(operation, maxRetries = 3, delay = 1000) {
+// Wrapper function with enhanced retry functionality for Neon database
+async function executeWithRetry(operation, maxRetries = 5, delay = 2000) {
   let lastError;
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -53,8 +53,11 @@ async function executeWithRetry(operation, maxRetries = 3, delay = 1000) {
         error.message.includes('Connection') || 
         error.message.includes('timeout') ||
         error.message.includes('ECONNREFUSED') ||
+        error.message.includes('pool timeout') ||
+        error.message.includes('Connection pool timeout') ||
         error.code === 'P1001' || // Cannot connect to the database
-        error.code === 'P1002';   // Database server timeout
+        error.code === 'P1002' || // Database server timeout
+        error.code === 'P1017';   // Connection pool timeout
       
       if (!isConnectionError || attempt === maxRetries) {
         throw error;
@@ -62,8 +65,9 @@ async function executeWithRetry(operation, maxRetries = 3, delay = 1000) {
       
       console.warn(`Database operation failed, retrying ${attempt}/${maxRetries}:`, error.message);
       
-      // Wait some time before retrying
-      await new Promise(resolve => setTimeout(resolve, delay * attempt));
+      // Exponential backoff with jitter
+      const backoffDelay = delay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+      await new Promise(resolve => setTimeout(resolve, Math.min(backoffDelay, 10000)));
     }
   }
   
@@ -74,7 +78,8 @@ async function executeWithRetry(operation, maxRetries = 3, delay = 1000) {
 const originalTransaction = prisma.$transaction;
 prisma.$transaction = async function(operations, options) {
   return executeWithRetry(() => originalTransaction.call(prisma, operations, {
-    timeout: 30000, // 30 seconds timeout
+    timeout: 60000, // 60 seconds timeout for better stability
+    maxWait: 20000, // Maximum wait time for a connection from the pool
     ...options
   }));
 };
