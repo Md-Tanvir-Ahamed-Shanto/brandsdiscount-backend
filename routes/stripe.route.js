@@ -134,8 +134,8 @@ router.post('/create-checkout-session', async (req, res) => {
             customer_email: email, // Using validated email variable
             
             // URLs
-            success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/checkout`,
+            success_url: `${process.env.FRONTEND_URL || process.env.CLIENT_URL || 'https://brandsdiscounts.com'}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.FRONTEND_URL || process.env.CLIENT_URL || 'https://brandsdiscounts.com'}/checkout`,
 
             // Additional metadata
             metadata: {
