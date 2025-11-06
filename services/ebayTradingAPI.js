@@ -8,6 +8,7 @@ const xml2js = require("xml2js");
 const prisma = new PrismaClient();
 
 const EBAY_TRADING_API_URL = "https://api.ebay.com/ws/api.dll";
+
 const EBAY_SANDBOX_TRADING_API_URL = "https://api.sandbox.ebay.com/ws/api.dll";
 
 const CURRENT_API_URL = process.env.NODE_ENV === 'production' 
@@ -386,25 +387,26 @@ async function updateEbayStockBySku(sku, stockQuantity, accountNumber = 1) {
   }
 }
 
+
 async function sendTradingAPIRequest(xml, callName, accessToken) {
+  const token = accessToken.trim();
+
   const headers = {
     'X-EBAY-API-CALL-NAME': callName,
     'X-EBAY-API-SITEID': '0',
     'X-EBAY-API-COMPATIBILITY-LEVEL': '967',
-    'X-EBAY-API-IAF-TOKEN': accessToken
+    'X-EBAY-API-IAF-TOKEN': token,
+    'Content-Type': 'text/xml'
   };
 
-  console.log(headers);
+  console.log('Trading API Headers:', headers);
 
   try {
-    const response = await ebayTradingAxios.post(CURRENT_API_URL, xml, { headers });
-    
+    const response = await axios.post(EBAY_TRADING_API_URL, xml, { headers });
     const parser = new xml2js.Parser({ explicitArray: false });
-    const result = await parser.parseStringPromise(response.data);
-    
-    return result;
+    return await parser.parseStringPromise(response.data);
   } catch (error) {
-    console.error(`Error in Trading API request (${callName}):`, error.message);
+    console.error(`Error in Trading API request (${callName}):`, error.response?.data || error.message);
     throw error;
   }
 }
