@@ -228,9 +228,6 @@ function createAddFixedPriceItemXML(product, globalRequiredFields = {}, authToke
   
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <AddFixedPriceItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-  <RequesterCredentials>
-    <eBayAuthToken>${authToken}</eBayAuthToken>
-  </RequesterCredentials>
   <ErrorLanguage>en_US</ErrorLanguage>
   <WarningLevel>High</WarningLevel>
   <Item>
@@ -280,9 +277,6 @@ function createAddFixedPriceItemXML(product, globalRequiredFields = {}, authToke
 function createReviseItemXML(itemId, quantity, authToken) {
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <ReviseItemRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-  <RequesterCredentials>
-    <eBayAuthToken>${authToken}</eBayAuthToken>
-  </RequesterCredentials>
   <ErrorLanguage>en_US</ErrorLanguage>
   <WarningLevel>High</WarningLevel>
   <Item>
@@ -295,11 +289,8 @@ function createReviseItemXML(itemId, quantity, authToken) {
 }
 
 function createGetMyeBaySellingXML(authToken, sku) {
-  const xml = `<?xml version="1.0" encoding="utf-8"?>
+  return `<?xml version="1.0" encoding="utf-8"?>
 <GetMyeBaySellingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
-  <RequesterCredentials>
-    <eBayAuthToken>${authToken}</eBayAuthToken>
-  </RequesterCredentials>
   <ErrorLanguage>en_US</ErrorLanguage>
   <WarningLevel>High</WarningLevel>
   <ActiveList>
@@ -311,14 +302,12 @@ function createGetMyeBaySellingXML(authToken, sku) {
   </ActiveList>
   <DetailLevel>ReturnAll</DetailLevel>
 </GetMyeBaySellingRequest>`;
-
-  return xml;
 }
 
 async function getItemIdBySku(sku, accountNumber = 1) {
   try {
     console.log(`Getting ItemID for SKU: ${sku} on eBay Account ${accountNumber}`);
-    
+    accountNumber = Number(accountNumber);
     let token;
     switch(accountNumber) {
       case 1:
@@ -335,7 +324,7 @@ async function getItemIdBySku(sku, accountNumber = 1) {
     }
     
     const xml = createGetMyeBaySellingXML(token, sku);
-    const response = await sendTradingAPIRequest(xml, 'GetMyeBaySelling');
+    const response = await sendTradingAPIRequest(xml, 'GetMyeBaySelling',token);
     
     if (response.GetMyeBaySellingResponse && response.GetMyeBaySellingResponse.Errors) {
       const error = response.GetMyeBaySellingResponse.Errors;
@@ -368,7 +357,7 @@ async function getItemIdBySku(sku, accountNumber = 1) {
 async function updateEbayStockBySku(sku, stockQuantity, accountNumber = 1) {
   try {
     console.log(`Starting SKU-based stock update for SKU: ${sku}, Quantity: ${stockQuantity} on Account ${accountNumber}`);
-    
+
     const itemId = await getItemIdBySku(sku, accountNumber);
     
     if (!itemId) {
@@ -397,14 +386,15 @@ async function updateEbayStockBySku(sku, stockQuantity, accountNumber = 1) {
   }
 }
 
-async function sendTradingAPIRequest(xml, callName) {
+async function sendTradingAPIRequest(xml, callName, accessToken) {
   const headers = {
-    'Content-Type': 'text/xml',
     'X-EBAY-API-CALL-NAME': callName,
-    'X-EBAY-API-VERSION': '967',
     'X-EBAY-API-SITEID': '0',
-    'X-EBAY-API-COMPATIBILITY-LEVEL': '967'
+    'X-EBAY-API-COMPATIBILITY-LEVEL': '967',
+    'X-EBAY-API-IAF-TOKEN': accessToken
   };
+
+  console.log(headers);
 
   try {
     const response = await ebayTradingAxios.post(CURRENT_API_URL, xml, { headers });
@@ -442,7 +432,7 @@ async function createEbayProductTrading(product, globalRequiredFields = {}, acco
     
     console.log(`eBay${accountNumber} Trading: Creating product for SKU: ${product.sku}`);
     
-    const response = await sendTradingAPIRequest(xml, 'AddFixedPriceItem');
+    const response = await sendTradingAPIRequest(xml, 'AddFixedPriceItem', token);
     
     if (response.AddFixedPriceItemResponse && response.AddFixedPriceItemResponse.Errors) {
       const error = response.AddFixedPriceItemResponse.Errors;
@@ -523,7 +513,7 @@ async function updateEbayStockTrading(itemId, stockQuantity, accountNumber = 1) 
     
     console.log(`eBay${accountNumber} Trading: Updating stock for ItemID: ${itemId}`);
     
-    const response = await sendTradingAPIRequest(xml, 'ReviseItem');
+    const response = await sendTradingAPIRequest(xml, 'ReviseItem', token);
     
     if (response.ReviseItemResponse && response.ReviseItemResponse.Errors) {
       const error = response.ReviseItemResponse.Errors;
@@ -668,7 +658,6 @@ module.exports = {
   manualUpdateEbayStockTrading,
   sendTradingAPIRequest,
   createAddFixedPriceItemXML,
-  createReviseInventoryStatusXML,
   createReviseItemXML,
   createGetMyeBaySellingXML
 };

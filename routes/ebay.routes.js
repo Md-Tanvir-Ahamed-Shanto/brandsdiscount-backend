@@ -21,6 +21,7 @@ const {
 const { createEbayProduct } = require("../services/ebayCreateProduct");
 const { ebayUpdateStock, manulayUpdateEbayStock } = require("../services/ebayUpdateStock");
 const { updateEbayProduct } = require("../services/ebayUpdateProduct");
+const {updateEbayStockBySku} = require("../services/ebayTradingAPI");
 
 // Sync eBay orders
 ebayRoutes.get("/sync", async (req, res) => {
@@ -156,7 +157,7 @@ ebayRoutes.get("/update-stock", async (req, res) => {
   }
 
   try {
-    const response = await manulayUpdateEbayStock(sku, stockQuantity, ebayAccount);
+    const response = await updateEbayStockBySku(sku, stockQuantity, ebayAccount);
     res
       .status(200)
       .json({ message: "Stock updated successfully", response });

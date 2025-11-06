@@ -17,7 +17,8 @@ const {
   ebayUpdateStock2,
   ebayUpdateStock3,
 } = require("./ebayUpdateStock");
-const { updateStockBySku } = require("./wooComService");
+// Removed unused import to break circular dependency with wooComService.js
+// const { updateStockBySku } = require("./wooComService");
 const { createNotification } = require("../utils/notification");
 
 /**
