@@ -259,7 +259,7 @@ const updateOrder = async (req, res) => {
     // Send email notification if status was updated
     if (status && updatedOrder.user && updatedOrder.user.email) {
       const customerName = updatedOrder.user.name || "Valued Customer";
-      const orderNumber = updatedOrder.id.substring(0, 8).toUpperCase();
+      const orderNumber = updatedOrder.orderDetails.map((detail) => detail.orderId).join(", ");
 
       try {
         switch (status) {
