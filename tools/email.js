@@ -206,6 +206,34 @@ async function sendOrderCancelledEmail(toEmail, customerName, orderNumber) {
   );
 }
 
+async function sendOrderPendingEmail(toEmail, customerName, orderNumber) {
+  const subject = `Your Brands Discounts Order #${orderNumber} is Pending`;
+  const htmlContent = await renderEmailTemplate("order_pending.ejs", {
+    customerName,
+    orderNumber,
+  });
+  await sendEmail(
+    toEmail,
+    "shipping@brandsdiscounts.com",
+    subject,
+    htmlContent
+  );
+}
+
+async function sendOrderRefundedEmail(toEmail, customerName, orderNumber) {
+  const subject = `Your Brands Discounts Order #${orderNumber} has been refunded`;
+  const htmlContent = await renderEmailTemplate("order_refunded.ejs", {
+    customerName,
+    orderNumber,
+  });
+  await sendEmail(
+    toEmail,
+    "shipping@brandsdiscounts.com",
+    subject,
+    htmlContent
+  );
+}
+
 async function sendForgotPasswordEmail(email, customerName) {
   // Ensure JWT_SECRET and CLIENT_URL are set in your .env file
   const token = jwt.sign({ email }, process.env.JWT_SECRET, {
@@ -369,6 +397,8 @@ module.exports = {
   sendOrderShippedEmail,
   sendOrderDeliveredEmail,
   sendOrderCancelledEmail,
+  sendOrderPendingEmail,
+  sendOrderRefundedEmail,
   sendForgotPasswordEmail,
   sendPasswordChangeConfirmationEmail,
   sendCustomerInquiryAutoReplyEmail,

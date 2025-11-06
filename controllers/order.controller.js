@@ -7,6 +7,8 @@ const {
   sendOrderShippedEmail,
   sendOrderDeliveredEmail,
   sendOrderCancelledEmail,
+  sendOrderPendingEmail,
+  sendOrderRefundedEmail,
   sendEmail
 } = require("../tools/email.js");
 
@@ -72,14 +74,15 @@ const createOrder = async (req, res) => {
     // Send order confirmation email to customer
     try {
       if (newOrder.user && newOrder.user.email) {
+        const orderNumber = newOrder.id.substring(0, 8).toUpperCase(); // Use first 8 characters of ID as order number
         await sendOrderConfirmationEmail(
           newOrder.user.email,
           newOrder.user.name || 'Valued Customer',
-          newOrder.orderId,
+          orderNumber,
           newOrder.orderDetails,
           newOrder.totalAmount
         );
-        console.log(`Order confirmation email sent to ${newOrder.user.email} for order #${newOrder.orderId}`);
+        console.log(`Order confirmation email sent to ${newOrder.user.email} for order #${orderNumber}`);
       }
     } catch (emailError) {
       console.error('Error sending order confirmation email:', emailError);
@@ -205,81 +208,6 @@ const getAllOrders = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching orders with pagination and search:", error);
-    
-// Update order status and send appropriate email notification
-const updateOrderStatus = async (req, res) => {
-  const { orderId } = req.params;
-  const { status, trackingInfo } = req.body;
-  
-  if (!orderId || !status) {
-    return res.status(400).json({ error: "Order ID and status are required." });
-  }
-  
-  try {
-    // Get the order with user details before updating
-    const existingOrder = await prisma.order.findUnique({
-      where: { orderId: parseInt(orderId) },
-      include: { user: true, orderDetails: true }
-    });
-    
-    if (!existingOrder) {
-      return res.status(404).json({ error: "Order not found." });
-    }
-    
-    // Update the order status
-    const updatedOrder = await prisma.order.update({
-      where: { orderId: parseInt(orderId) },
-      data: { 
-        status,
-        ...(trackingInfo && {
-          trackingNumber: trackingInfo.trackingNumber,
-          carrier: trackingInfo.carrier,
-          trackingUrl: trackingInfo.trackingUrl
-        })
-      },
-      include: { user: true, orderDetails: true }
-    });
-    
-    // Send appropriate email based on new status
-    if (existingOrder.user && existingOrder.user.email) {
-      const customerEmail = existingOrder.user.email;
-      const customerName = existingOrder.user.name || 'Valued Customer';
-      
-      try {
-        switch (status) {
-          case 'processing':
-            await sendOrderProcessingEmail(customerEmail, customerName, orderId);
-            break;
-          case 'shipped':
-            await sendOrderShippedEmail(
-              customerEmail, 
-              customerName, 
-              orderId, 
-              trackingInfo?.carrier || 'Shipping Partner',
-              trackingInfo?.trackingNumber || 'N/A',
-              trackingInfo?.trackingUrl || '#'
-            );
-            break;
-          case 'delivered':
-            await sendOrderDeliveredEmail(customerEmail, customerName, orderId);
-            break;
-          case 'cancelled':
-            await sendOrderCancelledEmail(customerEmail, customerName, orderId);
-            break;
-        }
-        console.log(`Order status email sent to ${customerEmail} for order #${orderId} (${status})`);
-      } catch (emailError) {
-        console.error(`Error sending order ${status} email:`, emailError);
-        // Don't fail the status update if email fails
-      }
-    }
-    
-    res.status(200).json(updatedOrder);
-  } catch (error) {
-    console.error("Error updating order status:", error);
-    res.status(500).json({ error: "Could not update order status." });
-  }
-};
     res.status(500).json({ error: "Could not fetch orders." });
   }
 };
@@ -325,6 +253,67 @@ const updateOrder = async (req, res) => {
         user: true,
       },
     });
+
+    // Send email notification if status was updated
+    if (status && updatedOrder.user && updatedOrder.user.email) {
+      const customerName = updatedOrder.user.name || 'Valued Customer';
+      const orderNumber = updatedOrder.id.substring(0, 8).toUpperCase();
+      
+      try {
+        switch (status) {
+          case 'Pending':
+            await sendOrderPendingEmail(
+              updatedOrder.user.email,
+              customerName,
+              orderNumber
+            );
+            break;
+          case 'Processing':
+            await sendOrderProcessingEmail(
+              updatedOrder.user.email,
+              customerName,
+              orderNumber
+            );
+            break;
+          case 'Shipped':
+            await sendOrderShippedEmail(
+              updatedOrder.user.email,
+              customerName,
+              orderNumber,
+              'Standard Shipping',
+              trackingNumber || 'Not available',
+              '#'
+            );
+            break;
+          case 'Delivered':
+            await sendOrderDeliveredEmail(
+              updatedOrder.user.email,
+              customerName,
+              orderNumber
+            );
+            break;
+          case 'Cancelled':
+            await sendOrderCancelledEmail(
+              updatedOrder.user.email,
+              customerName,
+              orderNumber
+            );
+            break;
+          case 'Refunded':
+            await sendOrderRefundedEmail(
+              updatedOrder.user.email,
+              customerName,
+              orderNumber
+            );
+            break;
+        }
+        console.log(`Status update email sent for order ${orderNumber} with status ${status}`);
+      } catch (emailError) {
+        console.error(`Error sending status update email: ${emailError}`);
+        // Don't fail the order update if email fails
+      }
+    }
+
     res.status(200).json(updatedOrder);
   } catch (error) {
     console.error("Error updating order:", error);
@@ -368,9 +357,10 @@ const updateOrderStatus = async (req, res) => {
 
   try {
     const order = await prisma.order.findUnique({
-      where: { orderId: parseInt(orderId) },
+      where: { id: orderId },
       include: {
         user: true,
+        orderDetails: true,
       },
     });
 
@@ -379,7 +369,7 @@ const updateOrderStatus = async (req, res) => {
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { orderId: parseInt(orderId) },
+      where: { id: orderId },
       data: { 
         status,
         ...(trackingNumber && { trackingNumber })
@@ -393,39 +383,57 @@ const updateOrderStatus = async (req, res) => {
     // Send appropriate email based on the new status
     if (order.user && order.user.email) {
       const customerName = order.user.name || 'Valued Customer';
+      const orderNumber = order.id.substring(0, 8).toUpperCase(); // Use first 8 characters of ID as order number
       
       try {
         switch (status) {
+          case 'pending':
+            await sendOrderPendingEmail(
+              order.user.email,
+              customerName,
+              orderNumber
+            );
+            break;
           case 'processing':
             await sendOrderProcessingEmail(
               order.user.email,
               customerName,
-              order.orderId
+              orderNumber
             );
             break;
           case 'shipped':
             await sendOrderShippedEmail(
               order.user.email,
               customerName,
-              order.orderId,
-              trackingNumber || 'Not available'
+              orderNumber,
+              'Standard Shipping',
+              trackingNumber || 'Not available',
+              '#'
             );
             break;
           case 'delivered':
             await sendOrderDeliveredEmail(
               order.user.email,
               customerName,
-              order.orderId
+              orderNumber
             );
             break;
           case 'cancelled':
             await sendOrderCancelledEmail(
               order.user.email,
               customerName,
-              order.orderId
+              orderNumber
+            );
+            break;
+          case 'refunded':
+            await sendOrderRefundedEmail(
+              order.user.email,
+              customerName,
+              orderNumber
             );
             break;
         }
+        console.log(`Status update email sent for order ${orderNumber} with status ${status}`);
       } catch (emailError) {
         console.error(`Error sending status update email: ${emailError}`);
         // Don't fail the status update if email fails
