@@ -172,7 +172,6 @@ async function sendOrderShippedEmail(
   const htmlContent = await renderEmailTemplate("order_shipped.ejs", {
     customerName,
     orderNumber,
-    carrier,
     trackingNumber,
     trackingLink,
   });
