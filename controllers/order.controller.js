@@ -1,15 +1,17 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const { createNotificationService } = require("../services/notificationService");
-const { 
-  sendOrderConfirmationEmail, 
-  sendOrderProcessingEmail, 
+const {
+  createNotificationService,
+} = require("../services/notificationService");
+const {
+  sendOrderConfirmationEmail,
+  sendOrderProcessingEmail,
   sendOrderShippedEmail,
   sendOrderDeliveredEmail,
   sendOrderCancelledEmail,
   sendOrderPendingEmail,
   sendOrderRefundedEmail,
-  sendEmail
+  sendEmail,
 } = require("../tools/email.js");
 
 // Create a new order
@@ -70,22 +72,24 @@ const createOrder = async (req, res) => {
       location: newOrder.location,
       selledBy: WEBSITE,
     });
-    
+
     // Send order confirmation email to customer
     try {
       if (newOrder.user && newOrder.user.email) {
         const orderNumber = newOrder.id.substring(0, 8).toUpperCase(); // Use first 8 characters of ID as order number
         await sendOrderConfirmationEmail(
           newOrder.user.email,
-          newOrder.user.name || 'Valued Customer',
+          newOrder.user.name || "Valued Customer",
           orderNumber,
           newOrder.orderDetails,
           newOrder.totalAmount
         );
-        console.log(`Order confirmation email sent to ${newOrder.user.email} for order #${orderNumber}`);
+        console.log(
+          `Order confirmation email sent to ${newOrder.user.email} for order #${orderNumber}`
+        );
       }
     } catch (emailError) {
-      console.error('Error sending order confirmation email:', emailError);
+      console.error("Error sending order confirmation email:", emailError);
       // Don't fail the order creation if email fails
     }
 
@@ -109,12 +113,10 @@ const getAllOrders = async (req, res) => {
     isNaN(parsedLimit) ||
     parsedLimit < 1
   ) {
-    return res
-      .status(400)
-      .json({
-        error:
-          "Invalid page or limit parameters. They must be positive integers.",
-      });
+    return res.status(400).json({
+      error:
+        "Invalid page or limit parameters. They must be positive integers.",
+    });
   }
 
   const skip = (parsedPage - 1) * parsedLimit;
@@ -256,50 +258,50 @@ const updateOrder = async (req, res) => {
 
     // Send email notification if status was updated
     if (status && updatedOrder.user && updatedOrder.user.email) {
-      const customerName = updatedOrder.user.name || 'Valued Customer';
+      const customerName = updatedOrder.user.name || "Valued Customer";
       const orderNumber = updatedOrder.id.substring(0, 8).toUpperCase();
-      
+
       try {
         switch (status) {
-          case 'Pending':
+          case "Pending":
             await sendOrderPendingEmail(
               updatedOrder.user.email,
               customerName,
               orderNumber
             );
             break;
-          case 'Processing':
+          case "Processing":
             await sendOrderProcessingEmail(
               updatedOrder.user.email,
               customerName,
               orderNumber
             );
             break;
-          case 'Shipped':
+          case "Shipped":
             await sendOrderShippedEmail(
               updatedOrder.user.email,
               customerName,
               orderNumber,
-              'Standard Shipping',
-              trackingNumber || 'Not available',
-              '#'
+              "Standard Shipping",
+              id || "Not available",
+              "#"
             );
             break;
-          case 'Delivered':
+          case "Delivered":
             await sendOrderDeliveredEmail(
               updatedOrder.user.email,
               customerName,
               orderNumber
             );
             break;
-          case 'Cancelled':
+          case "Cancelled":
             await sendOrderCancelledEmail(
               updatedOrder.user.email,
               customerName,
               orderNumber
             );
             break;
-          case 'Refunded':
+          case "Refunded":
             await sendOrderRefundedEmail(
               updatedOrder.user.email,
               customerName,
@@ -307,7 +309,9 @@ const updateOrder = async (req, res) => {
             );
             break;
         }
-        console.log(`Status update email sent for order ${orderNumber} with status ${status}`);
+        console.log(
+          `Status update email sent for order ${orderNumber} with status ${status}`
+        );
       } catch (emailError) {
         console.error(`Error sending status update email: ${emailError}`);
         // Don't fail the order update if email fails
@@ -370,9 +374,9 @@ const updateOrderStatus = async (req, res) => {
 
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
-      data: { 
+      data: {
         status,
-        ...(trackingNumber && { trackingNumber })
+        ...(trackingNumber && { trackingNumber }),
       },
       include: {
         orderDetails: true,
@@ -382,50 +386,50 @@ const updateOrderStatus = async (req, res) => {
 
     // Send appropriate email based on the new status
     if (order.user && order.user.email) {
-      const customerName = order.user.name || 'Valued Customer';
+      const customerName = order.user.name || "Valued Customer";
       const orderNumber = order.id.substring(0, 8).toUpperCase(); // Use first 8 characters of ID as order number
-      
+
       try {
         switch (status) {
-          case 'pending':
+          case "pending":
             await sendOrderPendingEmail(
               order.user.email,
               customerName,
               orderNumber
             );
             break;
-          case 'processing':
+          case "processing":
             await sendOrderProcessingEmail(
               order.user.email,
               customerName,
               orderNumber
             );
             break;
-          case 'shipped':
+          case "shipped":
             await sendOrderShippedEmail(
               order.user.email,
               customerName,
               orderNumber,
-              'Standard Shipping',
-              trackingNumber || 'Not available',
-              '#'
+              "Standard Shipping",
+              trackingNumber || "Not available",
+              "#"
             );
             break;
-          case 'delivered':
+          case "delivered":
             await sendOrderDeliveredEmail(
               order.user.email,
               customerName,
               orderNumber
             );
             break;
-          case 'cancelled':
+          case "cancelled":
             await sendOrderCancelledEmail(
               order.user.email,
               customerName,
               orderNumber
             );
             break;
-          case 'refunded':
+          case "refunded":
             await sendOrderRefundedEmail(
               order.user.email,
               customerName,
@@ -433,7 +437,9 @@ const updateOrderStatus = async (req, res) => {
             );
             break;
         }
-        console.log(`Status update email sent for order ${orderNumber} with status ${status}`);
+        console.log(
+          `Status update email sent for order ${orderNumber} with status ${status}`
+        );
       } catch (emailError) {
         console.error(`Error sending status update email: ${emailError}`);
         // Don't fail the status update if email fails
@@ -454,7 +460,9 @@ const sendOrderEmail = async (req, res) => {
   console.log("Received email data:", { body, to, subject, from });
 
   if (!body || !to || !subject) {
-    return res.status(400).json({ error: "Body, to, and subject are required" });
+    return res
+      .status(400)
+      .json({ error: "Body, to, and subject are required" });
   }
 
   try {
