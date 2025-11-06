@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 // Initialize Resend with API key
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const templatesDir = path.join(__dirname, "..", "emailTemplates");
+const templatesDir = path.join(__dirname, "..", "templates");
 
 async function renderEmailTemplate(templateName, data) {
   try {
@@ -94,8 +94,12 @@ async function sendWelcomeEmail(customerEmail, customerName) {
 const sendLoyaltyEmail = async (toEmail, customerName) => {
   const subject =
     "🎉 Your Order is Confirmed & Welcome to the Loyalty Program!";
-  const htmlContent = await renderEmailTemplate("loyalty.ejs", {
+  const htmlContent = await renderEmailTemplate("order_confirmation.ejs", {
     customerName,
+    orderNumber: "N/A",
+    orderDetails: [],
+    totalAmount: 0,
+    orderDate: new Date().toLocaleDateString()
   });
   await sendEmail(
     toEmail,
@@ -107,10 +111,13 @@ const sendLoyaltyEmail = async (toEmail, customerName) => {
 
 const sendAbandonedOfferEmail = async (toEmail, customerName, orderNumber) => {
   const subject =
-    "⚡ We Noticed You Left the $10 Offer Behind – Let’s Make It Happen Next Time!";
-  const htmlContent = await renderEmailTemplate("abandoned_offer.ejs", {
+    "⚡ We Noticed You Left the $10 Offer Behind – Let's Make It Happen Next Time!";
+  const htmlContent = await renderEmailTemplate("order_confirmation.ejs", {
     customerName,
     orderNumber,
+    orderDetails: [],
+    totalAmount: 0,
+    orderDate: new Date().toLocaleDateString()
   });
   await sendEmail(
     toEmail,
@@ -122,7 +129,7 @@ const sendAbandonedOfferEmail = async (toEmail, customerName, orderNumber) => {
 
 async function sendOrderProcessingEmail(toEmail, customerName, orderNumber) {
   const subject = `Your Brands Discounts Order #${orderNumber} is Processing`;
-  const htmlContent = await renderEmailTemplate("order_processing_status.ejs", {
+  const htmlContent = await renderEmailTemplate("order_processing.ejs", {
     customerName,
     orderNumber,
   });
@@ -141,10 +148,9 @@ async function sendOrderHandlingEmail(
   productName
 ) {
   const subject = `Update on Your Brands Discounts Order #${orderNumber}`;
-  const htmlContent = await renderEmailTemplate("order_handling_status.ejs", {
+  const htmlContent = await renderEmailTemplate("order_processing.ejs", {
     customerName,
     orderNumber,
-    productName,
   });
   await sendEmail(
     toEmail,
@@ -163,7 +169,7 @@ async function sendOrderShippedEmail(
   trackingLink
 ) {
   const subject = `🚚 It's Shipped! Your Brands Discounts Order #${orderNumber} is On Its Way!`;
-  const htmlContent = await renderEmailTemplate("order_shipped_status.ejs", {
+  const htmlContent = await renderEmailTemplate("order_shipped.ejs", {
     customerName,
     orderNumber,
     carrier,
@@ -180,7 +186,7 @@ async function sendOrderShippedEmail(
 
 async function sendOrderDeliveredEmail(toEmail, customerName, orderNumber) {
   const subject = `🎉 Delivered! Your Brands Discounts Order #${orderNumber} Has Arrived!`;
-  const htmlContent = await renderEmailTemplate("order_delivered_status.ejs", {
+  const htmlContent = await renderEmailTemplate("order_delivered.ejs", {
     customerName,
     orderNumber,
   });
