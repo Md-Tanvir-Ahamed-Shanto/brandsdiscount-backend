@@ -1,8 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const {
-  createNotificationService,
-} = require("../services/notificationService");
+
 const {
   sendOrderConfirmationEmail,
   sendOrderProcessingEmail,
@@ -13,6 +11,7 @@ const {
   sendOrderRefundedEmail,
   sendEmail,
 } = require("../tools/email.js");
+const { createNotification } = require("../utils/notification.js");
 
 // Create a new order
 const createOrder = async (req, res) => {
@@ -66,7 +65,7 @@ const createOrder = async (req, res) => {
       },
     });
 
-    const notification = await createNotificationService({
+    const notification = await createNotification({
       title: "New Sale on Website",
       message: `Order ${newOrder.orderId} for ${newOrder.orderDetails.length}x ${newOrder.orderDetails[0].productName} sold on Website. Fulfillment from ${newOrder.location}. Please ensure stock is removed from physical store if applicable.`,
       location: newOrder.location,
