@@ -104,9 +104,15 @@ router.post("/signup", async (req, res, next) => {
             profilePicture: null,
           },
         });
+
+        // Generate tokens for the new user
+        const token = getToken({ id: newUser.id });
+        const refreshToken = getRefreshToken({ id: newUser.id });
   
         res.status(201).json({
           success: true,
+          access_token: token,
+          refresh_token: refreshToken,
           user: { id: newUser.id, role: newUser.role, email: newUser.email },
         });
       } catch (error) {
@@ -186,7 +192,7 @@ router.post("/login", passport.authenticate("local", { session: false }), (req, 
     user: {
       id: req.user.id,
       role: req.user.role,
-      userName: req.user.username,
+      email: req.user.email,
     },
   });
 }
