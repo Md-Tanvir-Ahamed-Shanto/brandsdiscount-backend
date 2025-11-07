@@ -17,10 +17,10 @@ const modelIncludes = {
   // Add more models as needed
 };
 
-const paginateOverview = (model) => {
+const paginateOverview = (model, userFilter = null) => {
   return async (req, res, next) => {
     try {
-      const { page = 1, limit = 10, sort, filtering } = req.query;
+      const { page = 1, limit = 10, sort, filtering, userId, status } = req.query;
 
       // Convert page & limit to numbers
       const pageNum = parseInt(page, 10);
@@ -29,6 +29,16 @@ const paginateOverview = (model) => {
 
       // Filtering logic
       let where = {};
+      
+      // Apply user filter if provided (for user-specific routes like /order/me)
+      if (userFilter && req.user) {
+        where[userFilter] = req.user.id;
+      }
+      
+      // Apply query-based filtering for admin routes
+      if (userId) where.userId = userId;
+      if (status) where.status = status;
+      
       if (filtering) {
         console.log("enter filtering");
 
@@ -66,14 +76,19 @@ const paginateOverview = (model) => {
       const totalRecords = await prisma[model].count({ where });
       const totalPages = Math.ceil(totalRecords / limitNum);
 
-      // Send response
-      res.json({
+      // Store pagination data in req for middleware chain
+      req.pagination = {
         page: pageNum,
         limit: limitNum,
         totalPages,
         totalRecords,
-        data,
-      });
+        skip,
+        take: limitNum,
+        data
+      };
+
+      // Continue to next middleware
+      next();
     } catch (error) {
       next(error);
     }

@@ -15,30 +15,11 @@ const router = express.Router();
  */
 router.get("/", verifyUser, paginateOverview("order"), async (req, res) => {
   try {
-    const { userId, status } = req.query;
-    const { skip, take, page, totalPages, totalItems } = req.pagination;
-
-    const whereClause = {};
-    if (userId) whereClause.userId = userId;
-    if (status) whereClause.status = status;
-
-    const orders = await prisma.order.findMany({
-      where: whereClause,
-      include: {
-        orderDetails: {
-          include: { product: true },
-        },
-        transaction: true,
-        user: true,
-      },
-      orderBy: { createdAt: "desc" },
-      skip,
-      take,
-    });
+    const { page, limit, totalPages, totalRecords, data: orders } = req.pagination;
     
     res.json({
       orders,
-      pagination: { page, totalPages, totalItems, take },
+      pagination: { page, totalPages, totalItems: totalRecords, take: limit },
     });
   } catch (error) {
     console.error("Error fetching orders:", error);
@@ -51,29 +32,15 @@ router.get("/", verifyUser, paginateOverview("order"), async (req, res) => {
  * @desc    Get all orders for the authenticated user with pagination
  * @access  User
  */
-router.get("/me", verifyUser, paginateOverview("order", { userId: "req.user.id" }), async (req, res) => {
+router.get("/me", verifyUser, paginateOverview("order", "userId"), async (req, res) => {
   try {
-    const { skip, take, page, totalPages, totalItems } = req.pagination;
-
-    const orders = await prisma.order.findMany({
-      where: { userId: req.user.id },
-      include: {
-        orderDetails: {
-          include: { product: true },
-        },
-        transaction: true,
-        user: true,
-      },
-      orderBy: { createdAt: "desc" },
-      skip,
-      take,
-    });
+    const { page, limit, totalPages, totalRecords, data: orders } = req.pagination;
 
     if (orders.length === 0) return res.status(404).json({ message: "No orders found for this user" });
 
     res.json({
       orders,
-      pagination: { page, totalPages, totalItems, take },
+      pagination: { page, totalPages, totalItems: totalRecords, take: limit },
     });
   } catch (error) {
     console.error("Error fetching user's orders:", error);
