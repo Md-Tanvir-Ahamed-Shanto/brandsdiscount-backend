@@ -291,6 +291,34 @@ async function sendCustomerInquiryAutoReplyEmail(
   );
 }
 
+async function sendContactFormEmail(adminEmail, customerName, customerEmail, message) {
+  const subject = `New Contact Form Submission from ${customerName}`;
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <img src="${process.env.FRONTEND_URL || 'https://brandsdiscounts.com'}/logo.png" alt="Brands Discounts Logo" style="max-width: 150px;">
+      </div>
+      <h2 style="color: #333;">New Contact Form Submission</h2>
+      <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 15px 0;">
+        <p><strong>Name:</strong> ${customerName}</p>
+        <p><strong>Email:</strong> ${customerEmail}</p>
+        <p><strong>Message:</strong></p>
+        <p style="white-space: pre-wrap;">${message}</p>
+      </div>
+      <p style="color: #666; font-size: 12px;">This email was sent from the contact form on your website.</p>
+      <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e0e0e0; text-align: center; color: #777; font-size: 12px;">
+        <p>© ${new Date().getFullYear()} Brands Discounts. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+  await sendEmail(
+    adminEmail,
+    "noreply@brandsdiscounts.com",
+    subject,
+    htmlContent
+  );
+}
+
 async function sendAdminPlatformSaleAlert(adminEmail, data) {
   const subject = `🔴 ACTION REQUIRED: Remove Item from Physical Store - Order #${data.orderNumber} on ${data.platformName}`;
   const htmlContent = await renderEmailTemplate(
@@ -407,6 +435,7 @@ module.exports = {
   sendForgotPasswordEmail,
   sendPasswordChangeConfirmationEmail,
   sendCustomerInquiryAutoReplyEmail,
+  sendContactFormEmail,
   sendAdminPlatformSaleAlert,
   sendAdminPhysicalStoreSaleConfirmation,
   sendAdminInventorySyncFailureAlert,

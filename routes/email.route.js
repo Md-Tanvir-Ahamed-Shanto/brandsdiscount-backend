@@ -20,6 +20,7 @@ emailRoutes.post('/password-change-confirmation', emailController.sendPasswordCh
 
 // --- Customer Service Emails ---
 emailRoutes.post('/customer-inquiry-auto-reply', emailController.sendCustomerInquiryAutoReplyEmailController);
+emailRoutes.post('/contact-form', emailController.sendContactFormEmailController);
 
 // --- Admin Notification Emails ---
 emailRoutes.post('/admin/platform-sale-alert', emailController.sendAdminPlatformSaleAlertController);
