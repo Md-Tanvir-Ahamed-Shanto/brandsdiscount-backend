@@ -174,6 +174,27 @@ router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
 
 
     if (req.body.password) {
+      // Validate old password if provided
+      if (req.body.oldPassword) {
+        try {
+          const hashedOldPassword = await pbkdf2Async(
+            req.body.oldPassword,
+            userDetails.salt,
+            310000,
+            32,
+            "sha256"
+          );
+          
+          if (!crypto.timingSafeEqual(userDetails.hashedPassword, hashedOldPassword)) {
+            return res.status(400).json({ error: "Current password is incorrect" });
+          }
+        } catch (err) {
+          console.error("Error validating old password:", err);
+          return res.status(500).json({ error: "Error validating old password" });
+        }
+      }
+      
+      // Hash and update with new password
       const salt = crypto.randomBytes(16);
       const hashedPassword = await pbkdf2Async(
         req.body.password,
