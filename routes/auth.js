@@ -7,7 +7,7 @@ const ExtractJwt = require("passport-jwt").ExtractJwt;
 const LocalStrategy = require("passport-local");
 const { PrismaClient } = require("@prisma/client");
 const { getToken, verifyUser, COOKIE_OPTIONS, getRefreshToken } = require("../tools/authenticate");
-const { sendForgotPasswordEmail, sendPasswordChangeConfirmationEmail } = require("../tools/email.js");
+const { sendForgotPasswordEmail, sendPasswordChangeConfirmationEmail, sendWelcomeEmail } = require("../tools/email.js");
 const prisma = new PrismaClient();
 const util = require("util");
 const pbkdf2Async = util.promisify(crypto.pbkdf2);
@@ -108,6 +108,18 @@ router.post("/signup", async (req, res, next) => {
         // Generate tokens for the new user
         const token = getToken({ id: newUser.id });
         const refreshToken = getRefreshToken({ id: newUser.id });
+
+        // Send welcome email to new user
+        try {
+          await sendWelcomeEmail(
+            newUser.email,
+            newUser.username || newUser.name || "Valued Customer"
+          );
+          console.log(`Welcome email sent to ${newUser.email}`);
+        } catch (emailError) {
+          console.error("Error sending welcome email:", emailError);
+          // Don't fail the signup if email fails
+        }
   
         res.status(201).json({
           success: true,
