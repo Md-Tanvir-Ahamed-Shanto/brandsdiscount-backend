@@ -244,7 +244,7 @@ async function sendForgotPasswordEmail(email, customerName) {
   const token = jwt.sign({ email }, process.env.JWT_SECRET, {
     expiresIn: "1h",
   });
-  const resetLink = `${process.env.CLIENT_URL}/authroute/reset-password?token=${token}`; // Assuming a reset-password route
+  const resetLink = `${process.env.CLIENT_URL}/auth/reset-password?token=${token}`; // Assuming a reset-password route
 
   const subject = "Reset Your Brands Discounts Password";
   const htmlContent = await renderEmailTemplate("forgot_password.ejs", {

@@ -207,23 +207,35 @@ router.get("/logout", verifyUser, (req, res) => {
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
+    
+    // Validate email format
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
     }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Please provide a valid email address" });
+    }
 
+    // Check if user exists
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      // Don't reveal that the user doesn't exist
-      return res.status(200).json({ message: "If your email exists in our system, you will receive a password reset link" });
+      // Don't reveal that the user doesn't exist for security reasons
+      return res.status(200).json({ 
+        message: "If your email exists in our system, you will receive a password reset link shortly."
+      });
     }
 
     // Send password reset email
     await sendForgotPasswordEmail(email, user.username || user.name || 'Valued Customer');
 
-    res.status(200).json({ message: "Password reset email sent" });
+    res.status(200).json({ 
+      message: "Password reset email sent successfully. Please check your inbox for further instructions."
+    });
   } catch (error) {
     console.error("Error sending password reset email:", error);
-    res.status(500).json({ error: "Failed to process password reset request" });
+    res.status(500).json({ error: "Failed to process password reset request. Please try again later." });
   }
 });
 
@@ -231,8 +243,16 @@ router.post("/reset-password", async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     
+    // Validate input
     if (!token || !newPassword) {
       return res.status(400).json({ error: "Token and new password are required" });
+    }
+
+   
+    if (newPassword.length < 8) {
+      return res.status(400).json({ 
+        error: "Password must be at least 8 characters long" 
+      });
     }
 
     // Verify token
@@ -268,10 +288,12 @@ router.post("/reset-password", async (req, res) => {
     // Send confirmation email
     await sendPasswordChangeConfirmationEmail(email, user.username || user.name || 'Valued Customer');
 
-    res.status(200).json({ message: "Password has been reset successfully" });
+    res.status(200).json({ 
+      message: "Password has been reset successfully. You can now log in with your new password." 
+    });
   } catch (error) {
     console.error("Error resetting password:", error);
-    res.status(500).json({ error: "Failed to reset password" });
+    res.status(500).json({ error: "Failed to reset password. Please try again later." });
   }
 });
 
