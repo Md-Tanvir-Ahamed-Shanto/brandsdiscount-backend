@@ -304,6 +304,7 @@ const updateOrder = async (req, res) => {
                 total: detail.total,
                 productName: detail.productName,
               })),
+              updatedOrder.totalAmount
             );
             break;
           case "Shipped":
@@ -321,6 +322,7 @@ const updateOrder = async (req, res) => {
                 total: detail.total,
                 productName: detail.productName,
               })),
+              updatedOrder.totalAmount
             );
             break;
           case "Delivered":
@@ -335,6 +337,7 @@ const updateOrder = async (req, res) => {
                 total: detail.total,
                 productName: detail.productName,
               })),
+              updatedOrder.totalAmount
             );
             break;
           case "Cancelled":
@@ -349,6 +352,7 @@ const updateOrder = async (req, res) => {
                 total: detail.total,
                 productName: detail.productName,
               })),
+              updatedOrder.totalAmount
             );
             break;
           case "Refunded":
@@ -363,6 +367,7 @@ const updateOrder = async (req, res) => {
                 total: detail.total,
                 productName: detail.productName,
               })),
+              updatedOrder.totalAmount
             );
             break;
         }

@@ -127,11 +127,13 @@ const sendAbandonedOfferEmail = async (toEmail, customerName, orderNumber) => {
   );
 };
 
-async function sendOrderProcessingEmail(toEmail, customerName, orderNumber) {
+async function sendOrderProcessingEmail(toEmail, customerName, orderNumber, orderItems, totalAmount) {
   const subject = `Your Brands Discounts Order #${orderNumber} is Processing`;
   const htmlContent = await renderEmailTemplate("order_processing.ejs", {
     customerName,
     orderNumber,
+    orderItems,
+    totalAmount,
   });
   await sendEmail(
     toEmail,
@@ -166,7 +168,9 @@ async function sendOrderShippedEmail(
   orderNumber,
   carrier,
   trackingNumber,
-  trackingLink
+  trackingLink,
+  orderItems,
+  totalAmount
 ) {
   const subject = `🚚 It's Shipped! Your Brands Discounts Order #${orderNumber} is On Its Way!`;
   const htmlContent = await renderEmailTemplate("order_shipped.ejs", {
@@ -174,6 +178,8 @@ async function sendOrderShippedEmail(
     orderNumber,
     trackingNumber,
     trackingLink,
+    orderItems,
+    totalAmount,
   });
   await sendEmail(
     toEmail,
@@ -183,11 +189,13 @@ async function sendOrderShippedEmail(
   );
 }
 
-async function sendOrderDeliveredEmail(toEmail, customerName, orderNumber) {
+async function sendOrderDeliveredEmail(toEmail, customerName, orderNumber, orderItems, totalAmount) {
   const subject = `🎉 Delivered! Your Brands Discounts Order #${orderNumber} Has Arrived!`;
   const htmlContent = await renderEmailTemplate("order_delivered.ejs", {
     customerName,
     orderNumber,
+    orderItems,
+    totalAmount,
   });
   await sendEmail(
     toEmail,
@@ -197,11 +205,13 @@ async function sendOrderDeliveredEmail(toEmail, customerName, orderNumber) {
   );
 }
 
-async function sendOrderCancelledEmail(toEmail, customerName, orderNumber) {
+async function sendOrderCancelledEmail(toEmail, customerName, orderNumber, orderItems, totalAmount) {
   const subject = `Your Brands Discounts Order #${orderNumber} has been cancelled`;
   const htmlContent = await renderEmailTemplate("order_cancelled.ejs", {
     customerName,
     orderNumber,
+    orderItems,
+    totalAmount,
   });
   await sendEmail(
     toEmail,
@@ -211,11 +221,13 @@ async function sendOrderCancelledEmail(toEmail, customerName, orderNumber) {
   );
 }
 
-async function sendOrderPendingEmail(toEmail, customerName, orderNumber) {
+async function sendOrderPendingEmail(toEmail, customerName, orderNumber, orderItems, totalAmount) {
   const subject = `Your Brands Discounts Order #${orderNumber} is Pending`;
   const htmlContent = await renderEmailTemplate("order_pending.ejs", {
     customerName,
     orderNumber,
+    orderItems,
+    totalAmount,
   });
   await sendEmail(
     toEmail,
@@ -225,11 +237,13 @@ async function sendOrderPendingEmail(toEmail, customerName, orderNumber) {
   );
 }
 
-async function sendOrderRefundedEmail(toEmail, customerName, orderNumber) {
+async function sendOrderRefundedEmail(toEmail, customerName, orderNumber, orderItems, refundAmount) {
   const subject = `Your Brands Discounts Order #${orderNumber} has been refunded`;
   const htmlContent = await renderEmailTemplate("order_refunded.ejs", {
     customerName,
     orderNumber,
+    orderItems,
+    refundAmount,
   });
   await sendEmail(
     toEmail,
