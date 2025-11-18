@@ -65,13 +65,6 @@ const createOrder = async (req, res) => {
       },
     });
 
-    const notification = await createNotification({
-      title: "New Sale on Website",
-      message: `Order ${newOrder.orderId} for ${newOrder.orderDetails.length}x ${newOrder.orderDetails[0].productName} sold on Website. Fulfillment from ${newOrder.location}. Please ensure stock is removed from physical store if applicable.`,
-      location: newOrder.location,
-      selledBy: WEBSITE,
-    });
-
     // Send order confirmation email to customer
     try {
       if (newOrder.user && newOrder.user.email) {
@@ -83,6 +76,18 @@ const createOrder = async (req, res) => {
           newOrder.orderDetails,
           newOrder.totalAmount
         );
+        await sendOrderPendingEmail(
+          newOrder.user.email,
+          newOrder.user.name || "Valued Customer",
+          orderNumber
+        );
+
+        await createNotification({
+          title: "New Sale on Website",
+          message: `Order ${newOrder?.orderId} for ${newOrder?.orderDetails.length}x ${newOrder?.orderDetails[0].productName} sold on Website. Fulfillment from ${newOrder?.location}. Please ensure stock is removed from physical store if applicable.`,
+          location: "WEBSITE",
+          selledBy: "WEBSITE",
+        });
         console.log(
           `Order confirmation email sent to ${newOrder.user.email} for order #${orderNumber}`
         );
@@ -258,7 +263,9 @@ const updateOrder = async (req, res) => {
     // Send email notification if status was updated
     if (status && updatedOrder.user && updatedOrder.user.email) {
       const customerName = updatedOrder.user.name || "Valued Customer";
-      const orderNumber = updatedOrder.orderDetails.map((detail) => detail.orderId).join(", ");
+      const orderNumber = updatedOrder.orderDetails
+        .map((detail) => detail.orderId)
+        .join(", ");
 
       try {
         switch (status) {
