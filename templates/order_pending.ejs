@@ -16,6 +16,38 @@
     
     <p>Thank you for your order! Your order <strong>#<%= orderNumber %></strong> is currently pending and awaiting payment confirmation or additional processing.</p>
     
+    <% if (typeof orderItems !== 'undefined' && orderItems && orderItems.length > 0) { %>
+    <div style="margin: 20px 0;">
+        <h3 style="color: #333; margin-bottom: 10px;">Order Items:</h3>
+        <table style="width: 100%; border-collapse: collapse; background-color: #f9f9f9; border-radius: 5px;">
+            <thead>
+                <tr style="background-color: #f97316; color: white;">
+                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Product</th>
+                    <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Quantity</th>
+                    <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Price</th>
+                    <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% orderItems.forEach(function(item) { %>
+                <tr>
+                    <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                        <strong><%= item.productName %></strong><br>
+                        <small style="color: #666;">SKU: <%= item.sku %></small>
+                    </td>
+                    <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;"><%= item.quantity %></td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">$<%= item.price.toFixed(2) %></td>
+                    <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">$<%= item.total.toFixed(2) %></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+        <div style="text-align: right; margin-top: 10px; font-size: 16px; font-weight: bold; color: #333;">
+            Total: $<%= totalAmount.toFixed(2) %>
+        </div>
+    </div>
+    <% } %>
+    
     <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 20px 0;">
         <p style="margin: 0; color: #856404;"><strong>What's Next?</strong></p>
         <p style="margin: 5px 0 0 0; color: #856404;">Once your payment is processed, your order status will be updated to "Processing" and we'll begin preparing your items for shipment.</p>

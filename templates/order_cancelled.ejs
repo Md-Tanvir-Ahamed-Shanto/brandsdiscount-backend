@@ -38,8 +38,43 @@
     <div class="container">
         <h1>Your Brands Discounts Order #<%= orderNumber %> has been cancelled</h1>
         <p>Hi <%= customerName %>,</p>
-        <p>This is a confirmation that your order <strong>#<%= orderNumber %></strong> has been cancelled and a full refund has been issued.</p>
-        <p>The refund may take 5-7 business days to appear on your original payment method. If you have any questions, please don't hesitate to contact us.</p>
+        <p>We regret to inform you that your order <strong>#<%= orderNumber %></strong> has been cancelled.</p>
+        
+        <% if (typeof orderItems !== 'undefined' && orderItems && orderItems.length > 0) { %>
+        <div style="margin: 20px 0;">
+            <h3 style="color: #333; margin-bottom: 10px;">Cancelled Items:</h3>
+            <table style="width: 100%; border-collapse: collapse; background-color: #f9f9f9; border-radius: 5px;">
+                <thead>
+                    <tr style="background-color: #dc3545; color: white;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Product</th>
+                        <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Quantity</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Price</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orderItems.forEach(function(item) { %>
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                            <strong><%= item.productName %></strong><br>
+                            <small style="color: #666;">SKU: <%= item.sku %></small>
+                        </td>
+                        <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;"><%= item.quantity %></td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">$<%= item.price.toFixed(2) %></td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">$<%= item.total.toFixed(2) %></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            <% if (typeof totalAmount !== 'undefined') { %>
+            <div style="text-align: right; margin-top: 10px; font-size: 16px; font-weight: bold; color: #333;">
+                Order Total: $<%= totalAmount.toFixed(2) %>
+            </div>
+            <% } %>
+        </div>
+        <% } %>
+        
+        <p>If you have any questions about this cancellation or would like to place a new order, please contact us at <a href="mailto:hello@brandsdiscounts.com">hello@brandsdiscounts.com</a>.</p>
         <p>We hope to see you again soon.</p>
         <p>Best regards,<br/>The Brands Discounts Team</p>
         <div class="footer">

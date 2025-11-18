@@ -79,7 +79,15 @@ const createOrder = async (req, res) => {
         await sendOrderPendingEmail(
           newOrder.user.email,
           newOrder.user.name || "Valued Customer",
-          orderNumber
+          orderNumber,
+          newOrder.orderDetails.map((detail) => ({
+            sku: detail.sku,
+            quantity: detail.quantity,
+            price: detail.price,
+            total: detail.total,
+            productName: detail.productName,
+          })),
+          newOrder.totalAmount
         );
 
         await createNotification({
@@ -273,14 +281,29 @@ const updateOrder = async (req, res) => {
             await sendOrderPendingEmail(
               updatedOrder.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              updatedOrder.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
+              updatedOrder.totalAmount
             );
             break;
           case "Processing":
             await sendOrderProcessingEmail(
               updatedOrder.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              updatedOrder.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
             );
             break;
           case "Shipped":
@@ -290,28 +313,56 @@ const updateOrder = async (req, res) => {
               orderNumber,
               "Standard Shipping",
               id || "Not available",
-              "#"
+              "#",
+              updatedOrder.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
             );
             break;
           case "Delivered":
             await sendOrderDeliveredEmail(
               updatedOrder.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              updatedOrder.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
             );
             break;
           case "Cancelled":
             await sendOrderCancelledEmail(
               updatedOrder.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              updatedOrder.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
             );
             break;
           case "Refunded":
             await sendOrderRefundedEmail(
               updatedOrder.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              updatedOrder.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
             );
             break;
         }
@@ -401,14 +452,30 @@ const updateOrderStatus = async (req, res) => {
             await sendOrderPendingEmail(
               order.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              order.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
+              order.totalAmount
             );
             break;
           case "processing":
             await sendOrderProcessingEmail(
               order.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              order.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
+              order.totalAmount
             );
             break;
           case "shipped":
@@ -418,28 +485,60 @@ const updateOrderStatus = async (req, res) => {
               orderNumber,
               "Standard Shipping",
               trackingNumber || "Not available",
-              "#"
+              "#",
+              order.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
+              order.totalAmount
             );
             break;
           case "delivered":
             await sendOrderDeliveredEmail(
               order.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              order.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
+              order.totalAmount
             );
             break;
           case "cancelled":
             await sendOrderCancelledEmail(
               order.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              order.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
+              order.totalAmount
             );
             break;
           case "refunded":
             await sendOrderRefundedEmail(
               order.user.email,
               customerName,
-              orderNumber
+              orderNumber,
+              order.orderDetails.map((detail) => ({
+                sku: detail.sku,
+                quantity: detail.quantity,
+                price: detail.price,
+                total: detail.total,
+                productName: detail.productName,
+              })),
+              order.totalAmount
             );
             break;
         }

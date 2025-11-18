@@ -67,6 +67,41 @@
         </div>
         <p>Hi <%= customerName %>,</p>
         <p>Great news! Tracking shows your order <strong>#<%= orderNumber %></strong> was successfully delivered.</p>
+        
+        <% if (typeof orderItems !== 'undefined' && orderItems && orderItems.length > 0) { %>
+        <div style="margin: 20px 0;">
+            <h3 style="color: #333; margin-bottom: 10px;">Delivered Items:</h3>
+            <table style="width: 100%; border-collapse: collapse; background-color: #f9f9f9; border-radius: 5px;">
+                <thead>
+                    <tr style="background-color: #28a745; color: white;">
+                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Product</th>
+                        <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Quantity</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Price</th>
+                        <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orderItems.forEach(function(item) { %>
+                    <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                            <strong><%= item.productName %></strong><br>
+                            <small style="color: #666;">SKU: <%= item.sku %></small>
+                        </td>
+                        <td style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;"><%= item.quantity %></td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">$<%= item.price.toFixed(2) %></td>
+                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">$<%= item.total.toFixed(2) %></td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+            <% if (typeof totalAmount !== 'undefined') { %>
+            <div style="text-align: right; margin-top: 10px; font-size: 16px; font-weight: bold; color: #333;">
+                Total: $<%= totalAmount.toFixed(2) %>
+            </div>
+            <% } %>
+        </div>
+        <% } %>
+        
         <p>We hope you're already enjoying your new items! If you have any questions or concerns, please contact us at <a href="mailto:hello@brandsdiscounts.com">hello@brandsdiscounts.com</a>.</p>
         <p><a href="https://brandsdiscounts.com/order" class="button">View Order Details</a></p>
         <p>Love your look? Tag <strong>@brandsdiscounts.official</strong> on Instagram with <strong>#BrandsDiscountsStyle</strong> to be featured!</p>
