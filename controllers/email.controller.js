@@ -130,12 +130,12 @@ exports.sendOrderShippedEmailController = async (req, res) => {
     toEmail,
   } = req.body;
   const recipient = toEmail || process.env.TEST_RECIPIENT_EMAIL;
-  if (!recipient || !orderNumber || !trackingNumber) {
+  if (!recipient || !orderNumber) {
     return res
       .status(400)
       .json({
         message:
-          "Recipient email, order number, and tracking number are required.",
+          "Recipient email and order number are required.",
       });
   }
   try {
@@ -144,8 +144,8 @@ exports.sendOrderShippedEmailController = async (req, res) => {
       customerName || "Valued Customer",
       orderNumber,
       carrier || "USPS",
-      trackingNumber,
-      trackingLink || `https://example.com/track/${trackingNumber}`
+      trackingNumber || "Not available",
+      trackingLink || "#"
     );
     res
       .status(200)

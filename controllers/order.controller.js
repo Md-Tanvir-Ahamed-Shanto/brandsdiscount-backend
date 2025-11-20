@@ -313,7 +313,7 @@ const updateOrder = async (req, res) => {
               customerName,
               orderNumber,
               "Standard Shipping",
-              id || "Not available",
+              "Not available",
               "#",
               updatedOrder.orderDetails.map((detail) => ({
                 sku: detail.sku,
@@ -415,7 +415,7 @@ const deleteOrder = async (req, res) => {
 // Update order status
 const updateOrderStatus = async (req, res) => {
   const { orderId } = req.params;
-  const { status, trackingNumber } = req.body;
+  const { status } = req.body;
 
   if (!orderId || !status) {
     return res.status(400).json({ error: "Order ID and status are required" });
@@ -438,7 +438,6 @@ const updateOrderStatus = async (req, res) => {
       where: { id: orderId },
       data: {
         status,
-        ...(trackingNumber && { trackingNumber }),
       },
       include: {
         orderDetails: true,
@@ -489,7 +488,7 @@ const updateOrderStatus = async (req, res) => {
               customerName,
               orderNumber,
               "Standard Shipping",
-              trackingNumber || "Not available",
+              "Not available",
               "#",
               order.orderDetails.map((detail) => ({
                 sku: detail.sku,

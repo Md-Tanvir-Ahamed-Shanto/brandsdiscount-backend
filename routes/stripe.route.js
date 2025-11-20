@@ -370,6 +370,9 @@ router.get('/session-status/:sessionId', async (req, res) => {
 /**
  * Refund Payment
  * POST /api/stripe/refund
+ * 
+ * Enhanced refund endpoint with better validation, error handling,
+ * and support for both payment intent and charge refunds
  */
 router.post('/refund', async (req, res) => {
     try {
@@ -380,20 +383,206 @@ router.post('/refund', async (req, res) => {
             });
         }
 
-        const { paymentIntentId, amount, reason = 'requested_by_customer' } = req.body;
+        const { 
+            paymentIntentId, 
+            chargeId, 
+            amount, 
+            reason = 'requested_by_customer',
+            orderId,
+            refundApplicationFee = false,
+            reverseTransfer = false
+        } = req.body;
 
-        if (!paymentIntentId) {
+        // Validate that we have at least one identifier
+        if (!paymentIntentId && !chargeId) {
             return res.status(400).json({
                 success: false,
-                error: 'Payment Intent ID is required'
+                error: 'Either Payment Intent ID or Charge ID is required'
             });
         }
 
-        const refund = await stripe.refunds.create({
-            payment_intent: paymentIntentId,
-            amount: amount ? Math.round(amount * 100) : undefined, // Partial refund if amount specified
-            reason: reason
+        // Validate reason
+        const validReasons = ['duplicate', 'fraudulent', 'requested_by_customer'];
+        if (!validReasons.includes(reason)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid refund reason. Must be one of: duplicate, fraudulent, requested_by_customer'
+            });
+        }
+
+        // Validate amount if provided
+        if (amount !== undefined && amount !== null) {
+            if (typeof amount !== 'number' || amount <= 0) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Refund amount must be a positive number'
+                });
+            }
+            if (amount > 999999.99) { // Reasonable upper limit
+                return res.status(400).json({
+                    success: false,
+                    error: 'Refund amount exceeds maximum allowed'
+                });
+            }
+        }
+
+        // Build refund parameters
+        const refundParams = {
+            reason: reason,
+            metadata: {
+                requested_at: new Date().toISOString(),
+                requested_by: 'admin_system'
+            }
+        };
+
+        // Add amount if specified (convert to cents)
+        if (amount !== undefined && amount !== null) {
+            refundParams.amount = Math.round(amount * 100);
+        }
+
+        // Add payment identifier
+        if (paymentIntentId) {
+            refundParams.payment_intent = paymentIntentId;
+        } else {
+            refundParams.charge = chargeId;
+        }
+
+        // Add advanced parameters for connected accounts
+        if (refundApplicationFee) {
+            refundParams.refund_application_fee = true;
+        }
+        if (reverseTransfer) {
+            refundParams.reverse_transfer = true;
+        }
+
+        // Create the refund
+        const refund = await stripe.refunds.create(refundParams);
+
+        // Log successful refund
+        console.log('Refund created successfully:', {
+            refundId: refund.id,
+            amount: refund.amount / 100,
+            currency: refund.currency,
+            status: refund.status,
+            paymentIntentId: paymentIntentId,
+            chargeId: chargeId
         });
+
+        // If orderId is provided, update order status in database
+        if (orderId && refund.status === 'succeeded') {
+            try {
+                await prisma.order.update({
+                    where: { id: orderId },
+                    data: {
+                        status: 'refunded'
+                    }
+                });
+                console.log(`Order ${orderId} marked as refunded`);
+            } catch (dbError) {
+                console.error('Error updating order status:', dbError);
+                // Don't fail the refund if database update fails
+            }
+        }
+
+        // Return comprehensive refund information
+        res.json({
+            success: true,
+            refund: {
+                id: refund.id,
+                amount: refund.amount / 100,
+                currency: refund.currency,
+                status: refund.status,
+                reason: refund.reason,
+                created: refund.created,
+                payment_intent: refund.payment_intent,
+                charge: refund.charge,
+                metadata: refund.metadata,
+                failure_reason: refund.failure_reason,
+                failure_balance_transaction: refund.failure_balance_transaction
+            },
+            message: refund.status === 'succeeded' 
+                ? 'Refund processed successfully' 
+                : `Refund is ${refund.status}`,
+            next_steps: refund.status === 'failed' 
+                ? 'Please contact Stripe support for assistance' 
+                : refund.status === 'pending' 
+                ? 'Refund is being processed and will appear in customer account within 5-10 business days'
+                : 'Refund has been completed'
+        });
+
+    } catch (error) {
+        console.error('Refund error:', error);
+        
+        // Handle specific Stripe errors
+        let statusCode = 500;
+        let errorMessage = 'Failed to process refund';
+        let errorCode = 'REFUND_FAILED';
+
+        if (error.type === 'StripeInvalidRequestError') {
+            statusCode = 400;
+            errorMessage = 'Invalid refund request. Please check the payment details.';
+            errorCode = 'INVALID_REQUEST';
+        } else if (error.type === 'StripeCardError') {
+            statusCode = 400;
+            errorMessage = 'Card error occurred during refund.';
+            errorCode = 'CARD_ERROR';
+        } else if (error.type === 'StripeRateLimitError') {
+            statusCode = 429;
+            errorMessage = 'Too many refund requests. Please try again later.';
+            errorCode = 'RATE_LIMIT';
+        } else if (error.code === 'charge_already_refunded') {
+            statusCode = 400;
+            errorMessage = 'This charge has already been fully refunded.';
+            errorCode = 'ALREADY_REFUNDED';
+        } else if (error.code === 'amount_too_large') {
+            statusCode = 400;
+            errorMessage = 'Refund amount exceeds the original charge amount.';
+            errorCode = 'AMOUNT_TOO_LARGE';
+        } else if (error.code === 'expired_charge') {
+            statusCode = 400;
+            errorMessage = 'This charge is too old to be refunded.';
+            errorCode = 'CHARGE_EXPIRED';
+        }
+
+        res.status(statusCode).json({
+            success: false,
+            error: errorMessage,
+            code: errorCode,
+            details: process.env.NODE_ENV === 'development' ? {
+                message: error.message,
+                type: error.type,
+                code: error.code,
+                stack: error.stack
+            } : undefined
+        });
+    }
+});
+
+/**
+ * Get Refund Status
+ * GET /api/stripe/refund-status/:refundId
+ * 
+ * Retrieve the current status of a refund
+ */
+router.get('/refund-status/:refundId', async (req, res) => {
+    try {
+        if (!stripe) {
+            return res.status(500).json({
+                success: false,
+                error: 'Stripe is not properly configured'
+            });
+        }
+
+        const { refundId } = req.params;
+
+        if (!refundId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Refund ID is required'
+            });
+        }
+
+        const refund = await stripe.refunds.retrieve(refundId);
 
         res.json({
             success: true,
@@ -402,18 +591,107 @@ router.post('/refund', async (req, res) => {
                 amount: refund.amount / 100,
                 currency: refund.currency,
                 status: refund.status,
-                reason: refund.reason
+                reason: refund.reason,
+                created: refund.created,
+                payment_intent: refund.payment_intent,
+                charge: refund.charge,
+                metadata: refund.metadata,
+                failure_reason: refund.failure_reason,
+                failure_balance_transaction: refund.failure_balance_transaction,
+                description: getRefundStatusDescription(refund.status)
             }
         });
 
     } catch (error) {
-        console.error('Refund error:', error);
-        res.status(500).json({
+        console.error('Refund status error:', error);
+        
+        let statusCode = 500;
+        let errorMessage = 'Failed to retrieve refund status';
+
+        if (error.type === 'StripeInvalidRequestError') {
+            statusCode = 400;
+            errorMessage = 'Invalid refund ID';
+        }
+
+        res.status(statusCode).json({
             success: false,
-            error: 'Failed to process refund',
+            error: errorMessage,
             details: process.env.NODE_ENV === 'development' ? error.message : undefined
         });
     }
 });
+
+/**
+ * List Refunds for Payment Intent
+ * GET /api/stripe/refunds/:paymentIntentId
+ * 
+ * Get all refunds for a specific payment intent
+ */
+router.get('/refunds/:paymentIntentId', async (req, res) => {
+    try {
+        if (!stripe) {
+            return res.status(500).json({
+                success: false,
+                error: 'Stripe is not properly configured'
+            });
+        }
+
+        const { paymentIntentId } = req.params;
+        const { limit = 10, starting_after } = req.query;
+
+        if (!paymentIntentId) {
+            return res.status(400).json({
+                success: false,
+                error: 'Payment Intent ID is required'
+            });
+        }
+
+        // Validate limit
+        const refundLimit = Math.min(Math.max(1, parseInt(limit) || 10), 100); // Between 1 and 100
+
+        const refunds = await stripe.refunds.list({
+            payment_intent: paymentIntentId,
+            limit: refundLimit,
+            starting_after: starting_after || undefined
+        });
+
+        res.json({
+            success: true,
+            refunds: refunds.data.map(refund => ({
+                id: refund.id,
+                amount: refund.amount / 100,
+                currency: refund.currency,
+                status: refund.status,
+                reason: refund.reason,
+                created: refund.created,
+                metadata: refund.metadata,
+                failure_reason: refund.failure_reason
+            })),
+            has_more: refunds.has_more,
+            total_count: refunds.data.length
+        });
+
+    } catch (error) {
+        console.error('List refunds error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to retrieve refunds',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+/**
+ * Helper function to get refund status description
+ */
+function getRefundStatusDescription(status) {
+    const descriptions = {
+        'pending': 'Refund is being processed and will appear in customer account within 5-10 business days',
+        'succeeded': 'Refund has been completed successfully',
+        'failed': 'Refund failed to process. Please contact support',
+        'canceled': 'Refund was canceled'
+    };
+    return descriptions[status] || 'Refund status unknown';
+}
 
 module.exports = router;

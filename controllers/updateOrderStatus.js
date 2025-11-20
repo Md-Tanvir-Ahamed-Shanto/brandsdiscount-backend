@@ -10,7 +10,7 @@ const {
 
 const updateOrderStatus = async (req, res) => {
   const { orderId } = req.params;
-  const { status, trackingNumber } = req.body;
+  const { status } = req.body;
 
   if (!orderId || !status) {
     return res.status(400).json({ error: "Order ID and status are required" });
@@ -18,7 +18,7 @@ const updateOrderStatus = async (req, res) => {
 
   try {
     const order = await prisma.order.findUnique({
-      where: { orderId: parseInt(orderId) },
+      where: { id: orderId },
       include: {
         user: true,
       },
@@ -29,10 +29,9 @@ const updateOrderStatus = async (req, res) => {
     }
 
     const updatedOrder = await prisma.order.update({
-      where: { orderId: parseInt(orderId) },
+      where: { id: orderId },
       data: { 
-        status,
-        ...(trackingNumber && { trackingNumber })
+        status
       },
       include: {
         orderDetails: true,
@@ -57,8 +56,8 @@ const updateOrderStatus = async (req, res) => {
             await sendOrderShippedEmail(
               order.user.email,
               customerName,
-              order.orderId,
-              trackingNumber || 'Not available'
+              order.id,
+              'Not available'
             );
             break;
           case 'delivered':
