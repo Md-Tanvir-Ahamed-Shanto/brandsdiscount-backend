@@ -474,7 +474,7 @@ router.post('/refund', async (req, res) => {
                 await prisma.order.update({
                     where: { id: orderId },
                     data: {
-                        status: 'refunded'
+                        status: 'Refunded'
                     }
                 });
                 console.log(`Order ${orderId} marked as refunded`);
