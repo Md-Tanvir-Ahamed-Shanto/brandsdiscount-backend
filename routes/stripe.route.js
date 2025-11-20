@@ -1,8 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const {
-  sendOrderRefundedEmail,
-} = require("../tools/email.js");
 // Initialize Stripe with proper error handling
 let stripe;
 try {
