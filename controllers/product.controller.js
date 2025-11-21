@@ -1,4 +1,5 @@
 const { prisma } = require("../db/connection");
+const { createNotification } = require("../utils/notification");
 const {
   createEbayProduct,
   createEbayProduct2,
@@ -2233,7 +2234,7 @@ const updateProductQuantities = async (req, res) => {
             sku: currentSku,
             status: "failed",
             message: `Insufficient stock. Available: ${oldQuantity}, Requested: ${soldQuantity}`,
-          });
+          }); 
           continue;
         }
 
@@ -2305,6 +2306,18 @@ const updateProductQuantities = async (req, res) => {
             message: `Stock deducted successfully (${updatedRecord.oldQuantity} - ${updatedRecord.soldQuantity} = ${updatedRecord.newQuantity}), but ${failedSyncs.length} external platform sync(s) failed.`,
             syncFailures: failedSyncs.length,
           });
+          
+          // Create notification for partial success
+          try {
+            await createNotification({
+              title: `Physicaly sell ${updatedRecord.soldQuantity} units from website`,
+              message: `Product ${currentSku}: Stock deducted from ${updatedRecord.oldQuantity} to ${updatedRecord.newQuantity} (${updatedRecord.soldQuantity} units), but ${failedSyncs.length} external sync(s) failed.`,
+              location: "PRODUCT_MANAGEMENT",
+              selledBy: "WEBSITE"
+            });
+          } catch (notificationError) {
+            console.error(`Failed to create notification for ${currentSku}:`, notificationError.message);
+          }
         } else {
           console.log(
             `All external syncs completed successfully for SKU ${currentSku}`
@@ -2317,6 +2330,18 @@ const updateProductQuantities = async (req, res) => {
             soldQuantity: updatedRecord.soldQuantity,
             message: `Stock deducted successfully: ${updatedRecord.oldQuantity} - ${updatedRecord.soldQuantity} = ${updatedRecord.newQuantity}`,
           });
+          
+          // Create notification for successful stock update
+          try {
+            await createNotification({
+              title: `Physicaly sell ${updatedRecord.soldQuantity} units from website`,
+              message: `Product ${currentSku}: Stock successfully updated from ${updatedRecord.oldQuantity} to ${updatedRecord.newQuantity} (${updatedRecord.soldQuantity} units sold). All external platforms synced.`,
+              location: "PRODUCT_MANAGEMENT",
+              selledBy: "WEBSITE"
+            });
+          } catch (notificationError) {
+            console.error(`Failed to create notification for ${currentSku}:`, notificationError.message);
+          }
         }
       }
     } catch (error) {
@@ -2331,6 +2356,19 @@ const updateProductQuantities = async (req, res) => {
   }
 
   if (allSuccessful && results.length > 0) {
+    // Create summary notification for successful batch
+    try {
+      const successCount = results.filter(r => r.status === "success").length;
+      await createNotification({
+        title: `Batch Stock Update - Complete Success`,
+        message: `Successfully updated stock for ${successCount} product(s). All external platform syncs completed successfully.`,
+        location: "PRODUCT_MANAGEMENT",
+        selledBy: "WEBSITE"
+      });
+    } catch (notificationError) {
+      console.error("Failed to create summary notification:", notificationError.message);
+    }
+    
     return res.status(200).json({
       success: true,
       message: `${updatesToPerform.length} product(s) stock deducted successfully.`,
@@ -2344,6 +2382,22 @@ const updateProductQuantities = async (req, res) => {
         message: "No products provided for stock deduction.",
       });
   } else {
+    // Create summary notification for partial/failed batch
+    try {
+      const successCount = results.filter(r => r.status === "success").length;
+      const partialCount = results.filter(r => r.status === "partial_success").length;
+      const failedCount = results.filter(r => r.status === "failed").length;
+      
+      await createNotification({
+        title: `Batch Stock Update - Mixed Results`,
+        message: `Stock update completed: ${successCount} success, ${partialCount} partial success, ${failedCount} failed. Check details for more information.`,
+        location: "PRODUCT_MANAGEMENT",
+        selledBy: "WEBSITE"
+      });
+    } catch (notificationError) {
+      console.error("Failed to create summary notification:", notificationError.message);
+    }
+    
     return res.status(207).json({
       success: false,
       message:
