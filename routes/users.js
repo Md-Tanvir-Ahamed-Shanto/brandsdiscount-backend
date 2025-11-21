@@ -44,7 +44,7 @@ router.get("/users", verifyUser, paginateOverview("user"), async (req, res) => {
 });
 
 // get users without PlatformUser role
-router.get("/users/without-platform-user", async (req, res) => {
+router.get("/users/without-platform-user", verifyUser, async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       where: {
