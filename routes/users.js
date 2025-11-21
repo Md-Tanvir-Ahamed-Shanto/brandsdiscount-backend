@@ -13,51 +13,63 @@ const pbkdf2Async = util.promisify(crypto.pbkdf2);
 const prisma = new PrismaClient();
 
 // API route to get all users with pagination
-router.get(
-  "/users",
-  verifyUser,
-  paginateOverview("user"),
-  async (req, res) => {
-    try {
-      // Use pagination data from the middleware
-      const { skip, take } = req.pagination;
-      const users = await prisma.user.findMany({
-        skip,
-        take,
-        orderBy: {
-          createdAt: 'desc', // Example ordering
-        },
-      });
-      res.send({ users, ...req.pagination }); // Send pagination data back
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Error fetching users" });
-    }
+// get without salt and hashedPassword
+router.get("/users", verifyUser, paginateOverview("user"), async (req, res) => {
+  try {
+    // Use pagination data from the middleware
+    const { skip, take } = req.pagination;
+    const users = await prisma.user.findMany({
+      skip,
+      take,
+      orderBy: {
+        createdAt: "desc", // Example ordering
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        profilePicture: true,
+        createdAt: true,
+        userDetails: true,
+        loyaltyStatus: true,
+        orderPoint: true,
+      },
+    });
+    res.send({ users, ...req.pagination }); // Send pagination data back
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fetching users" });
   }
-);
+});
 
 // get users without PlatformUser role
-router.get(
-  "/users/without-platform-user",
-  verifyUser,
-  async (req, res) => {
-    try {
-      const users = await prisma.user.findMany({
-        where: {
-          role: {
-            not: "PlatformUser",
-          },
+router.get("/users/without-platform-user", async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        role: {
+          not: "PlatformUser",
         },
-      });
-      res.send({ users });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Error fetching users" });
-    }
+      },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        role: true,
+        profilePicture: true,
+        createdAt: true,
+        userDetails: true,
+        loyaltyStatus: true,
+        orderPoint: true,
+      },
+    });
+    res.send({ users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fetching users" });
   }
-);
-
-
+});
 
 // API route to get a single user by ID
 router.get("/user/:id", async (req, res) => {
@@ -113,7 +125,7 @@ router.post(
     } catch (error) {
       console.error("User create error:", error);
       // Handle unique constraint error (e.g., email already exists)
-      if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+      if (error.code === "P2002" && error.meta?.target?.includes("email")) {
         return res.status(409).json({ error: "Email already in use" });
       }
       return res.status(500).json({ error: "Error creating user" });
@@ -135,9 +147,14 @@ router.delete("/delete/:id", verifyUser, ensureRoleAdmin, async (req, res) => {
     if (user.profilePicture && user.profilePicture.id) {
       try {
         await deleteCloudflareImage(user.profilePicture.id);
-        console.log(`Cloudflare image ${user.profilePicture.id} deleted successfully.`);
+        console.log(
+          `Cloudflare image ${user.profilePicture.id} deleted successfully.`
+        );
       } catch (imageError) {
-        console.error(`Failed to delete Cloudflare image ${user.profilePicture.id}:`, imageError.message);
+        console.error(
+          `Failed to delete Cloudflare image ${user.profilePicture.id}:`,
+          imageError.message
+        );
         // Log the error but continue, as the user record is already deleted
       }
     }
@@ -162,7 +179,9 @@ router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
 
     // Authorization check
     if (req.user.role !== "Admin" && req.user.id !== userDetails.id) {
-      return res.status(403).send({ error: "You are not authorized to update this user" });
+      return res
+        .status(403)
+        .send({ error: "You are not authorized to update this user" });
     }
 
     let updateData = {};
@@ -170,8 +189,10 @@ router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
     // Conditionally add fields to the update data object only if provided
     if (req.body.username) updateData.username = req.body.username;
     if (req.body.email) updateData.email = req.body.email;
-    if (req.body.role && req.user.role === "Admin") updateData.role = req.body.role; // Only allow admins to change roles
-    if (req.body.userDetails) updateData.userDetails = JSON.parse(req.body.userDetails);
+    if (req.body.role && req.user.role === "Admin")
+      updateData.role = req.body.role; // Only allow admins to change roles
+    if (req.body.userDetails)
+      updateData.userDetails = JSON.parse(req.body.userDetails);
 
     // If a new profile picture is uploaded, delete the old one first
     if (req.images.length > 0) {
@@ -179,21 +200,27 @@ router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
         try {
           await deleteCloudflareImage(userDetails.profilePicture.id);
         } catch (imageError) {
-          console.warn(`Failed to delete old Cloudflare image for user ${userId}:`, imageError.message);
+          console.warn(
+            `Failed to delete old Cloudflare image for user ${userId}:`,
+            imageError.message
+          );
         }
       }
       updateData.profilePicture = req.images[0];
-    } else if (req.body.profilePicture === 'null') { // Handle explicit deletion
+    } else if (req.body.profilePicture === "null") {
+      // Handle explicit deletion
       if (userDetails.profilePicture && userDetails.profilePicture.id) {
         try {
           await deleteCloudflareImage(userDetails.profilePicture.id);
         } catch (imageError) {
-          console.warn(`Failed to delete old Cloudflare image for user ${userId}:`, imageError.message);
+          console.warn(
+            `Failed to delete old Cloudflare image for user ${userId}:`,
+            imageError.message
+          );
         }
       }
       updateData.profilePicture = null;
     }
-
 
     if (req.body.password) {
       // Validate old password if provided
@@ -206,16 +233,25 @@ router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
             32,
             "sha256"
           );
-          
-          if (!crypto.timingSafeEqual(userDetails.hashedPassword, hashedOldPassword)) {
-            return res.status(400).json({ error: "Current password is incorrect" });
+
+          if (
+            !crypto.timingSafeEqual(
+              userDetails.hashedPassword,
+              hashedOldPassword
+            )
+          ) {
+            return res
+              .status(400)
+              .json({ error: "Current password is incorrect" });
           }
         } catch (err) {
           console.error("Error validating old password:", err);
-          return res.status(500).json({ error: "Error validating old password" });
+          return res
+            .status(500)
+            .json({ error: "Error validating old password" });
         }
       }
-      
+
       // Hash and update with new password
       const salt = crypto.randomBytes(16);
       const hashedPassword = await pbkdf2Async(
@@ -237,18 +273,16 @@ router.put("/update/:id", verifyUser, uploadImages, async (req, res) => {
       where: { id: userId },
       data: updateData,
     });
-    
-    res.status(200).send({ success: true, user: updatedUser });
 
+    res.status(200).send({ success: true, user: updatedUser });
   } catch (error) {
     console.error("Error updating user:", error);
-    if (error.code === 'P2002' && error.meta?.target?.includes('email')) {
+    if (error.code === "P2002" && error.meta?.target?.includes("email")) {
       return res.status(409).json({ error: "Email already in use" });
     }
     res.status(500).send({ error: "Internal server error" });
   }
 });
-
 
 router.post("/forgotPassword", async (req, res) => {
   const email = req.body.email;
