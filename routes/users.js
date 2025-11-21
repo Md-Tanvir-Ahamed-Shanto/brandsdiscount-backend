@@ -16,7 +16,6 @@ const prisma = new PrismaClient();
 router.get(
   "/users",
   verifyUser,
-  ensureRoleAdmin,
   paginateOverview("user"),
   async (req, res) => {
     try {
@@ -36,6 +35,29 @@ router.get(
     }
   }
 );
+
+// get users without PlatformUser role
+router.get(
+  "/users/without-platform-user",
+  verifyUser,
+  async (req, res) => {
+    try {
+      const users = await prisma.user.findMany({
+        where: {
+          role: {
+            not: "PlatformUser",
+          },
+        },
+      });
+      res.send({ users });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Error fetching users" });
+    }
+  }
+);
+
+
 
 // API route to get a single user by ID
 router.get("/user/:id", async (req, res) => {
